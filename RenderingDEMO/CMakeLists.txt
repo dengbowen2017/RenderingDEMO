@@ -1,12 +1,6 @@
-﻿# CMakeList.txt: RenderingDEMO 的 CMake 项目，在此处包括源代码并定义
-# 项目特定的逻辑。
-#
+﻿add_executable (${PROJECT_NAME} "RenderingDEMO.cpp" "RenderingDEMO.h")
 
-# 将源代码添加到此项目的可执行文件。
-add_executable (RenderingDEMO "RenderingDEMO.cpp" "RenderingDEMO.h")
+target_link_libraries (${PROJECT_NAME} PUBLIC glfw opengl32.lib)
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET RenderingDEMO PROPERTY CXX_STANDARD 20)
-endif()
-
-# TODO: 如有需要，请添加测试并安装目标。
+target_link_directories (${PROJECT_NAME} PUBLIC 
+	${CMAKE_SOURCE_DIR}/dependence/glfw-3.4/include)
