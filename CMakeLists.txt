@@ -2,6 +2,4 @@
 
 project ("RenderingDEMO")
 
-add_subdirectory ("dependence")
-
 add_subdirectory ("RenderingDEMO")
