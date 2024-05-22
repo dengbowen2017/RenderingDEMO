@@ -27,7 +27,15 @@ namespace RenderingDEMO
 		}
 
 		glfwMakeContextCurrent(m_Window);
-			
+
+		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+		{
+			spdlog::error("Failed to initialize GLAD");
+			return;
+		}
+
+		glfwSetWindowUserPointer(m_Window, this);
+		glfwSetKeyCallback(m_Window, KeyCallback);
 	}
 
 	void Window::OnUpdate()
@@ -40,5 +48,22 @@ namespace RenderingDEMO
 
 		/* Poll for and process events */
 		glfwPollEvents();
+	}
+
+	void Window::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+	{
+		Window* w = (Window*)(glfwGetWindowUserPointer(window));
+		if (w)
+		{
+			w->OnKey(key, scancode, action, mods);
+		}
+
+	}
+	void Window::OnKey(int key, int scancode, int action, int mods)
+	{
+		for (auto& f : m_OnKeyFuncs)
+		{
+			f(key, scancode, action, mods);
+		}
 	}
 }

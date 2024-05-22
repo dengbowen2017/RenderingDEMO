@@ -8,8 +8,8 @@ namespace RenderingDEMO
 		m_InputManager = std::make_unique<InputManager>();
 
 		WindowProps props;
-
 		m_Window->Initialize(props);
+		m_Window->RegisterOnKeyFunc(std::bind(&InputManager::OnKey, m_InputManager.get(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 	}
 
 	Application::~Application()
