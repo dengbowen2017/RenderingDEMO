@@ -9,6 +9,7 @@ namespace RenderingDEMO
 	void InputManager::OnUpdate()
 	{
 	}
+
 	void InputManager::OnKey(int key, int scancode, int action, int mods)
 	{
 		if (action == GLFW_PRESS)

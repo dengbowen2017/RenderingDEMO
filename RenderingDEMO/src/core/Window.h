@@ -23,6 +23,11 @@ namespace RenderingDEMO
 		void Initialize(const WindowProps& props);
 		void OnUpdate();
 
+		//test function
+		//will be removed when RenderContext is done
+		void PollEventsAndClearBufferAndSetViewport();
+		void SwapBuffer();
+
 		GLFWwindow* GetWindowPointer() const { return m_Window; }
 		bool WindowShouldClose() const { return glfwWindowShouldClose(m_Window); }
 

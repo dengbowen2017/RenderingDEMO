@@ -9,12 +9,14 @@ namespace RenderingDEMO
 
 	void Window::Initialize(const WindowProps& props)
 	{
-		/* Initialize the library */
 		if (!glfwInit())
 		{
 			spdlog::error("Failed to initialize GLFW");
 			return;
 		}
+
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
 		m_Width = props.Width;
 		m_Height = props.Height;
@@ -40,14 +42,22 @@ namespace RenderingDEMO
 
 	void Window::OnUpdate()
 	{
-		/* Render here */
-		glClear(GL_COLOR_BUFFER_BIT);
+		
+	}
 
-		/* Swap front and back buffers */
-		glfwSwapBuffers(m_Window);
-
-		/* Poll for and process events */
+	void Window::PollEventsAndClearBufferAndSetViewport()
+	{
 		glfwPollEvents();
+		int display_w, display_h;
+		glfwGetFramebufferSize(m_Window, &display_w, &display_h);
+		glViewport(0, 0, display_w, display_h);
+		glClearColor(0.2f, 0.3f, 0.7f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
+
+	void Window::SwapBuffer()
+	{
+		glfwSwapBuffers(m_Window);
 	}
 
 	void Window::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)

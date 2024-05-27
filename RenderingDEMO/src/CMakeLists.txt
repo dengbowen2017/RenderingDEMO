@@ -10,11 +10,16 @@ target_sources(${PROJECT_NAME} PUBLIC ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries (${PROJECT_NAME} PUBLIC
 	glfw
 	glad
+	imgui
 	opengl32.lib)
 
 target_link_directories (${PROJECT_NAME} PUBLIC 
 	${PROJECT_SOURCE_DIR}/dependence/glfw-3.4/include
-	${PROJECT_SOURCE_DIR}/dependence/glad/include)
+	${PROJECT_SOURCE_DIR}/dependence/glad/include
+	${PROJECT_SOURCE_DIR}/dependence/imgui)
+
+target_link_options (${PROJECT_NAME} PRIVATE
+	/NATVIS:${PROJECT_SOURCE_DIR}/dependence/imgui/misc/debuggers/imgui.natvis)
 
 target_include_directories (${PROJECT_NAME} PUBLIC
 	${PROJECT_SOURCE_DIR}/dependence/spdlog/include
