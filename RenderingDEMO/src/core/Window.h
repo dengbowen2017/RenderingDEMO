@@ -1,6 +1,8 @@
 #pragma once
 
-#include <glad/glad.h>
+#include "render/RenderContext.h"
+#include "WindowUI.h"
+
 #include <GLFW/glfw3.h>
 
 namespace RenderingDEMO
@@ -21,11 +23,6 @@ namespace RenderingDEMO
 		void Initialize(const WindowProps& props);
 		void OnUpdate();
 
-		//test function
-		//will be removed when RenderContext is done
-		void PollEventsAndClearBufferAndSetViewport();
-		void SwapBuffer();
-
 		GLFWwindow* GetWindowPointer() const { return m_Window; }
 		bool WindowShouldClose() const { return glfwWindowShouldClose(m_Window); }
 
@@ -44,6 +41,9 @@ namespace RenderingDEMO
 		uint32_t m_Height = 0;
 
 		std::vector<OnKeyFunc> m_OnKeyFuncs;
+
+		std::unique_ptr<RenderContext> m_RenderContext = nullptr;
+		std::unique_ptr<WindowUI> m_WindowUI = nullptr;
 	};
 
 }

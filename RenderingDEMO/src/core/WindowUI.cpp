@@ -1,17 +1,25 @@
 #include "WindowUI.h"
 
+#include <imgui.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
+
 namespace RenderingDEMO
 {
+	WindowUI::WindowUI(GLFWwindow* window)
+		:m_Window(window)
+	{
+	}
+
 	WindowUI::~WindowUI()
 	{
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 	}
-	void WindowUI::Initialize(GLFWwindow* window)
-	{
-		m_Window = window;
 
+	void WindowUI::Initialize()
+	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();
@@ -26,6 +34,7 @@ namespace RenderingDEMO
 		//set glsl version
 		ImGui_ImplOpenGL3_Init("#version 130");
 	}
+
 	void WindowUI::ShowWindowUI()
 	{
 		ImGui_ImplOpenGL3_NewFrame();
@@ -36,6 +45,7 @@ namespace RenderingDEMO
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
+
 	void WindowUI::OnUpdate()
 	{
 

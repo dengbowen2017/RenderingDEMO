@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Window.h"
-#include "WindowUI.h"
 #include "InputManager.h"
 
 namespace RenderingDEMO
@@ -17,6 +16,5 @@ namespace RenderingDEMO
 	private:
 		std::unique_ptr<Window> m_Window;
 		std::unique_ptr<InputManager> m_InputManager;
-		std::shared_ptr<WindowUI> m_WindowUI;
 	};
 }

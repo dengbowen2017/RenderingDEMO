@@ -1,5 +1,10 @@
 #include "Window.h"
+#include "render/OpenGL/OpenGLContext.h"
+
 #include <spdlog/spdlog.h>
+
+//should not be included here
+#include <glad/glad.h>
 
 namespace RenderingDEMO
 {
@@ -29,36 +34,30 @@ namespace RenderingDEMO
 			return ;
 		}
 
-		glfwMakeContextCurrent(m_Window);
-
-		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-		{
-			spdlog::error("Failed to initialize GLAD");
-			return;
-		}
-
 		glfwSetWindowUserPointer(m_Window, this);
 		glfwSetKeyCallback(m_Window, KeyCallback);
+
+		m_RenderContext = std::make_unique<OpenGLContext>(m_Window);
+		m_RenderContext->Initialize();
+
+		m_WindowUI = std::make_unique<WindowUI>(m_Window);
+		m_WindowUI->Initialize();
 	}
 
 	void Window::OnUpdate()
 	{
-		
-	}
-
-	void Window::PollEventsAndClearBufferAndSetViewport()
-	{
 		glfwPollEvents();
 		int display_w, display_h;
 		glfwGetFramebufferSize(m_Window, &display_w, &display_h);
+
+		//will be moved to render
 		glViewport(0, 0, display_w, display_h);
 		glClearColor(0.2f, 0.3f, 0.7f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-	}
 
-	void Window::SwapBuffer()
-	{
-		glfwSwapBuffers(m_Window);
+		m_WindowUI->ShowWindowUI();
+
+		m_RenderContext->SwapBuffer();
 	}
 
 	void Window::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)

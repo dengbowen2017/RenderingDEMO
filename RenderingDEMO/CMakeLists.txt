@@ -1,4 +1,2 @@
-﻿project ("RenderingDEMO")
-
-add_subdirectory ("dependence")
+﻿add_subdirectory ("dependence")
 add_subdirectory ("src")

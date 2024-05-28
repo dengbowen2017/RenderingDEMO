@@ -10,4 +10,4 @@ add_library (imgui ${SRC_FILES} ${BACKENDS})
 
 target_include_directories (imgui PUBLIC
     ${PROJECT_SOURCE_DIR}
-    ${RenderingDEMO_SOURCE_DIR}/dependence/glfw-3.4/include)
+    ${RenderingDEMO_SOURCE_DIR}/RenderingDEMO/dependence/glfw-3.4/include)
