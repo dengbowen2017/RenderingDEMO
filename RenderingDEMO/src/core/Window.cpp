@@ -1,4 +1,5 @@
 #include "Window.h"
+#include <spdlog/spdlog.h>
 
 namespace RenderingDEMO
 {

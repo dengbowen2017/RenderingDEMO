@@ -1,5 +1,4 @@
-﻿#include "pch.h"
-#include "core/Application.h"
+﻿#include "core/Application.h"
 
 int main(void)
 {

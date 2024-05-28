@@ -24,3 +24,5 @@ target_link_options (${PROJECT_NAME} PRIVATE
 target_include_directories (${PROJECT_NAME} PUBLIC
 	${PROJECT_SOURCE_DIR}/dependence/spdlog/include
 	${PROJECT_SOURCE_DIR}/src)
+
+target_precompile_headers (${PROJECT_NAME} PUBLIC pch.h)

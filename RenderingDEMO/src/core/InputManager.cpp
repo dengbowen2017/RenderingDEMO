@@ -1,4 +1,5 @@
 #include "InputManager.h"
+#include <spdlog/spdlog.h>
 
 namespace RenderingDEMO
 {
