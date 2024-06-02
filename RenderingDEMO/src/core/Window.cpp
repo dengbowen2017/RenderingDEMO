@@ -1,10 +1,6 @@
 #include "Window.h"
-#include "render/OpenGL/OpenGLContext.h"
 
 #include <spdlog/spdlog.h>
-
-//should not be included here
-#include <glad/glad.h>
 
 namespace RenderingDEMO
 {
@@ -36,28 +32,12 @@ namespace RenderingDEMO
 
 		glfwSetWindowUserPointer(m_Window, this);
 		glfwSetKeyCallback(m_Window, KeyCallback);
-
-		m_RenderContext = std::make_unique<OpenGLContext>(m_Window);
-		m_RenderContext->Initialize();
-
-		m_WindowUI = std::make_unique<WindowUI>(m_Window);
-		m_WindowUI->Initialize();
+		glfwSetWindowSizeCallback(m_Window, WindowSizeCallback);
 	}
 
-	void Window::OnUpdate()
+	void Window::PollEvents()
 	{
 		glfwPollEvents();
-		int display_w, display_h;
-		glfwGetFramebufferSize(m_Window, &display_w, &display_h);
-
-		//will be moved to render
-		glViewport(0, 0, display_w, display_h);
-		glClearColor(0.2f, 0.3f, 0.7f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		m_WindowUI->ShowWindowUI();
-
-		m_RenderContext->SwapBuffer();
 	}
 
 	void Window::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -67,8 +47,18 @@ namespace RenderingDEMO
 		{
 			w->OnKey(key, scancode, action, mods);
 		}
-
 	}
+
+	void Window::WindowSizeCallback(GLFWwindow* window, int width, int height)
+	{
+		Window* w = (Window*)(glfwGetWindowUserPointer(window));
+		if (w)
+		{
+			w->m_Width = width;
+			w->m_Height = height;
+		}
+	}
+
 	void Window::OnKey(int key, int scancode, int action, int mods)
 	{
 		for (auto& f : m_OnKeyFuncs)

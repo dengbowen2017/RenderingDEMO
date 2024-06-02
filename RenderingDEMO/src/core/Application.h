@@ -2,6 +2,7 @@
 
 #include "Window.h"
 #include "InputManager.h"
+#include "render/Renderer.h"
 
 namespace RenderingDEMO
 {
@@ -14,7 +15,8 @@ namespace RenderingDEMO
 		void Run();
 
 	private:
-		std::unique_ptr<Window> m_Window;
-		std::unique_ptr<InputManager> m_InputManager;
+		std::shared_ptr<Window> m_Window;
+		std::shared_ptr<InputManager> m_InputManager;
+		std::shared_ptr<Renderer> m_Renderer;
 	};
 }

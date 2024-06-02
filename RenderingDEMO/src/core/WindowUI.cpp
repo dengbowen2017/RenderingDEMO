@@ -6,11 +6,6 @@
 
 namespace RenderingDEMO
 {
-	WindowUI::WindowUI(GLFWwindow* window)
-		:m_Window(window)
-	{
-	}
-
 	WindowUI::~WindowUI()
 	{
 		ImGui_ImplOpenGL3_Shutdown();
@@ -18,8 +13,10 @@ namespace RenderingDEMO
 		ImGui::DestroyContext();
 	}
 
-	void WindowUI::Initialize()
+	void WindowUI::Initialize(std::shared_ptr<Window> window)
 	{
+		m_Window = window->GetWindowPointer();
+
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();
@@ -43,6 +40,11 @@ namespace RenderingDEMO
 		ImGui_ImplOpenGL3_Init("#version 130");
 	}
 
+	void WindowUI::OnUpdate()
+	{
+		this->ShowWindowUI();
+	}
+
 	void WindowUI::ShowWindowUI()
 	{
 		ImGui_ImplOpenGL3_NewFrame();
@@ -61,10 +63,5 @@ namespace RenderingDEMO
 			ImGui::RenderPlatformWindowsDefault();
 			glfwMakeContextCurrent(backup_current_context);
 		}
-	}
-
-	void WindowUI::OnUpdate()
-	{
-
 	}
 }

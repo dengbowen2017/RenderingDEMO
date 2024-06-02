@@ -1,18 +1,20 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
+#include "Window.h"
 
 namespace RenderingDEMO
 {
 	class WindowUI
 	{
 	public:
-		WindowUI(GLFWwindow* window);
+		WindowUI() = default;
 		~WindowUI();
 
-		void Initialize();
-		void ShowWindowUI();
+		void Initialize(std::shared_ptr<Window> window);
 		void OnUpdate();
+
+	private:
+		void ShowWindowUI();
 
 	private:
 		GLFWwindow* m_Window = nullptr;

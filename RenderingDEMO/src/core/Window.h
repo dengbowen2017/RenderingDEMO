@@ -1,8 +1,5 @@
 #pragma once
 
-#include "render/RenderContext.h"
-#include "WindowUI.h"
-
 #include <GLFW/glfw3.h>
 
 namespace RenderingDEMO
@@ -10,8 +7,8 @@ namespace RenderingDEMO
 	struct WindowProps
 	{
 		const char* Title = "RenderingDEMO";
-		uint32_t Width = 1600;
-		uint32_t Height = 900;
+		int Width = 1600;
+		int Height = 900;
 	};
 
 	class Window
@@ -21,9 +18,10 @@ namespace RenderingDEMO
 		~Window();
 
 		void Initialize(const WindowProps& props);
-		void OnUpdate();
+		void PollEvents();
 
 		GLFWwindow* GetWindowPointer() const { return m_Window; }
+		std::array<int, 2> GetWindowSize() const { return std::array<int, 2>({ m_Width, m_Height }); }
 		bool WindowShouldClose() const { return glfwWindowShouldClose(m_Window); }
 
 		typedef std::function<void(int, int, int, int)> OnKeyFunc;
@@ -32,18 +30,16 @@ namespace RenderingDEMO
 
 	private:
 		static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+		static void WindowSizeCallback(GLFWwindow* window, int width, int height);
 
 		void OnKey(int key, int scancode, int action, int mods);
 
 	private:
 		GLFWwindow* m_Window = nullptr;
-		uint32_t m_Width = 0;
-		uint32_t m_Height = 0;
+		int m_Width = 0;
+		int m_Height = 0;
 
 		std::vector<OnKeyFunc> m_OnKeyFuncs;
-
-		std::unique_ptr<RenderContext> m_RenderContext = nullptr;
-		std::unique_ptr<WindowUI> m_WindowUI = nullptr;
 	};
 
 }
