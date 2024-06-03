@@ -17,20 +17,21 @@ namespace RenderingDEMO
 		virtual void RecreateSwapChain() override;
 
 		virtual std::shared_ptr<VertexBuffer> CreateVertexBuffer(void* data, unsigned int size) override;
-		virtual void CreateIndexBuffer() override;
-		virtual void CreateShader() override;
-		virtual void CreateVertexDeclaration() override;
+		virtual std::shared_ptr<IndexBuffer> CreateIndexBuffer(void* data, unsigned int size) override;
+		virtual std::shared_ptr<VertexDeclaration> CreateVertexDeclaration(const std::vector<VertexElement>& elements) override;
+		virtual void CreateShaderState() override;
 
-		virtual void SetVertexShaderLayout() override;
 		virtual void SetVertexBuffer(std::shared_ptr<VertexBuffer> vb) override;
+		virtual void SetIndexBuffer(std::shared_ptr<IndexBuffer>) override;
+		virtual void SetShaderState(std::shared_ptr<VertexDeclaration> vd) override;
 
 		virtual void ClearBackBuffer(float r, float g, float b, float a) override;
 		virtual void SwapBuffer() override;
-		virtual void Draw() override;
+		virtual void Draw(unsigned int count) override;
 
 	private:
 		GLFWwindow* m_Window = nullptr;
-		std::array<int, 2> m_WindowSize;
+		std::array<int, 2> m_WindowSize = {0 ,0};
 
 		unsigned int m_VAO = 0;
 	};

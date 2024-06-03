@@ -16,15 +16,16 @@ namespace RenderingDEMO
 		virtual void RecreateSwapChain() = 0;
 
 		virtual std::shared_ptr<VertexBuffer> CreateVertexBuffer(void* data, unsigned int size) = 0;
-		virtual void CreateIndexBuffer() = 0;
-		virtual void CreateShader() = 0;
-		virtual void CreateVertexDeclaration() = 0;
+		virtual std::shared_ptr<IndexBuffer> CreateIndexBuffer(void* data, unsigned int size) = 0;
+		virtual std::shared_ptr<VertexDeclaration> CreateVertexDeclaration(const std::vector<VertexElement>& elements) = 0;
+		virtual void CreateShaderState() = 0;
 
-		virtual void SetVertexShaderLayout() = 0;
 		virtual void SetVertexBuffer(std::shared_ptr<VertexBuffer> vb) = 0;
+		virtual void SetIndexBuffer(std::shared_ptr<IndexBuffer> ib) = 0;
+		virtual void SetShaderState(std::shared_ptr<VertexDeclaration> vd) = 0;
 
 		virtual void ClearBackBuffer(float r, float g, float b, float a) = 0;
 		virtual void SwapBuffer() = 0;
-		virtual void Draw() = 0;
+		virtual void Draw(unsigned int count) = 0;
 	};
 }
