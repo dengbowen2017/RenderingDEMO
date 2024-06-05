@@ -2,10 +2,6 @@
 
 #include "render/OpenGL/OpenGLRHI.h"
 
-
-// temp
-#include <glad/glad.h>
-
 namespace RenderingDEMO
 {
 	Renderer::~Renderer()
@@ -37,11 +33,10 @@ namespace RenderingDEMO
 		// draw 
 		// swap buffer
 
-		m_RHI->ClearBackBuffer(0.2f, 0.3f, 0.7f, 1.0f);
+		m_RHI->ClearBackBuffer();
 
 		//m_WindowUI->OnUpdate();
 
-		//glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
 		m_RHI->Draw(m_IndexBuffer->GetCount());
 
 		m_RHI->SwapBuffer();
@@ -73,8 +68,9 @@ namespace RenderingDEMO
 		std::vector<VertexElement> elements;
 		elements.push_back({ "Position", VertexElementType::Float3 });
 
+		//should remove to SetBoundState
 		m_VertexDeclaration = m_RHI->CreateVertexDeclaration(elements);
-		m_RHI->SetShaderState(m_VertexDeclaration);
+		//m_RHI->SetVertexLayout(m_VertexDeclaration);
 
 		unsigned int indices[3] =
 		{
@@ -83,5 +79,11 @@ namespace RenderingDEMO
 
 		m_IndexBuffer = m_RHI->CreateIndexBuffer(indices, sizeof(indices));
 		m_RHI->SetIndexBuffer(m_IndexBuffer);
+
+		std::shared_ptr<VertexShader> vshader = m_RHI->CreateVertexShader("../shader/vs.glsl");
+		std::shared_ptr<PixelShader> pshader = m_RHI->CreatePixelShader("../shader/ps.glsl");
+
+		m_State = m_RHI->CreateBoundShaderState(vshader, pshader, m_VertexDeclaration);
+		m_RHI->SetBoundShaderState(m_State);
 	}
 }

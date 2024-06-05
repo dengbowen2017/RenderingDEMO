@@ -19,15 +19,21 @@ namespace RenderingDEMO
 		virtual std::shared_ptr<VertexBuffer> CreateVertexBuffer(void* data, unsigned int size) override;
 		virtual std::shared_ptr<IndexBuffer> CreateIndexBuffer(void* data, unsigned int size) override;
 		virtual std::shared_ptr<VertexDeclaration> CreateVertexDeclaration(const std::vector<VertexElement>& elements) override;
-		virtual void CreateShaderState() override;
+		virtual std::shared_ptr<VertexShader> CreateVertexShader(const std::string& file_path) override;
+		virtual std::shared_ptr<PixelShader> CreatePixelShader(const std::string& file_path) override;
+		virtual std::shared_ptr<BoundShaderState> CreateBoundShaderState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd) override;
 
 		virtual void SetVertexBuffer(std::shared_ptr<VertexBuffer> vb) override;
 		virtual void SetIndexBuffer(std::shared_ptr<IndexBuffer>) override;
-		virtual void SetShaderState(std::shared_ptr<VertexDeclaration> vd) override;
+		virtual void SetVertexLayout(std::shared_ptr<VertexDeclaration> vd) override;
+		virtual void SetBoundShaderState(std::shared_ptr<BoundShaderState> state) override;
 
-		virtual void ClearBackBuffer(float r, float g, float b, float a) override;
+		virtual void ClearBackBuffer() override;
 		virtual void SwapBuffer() override;
 		virtual void Draw(unsigned int count) override;
+
+	private:
+		std::string ReadFromFile(const std::string& file_path);
 
 	private:
 		GLFWwindow* m_Window = nullptr;

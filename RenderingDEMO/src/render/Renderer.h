@@ -31,7 +31,6 @@ namespace RenderingDEMO
 		std::shared_ptr<VertexBuffer> m_VertexBuffer;
 		std::shared_ptr<VertexDeclaration> m_VertexDeclaration;
 		std::shared_ptr<IndexBuffer> m_IndexBuffer;
-
-		unsigned int m_VEO;
+		std::shared_ptr<BoundShaderState> m_State;
 	};
 }

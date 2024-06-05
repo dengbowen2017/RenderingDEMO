@@ -1,18 +1,23 @@
 #include "OpenGLRHIResource.h"
-#include "glad/glad.h"
+
+#include <glad/glad.h>
+#include <spdlog/spdlog.h>
 
 namespace RenderingDEMO
 {
 	OpenGLVertexDeclaration::OpenGLVertexDeclaration(const std::vector<VertexElement>& elements)
 	{
 		unsigned int offset = 0;
+		unsigned int index = 0;
 		m_Stride = 0;
+
 		for (const auto& e : elements)
 		{
 			OpenGLVertexElement glElement;
 			glElement.Name = e.Name;
 			glElement.Size = e.Size;
-			
+			glElement.Index = index;
+
 			switch (e.Type)
 			{
 			case VertexElementType::None:
@@ -80,6 +85,7 @@ namespace RenderingDEMO
 			m_Elements.push_back(glElement);
 			offset += e.Size;
 			m_Stride += e.Size;
+			index++;
 		}
 	}
 
@@ -101,5 +107,50 @@ namespace RenderingDEMO
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()
 	{
 		glDeleteBuffers(1, &m_ID);
+	}
+
+	OpenGLVertexShader::OpenGLVertexShader(unsigned int id)
+		:m_ID(id)
+	{
+	}
+
+	OpenGLVertexShader::~OpenGLVertexShader()
+	{
+		glDeleteShader(m_ID);
+	}
+
+	OpenGLPixelShader::OpenGLPixelShader(unsigned int id)
+		:m_ID(id)
+	{
+	}
+
+	OpenGLPixelShader::~OpenGLPixelShader()
+	{
+		glDeleteShader(m_ID);
+	}
+
+	OpenGLBoundShaderState::OpenGLBoundShaderState(std::shared_ptr<OpenGLVertexShader> vs, std::shared_ptr<OpenGLPixelShader> ps, std::shared_ptr<OpenGLVertexDeclaration> vd)
+	{
+		m_VertexDeclaration = vd;
+
+		int success = 0;
+		char infoLog[512];
+		m_ID = glCreateProgram();
+		glAttachShader(m_ID, vs->GetID());
+		glAttachShader(m_ID, ps->GetID());
+		glLinkProgram(m_ID);
+
+		// check for linking errors
+		glGetProgramiv(m_ID, GL_LINK_STATUS, &success);
+		if (!success)
+		{
+			glGetProgramInfoLog(m_ID, 512, NULL, infoLog);
+			spdlog::error("OpenGL Shader Program Linking Failed:", infoLog);
+		}
+	}
+
+	OpenGLBoundShaderState::~OpenGLBoundShaderState()
+	{
+		glDeleteProgram(m_ID);
 	}
 }

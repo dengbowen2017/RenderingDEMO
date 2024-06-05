@@ -58,13 +58,28 @@ namespace RenderingDEMO
 		}
 	};
 
+	class BoundShaderState 
+	{
+	public:
+		virtual ~BoundShaderState() = default;
+	};
+
+	class VertexShader 
+	{
+	public:
+		virtual ~VertexShader() = default;
+	};
+
+	class PixelShader 
+	{
+	public:
+		virtual ~PixelShader() = default;
+	};
+
 	class VertexDeclaration
 	{
 	public:
 		virtual ~VertexDeclaration() = default;
-
-	public:
-		unsigned int m_Stride = 0;
 	};
 
 	class VertexBuffer

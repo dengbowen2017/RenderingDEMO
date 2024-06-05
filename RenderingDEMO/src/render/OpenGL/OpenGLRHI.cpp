@@ -24,6 +24,7 @@ namespace RenderingDEMO
         }
 
         //create swapchain
+        //TODO: add window resize callback to reset the viewport
         CreateSwapChain();
 
         glCreateVertexArrays(1, &m_VAO);
@@ -69,8 +70,55 @@ namespace RenderingDEMO
         return std::shared_ptr<OpenGLVertexDeclaration>(new OpenGLVertexDeclaration(elements));
     }
 
-    void OpenGLRHI::CreateShaderState()
+    std::shared_ptr<VertexShader> OpenGLRHI::CreateVertexShader(const std::string& file_path)
     {
+        std::string vertexShaderSource = ReadFromFile(file_path);
+        const char* source = vertexShaderSource.c_str();
+
+        unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(vertexShader, 1, &source, nullptr);
+        glCompileShader(vertexShader);
+
+        int success;
+        char infoLog[512];
+        glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
+            spdlog::error("Shader Vertex Compilation Failed:", infoLog);
+        }
+
+        return std::shared_ptr<OpenGLVertexShader>(new OpenGLVertexShader(vertexShader));
+    }
+
+    std::shared_ptr<PixelShader> OpenGLRHI::CreatePixelShader(const std::string& file_path)
+    {
+        std::string pixelShaderSource = ReadFromFile(file_path);
+        const char* source = pixelShaderSource.c_str();
+
+        unsigned int pixelShader = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(pixelShader, 1, &source, nullptr);
+        glCompileShader(pixelShader);
+
+        int success;
+        char infoLog[512];
+        glGetShaderiv(pixelShader, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(pixelShader, 512, nullptr, infoLog);
+            spdlog::error("Shader pixel Compilation Failed:", infoLog);
+        }
+
+        return std::shared_ptr<OpenGLPixelShader>(new OpenGLPixelShader(pixelShader));
+    }
+
+    std::shared_ptr<BoundShaderState> OpenGLRHI::CreateBoundShaderState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd)
+    {
+        std::shared_ptr<OpenGLVertexShader> glvs = std::dynamic_pointer_cast<OpenGLVertexShader>(vs);
+        std::shared_ptr<OpenGLPixelShader> glps = std::dynamic_pointer_cast<OpenGLPixelShader>(ps);
+        std::shared_ptr<OpenGLVertexDeclaration> glvd = std::dynamic_pointer_cast<OpenGLVertexDeclaration>(vd);
+
+        return std::shared_ptr<BoundShaderState>(new OpenGLBoundShaderState(glvs, glps, glvd));
     }
 
     void OpenGLRHI::SetVertexBuffer(std::shared_ptr<VertexBuffer> vb)
@@ -85,22 +133,29 @@ namespace RenderingDEMO
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glIB->GetID());
     }
 
-    void OpenGLRHI::SetShaderState(std::shared_ptr<VertexDeclaration> vd)
+    void OpenGLRHI::SetVertexLayout(std::shared_ptr<VertexDeclaration> vd)
     {
         std::shared_ptr<OpenGLVertexDeclaration> glvd = std::dynamic_pointer_cast<OpenGLVertexDeclaration>(vd);
         
-        unsigned int index = 0;
-        for (const auto& e : glvd->m_Elements)
+        for (const auto& e : glvd->GetElements())
         {
-            //switch to new OpenGL api in 4.3
-            glEnableVertexAttribArray(index);
-            glVertexAttribPointer(index, e.Count, e.Type, GL_FALSE, glvd->m_Stride, (const void*)e.Offset);
+            //TODO: switch to new OpenGL api in 4.3
+            glEnableVertexAttribArray(e.Index);
+            glVertexAttribPointer(e.Index, e.Count, e.Type, GL_FALSE, glvd->GetStride(), (const void*)e.Offset);
         }
     }
 
-    void OpenGLRHI::ClearBackBuffer(float r, float g, float b, float a)
+    void OpenGLRHI::SetBoundShaderState(std::shared_ptr<BoundShaderState> state)
     {
-        glClearColor(r, g, b, a);
+        std::shared_ptr<OpenGLBoundShaderState> glState = std::dynamic_pointer_cast<OpenGLBoundShaderState>(state);
+
+        SetVertexLayout(glState->GetVertexDeclaration());
+        glUseProgram(glState->GetID());
+    }
+
+    void OpenGLRHI::ClearBackBuffer()
+    {
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
@@ -112,5 +167,28 @@ namespace RenderingDEMO
     void OpenGLRHI::Draw(unsigned int count)
     {
         glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+    }
+
+    std::string OpenGLRHI::ReadFromFile(const std::string& file_path)
+    {
+        std::string shaderCode;
+        std::ifstream shaderFile;
+
+        shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+        try
+        {
+            shaderFile.open(file_path);
+            std::stringstream shaderStream;
+            shaderStream << shaderFile.rdbuf();
+            shaderFile.close();
+            shaderCode = shaderStream.str();
+        }
+        catch (const std::ifstream::failure& e)
+        {
+            spdlog::error("Shader File Not Successfully Read:", e.what());
+        }
+
+        return shaderCode;
     }
 }
