@@ -2,6 +2,9 @@
 
 #include <spdlog/spdlog.h>
 
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+
 namespace RenderingDEMO
 {
 	Window::~Window()
@@ -30,6 +33,8 @@ namespace RenderingDEMO
 			return ;
 		}
 
+		m_WindowHandler = glfwGetWin32Window(m_Window);
+
 		glfwSetWindowUserPointer(m_Window, this);
 		glfwSetKeyCallback(m_Window, KeyCallback);
 		glfwSetWindowSizeCallback(m_Window, WindowSizeCallback);
@@ -56,6 +61,7 @@ namespace RenderingDEMO
 		{
 			w->m_Width = width;
 			w->m_Height = height;
+			w->OnWindowSize(width, height);
 		}
 	}
 
@@ -64,6 +70,13 @@ namespace RenderingDEMO
 		for (auto& f : m_OnKeyFuncs)
 		{
 			f(key, scancode, action, mods);
+		}
+	}
+	void Window::OnWindowSize(int width, int height)
+	{
+		for (auto& f : m_OnWindowSizeFuncs)
+		{
+			f(width, height);
 		}
 	}
 }

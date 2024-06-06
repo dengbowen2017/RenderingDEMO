@@ -35,6 +35,8 @@ namespace RenderingDEMO
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
+
+		//TODO: move to renderer since we need to init the UI with the api we choose
 		ImGui_ImplGlfw_InitForOpenGL(m_Window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
 		//set glsl version
 		ImGui_ImplOpenGL3_Init("#version 130");

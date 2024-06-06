@@ -12,8 +12,7 @@ namespace RenderingDEMO
 
 		virtual void Initialize(std::shared_ptr<Window> window) = 0;
 
-		virtual void CreateSwapChain() = 0;
-		virtual void RecreateSwapChain() = 0;
+		virtual void RecreateSwapChain(int width, int height) = 0;
 
 		virtual std::shared_ptr<VertexBuffer> CreateVertexBuffer(void* data, unsigned int size) = 0;
 		virtual std::shared_ptr<IndexBuffer> CreateIndexBuffer(void* data, unsigned int size) = 0;

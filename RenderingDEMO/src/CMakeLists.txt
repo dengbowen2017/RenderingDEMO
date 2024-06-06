@@ -16,7 +16,11 @@ target_link_libraries (${PROJECT_NAME} PUBLIC
 	glfw
 	glad
 	imgui
-	opengl32.lib)
+	opengl32.lib
+	d3d11.lib
+	dxgi.lib
+	dxguid.lib
+	winmm.lib)
 
 target_link_directories (${PROJECT_NAME} PUBLIC 
 	${DEPENDENCES_DIR}/glfw-3.4/include

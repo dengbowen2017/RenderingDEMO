@@ -6,17 +6,22 @@
 
 namespace RenderingDEMO
 {
+	enum RenderAPI
+	{
+		Unknown = 0, OpenGL, DirectX
+	};
+
 	class Renderer
 	{
 	public:
 		Renderer() = default;
 		~Renderer();
 
-		void Initialize(std::shared_ptr<Window> window);
-
+		void Initialize(std::shared_ptr<Window> window, RenderAPI api);
 		void OnUpdate();
-
 		void ProcessMeshData();
+
+		std::shared_ptr<RHI> GetRHI() const { return m_RHI; }
 
 	private:
 		std::shared_ptr<RHI> m_RHI;

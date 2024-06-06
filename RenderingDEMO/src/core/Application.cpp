@@ -2,9 +2,6 @@
 
 #include <spdlog/spdlog.h>
 
-//temp
-#include <glad/glad.h>
-
 namespace RenderingDEMO
 {
 	Application::Application()
@@ -13,11 +10,14 @@ namespace RenderingDEMO
 		m_InputManager = std::make_shared<InputManager>();
 		m_Renderer = std::make_shared<Renderer>();
 
+		// Initialize
 		WindowProps props;
 		m_Window->Initialize(props);
 		m_Window->RegisterOnKeyFunc(std::bind(&InputManager::OnKey, m_InputManager.get(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 
-		m_Renderer->Initialize(m_Window);
+		// TODO: Pass render information from main
+		m_Renderer->Initialize(m_Window, RenderAPI::DirectX);
+		m_Window->RegisterOnWindowSizeFunc(std::bind(&RHI::RecreateSwapChain, m_Renderer->GetRHI().get(), std::placeholders::_1, std::placeholders::_2));
 	}
 
 	Application::~Application()

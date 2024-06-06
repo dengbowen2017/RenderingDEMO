@@ -3,16 +3,21 @@
 #include "render/RHI.h"
 #include "core/Window.h"
 
+//TODO: temp
+#include <d3d11.h>
+#include <dxgi1_3.h>
+
 namespace RenderingDEMO
 {
-	class OpenGLRHI :public RHI
+	class DirectXRHI :public RHI
 	{
 	public:
-		OpenGLRHI() = default;
-		~OpenGLRHI();
+		DirectXRHI() = default;
+		~DirectXRHI();
 
 		virtual void Initialize(std::shared_ptr<Window> window) override;
 
+		//TODO: should change to swapChainResource since we only have to change the size of the back buffer rather than recreate the whole swapchain?
 		virtual void RecreateSwapChain(int width, int height) override;
 
 		virtual std::shared_ptr<VertexBuffer> CreateVertexBuffer(void* data, unsigned int size) override;
@@ -32,12 +37,17 @@ namespace RenderingDEMO
 		virtual void Draw(unsigned int count) override;
 
 	private:
-		std::string ReadFromFile(const std::string& file_path);
+		void CreateSwapChainResource();
+		void SetViewportAndRenderTarget();
 
 	private:
-		GLFWwindow* m_Window = nullptr;
-		std::array<int, 2> m_WindowSize = {0 ,0};
+		HWND m_WindowHandler;
+		std::array<int, 2> m_WindowSize = { 0 ,0 };
 
-		unsigned int m_VAO = 0;
+		Microsoft::WRL::ComPtr<IDXGISwapChain1> m_SwapChain;
+		Microsoft::WRL::ComPtr<ID3D11Device> m_Device;
+		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_DeviceContext;
+		Microsoft::WRL::ComPtr<IDXGIFactory2> m_DXGIFactory;
+		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_RenderTarget;
 	};
 }

@@ -1,6 +1,8 @@
 #include "Renderer.h"
-
 #include "render/OpenGL/OpenGLRHI.h"
+#include "render/DirectX/DirectXRHI.h"
+
+#include <spdlog/spdlog.h>
 
 namespace RenderingDEMO
 {
@@ -9,15 +11,27 @@ namespace RenderingDEMO
 
 	}
 
-	void Renderer::Initialize(std::shared_ptr<Window> window)
+	void Renderer::Initialize(std::shared_ptr<Window> window, RenderAPI api)
 	{
-		m_RHI = std::make_shared<OpenGLRHI>();
-		//m_WindowUI = std::make_shared<WindowUI>();
+		switch (api)
+		{
+		case RenderAPI::Unknown:
+			spdlog::error("Unknown RenderAPI");
+			break;
+		case RenderAPI::OpenGL:
+			m_RHI = std::make_shared<OpenGLRHI>();
+			break;
+		case RenderAPI::DirectX:
+			m_RHI = std::make_shared<DirectXRHI>();
+			break;
+		}
 
 		m_RHI->Initialize(window);
+
+		//m_WindowUI = std::make_shared<WindowUI>();
 		//m_WindowUI->Initialize(window);
 
-		ProcessMeshData();
+		//ProcessMeshData();
 	}
 
 	void Renderer::OnUpdate()
@@ -37,7 +51,7 @@ namespace RenderingDEMO
 
 		//m_WindowUI->OnUpdate();
 
-		m_RHI->Draw(m_IndexBuffer->GetCount());
+		//m_RHI->Draw(m_IndexBuffer->GetCount());
 
 		m_RHI->SwapBuffer();
 	}

@@ -25,23 +25,18 @@ namespace RenderingDEMO
 
         //create swapchain
         //TODO: add window resize callback to reset the viewport
-        CreateSwapChain();
+        glViewport(0, 0, m_WindowSize[0], m_WindowSize[1]);
 
         glCreateVertexArrays(1, &m_VAO);
         glBindVertexArray(m_VAO);
     }
 
-    void OpenGLRHI::CreateSwapChain()
+    void OpenGLRHI::RecreateSwapChain(int width, int height)
     {
+        m_WindowSize = { width, height };
         glViewport(0, 0, m_WindowSize[0], m_WindowSize[1]);
+        spdlog::info("Window Size:{0}, {1}", m_WindowSize[0], m_WindowSize[1]);
     }
-
-    void OpenGLRHI::RecreateSwapChain()
-    {
-        //when windowsize is changed, swapchain need to be recreated.
-        glViewport(0, 0, m_WindowSize[0], m_WindowSize[1]);
-    }
-
 
     std::shared_ptr<VertexBuffer> OpenGLRHI::CreateVertexBuffer(void* data, unsigned int size)
     {

@@ -22,24 +22,30 @@ namespace RenderingDEMO
 
 		GLFWwindow* GetWindowPointer() const { return m_Window; }
 		std::array<int, 2> GetWindowSize() const { return std::array<int, 2>({ m_Width, m_Height }); }
+		HWND GetWindowHandler() const { return m_WindowHandler; }
 		bool WindowShouldClose() const { return glfwWindowShouldClose(m_Window); }
 
 		typedef std::function<void(int, int, int, int)> OnKeyFunc;
+		typedef std::function<void(int, int)> OnWindowSizeFunc;
 
 		void RegisterOnKeyFunc(OnKeyFunc f) { m_OnKeyFuncs.push_back(f); }
+		void RegisterOnWindowSizeFunc(OnWindowSizeFunc f) { m_OnWindowSizeFuncs.push_back(f); }
 
 	private:
 		static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 		static void WindowSizeCallback(GLFWwindow* window, int width, int height);
 
 		void OnKey(int key, int scancode, int action, int mods);
+		void OnWindowSize(int width, int height);
 
 	private:
+		HWND m_WindowHandler = nullptr;
 		GLFWwindow* m_Window = nullptr;
 		int m_Width = 0;
 		int m_Height = 0;
 
 		std::vector<OnKeyFunc> m_OnKeyFuncs;
+		std::vector<OnWindowSizeFunc> m_OnWindowSizeFuncs;
 	};
 
 }
