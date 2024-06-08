@@ -20,7 +20,8 @@ target_link_libraries (${PROJECT_NAME} PUBLIC
 	d3d11.lib
 	dxgi.lib
 	dxguid.lib
-	winmm.lib)
+	winmm.lib
+	d3dcompiler.lib)
 
 target_link_directories (${PROJECT_NAME} PUBLIC 
 	${DEPENDENCES_DIR}/glfw-3.4/include

@@ -16,7 +16,8 @@ namespace RenderingDEMO
 		m_Window->RegisterOnKeyFunc(std::bind(&InputManager::OnKey, m_InputManager.get(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 
 		// TODO: Pass render information from main
-		m_Renderer->Initialize(m_Window, RenderAPI::DirectX);
+		// Set API here
+		m_Renderer->Initialize(m_Window, RenderAPI::OpenGL);
 		m_Window->RegisterOnWindowSizeFunc(std::bind(&RHI::RecreateSwapChain, m_Renderer->GetRHI().get(), std::placeholders::_1, std::placeholders::_2));
 	}
 

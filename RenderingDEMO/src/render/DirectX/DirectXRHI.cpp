@@ -1,4 +1,7 @@
 #include "DirectXRHI.h"
+#include "DirectXRHIResource.h"
+
+#include <d3dcompiler.h>
 
 #include <spdlog/spdlog.h>
 
@@ -101,22 +104,66 @@ namespace RenderingDEMO
 
 	std::shared_ptr<VertexDeclaration> DirectXRHI::CreateVertexDeclaration(const std::vector<VertexElement>& elements)
 	{
-		return std::shared_ptr<VertexDeclaration>();
+		return std::shared_ptr<DirectXVertexDeclaration>(new DirectXVertexDeclaration(elements));
 	}
 
-	std::shared_ptr<VertexShader> DirectXRHI::CreateVertexShader(const std::string& file_path)
+	std::shared_ptr<VertexShader> DirectXRHI::CreateVertexShader(const std::wstring& filePath)
 	{
-		return std::shared_ptr<VertexShader>();
+		Microsoft::WRL::ComPtr<ID3D11VertexShader> vs;
+		Microsoft::WRL::ComPtr<ID3D10Blob> blob;
+
+		if (!CompileShader(filePath, blob))
+		{
+			return nullptr;
+		}
+
+		if (FAILED(m_Device->CreateVertexShader(
+			blob->GetBufferPointer(),
+			blob->GetBufferSize(),
+			nullptr,
+			&vs)))
+		{
+			spdlog::error("D3D11: Failed to compile vertex shader");
+			return nullptr;
+		}
+
+		// TEST
+		// add std::move or not
+		return std::shared_ptr<DirectXVertexShader>(new DirectXVertexShader(std::move(vs), std::move(blob)));
 	}
 
-	std::shared_ptr<PixelShader> DirectXRHI::CreatePixelShader(const std::string& file_path)
+	std::shared_ptr<PixelShader> DirectXRHI::CreatePixelShader(const std::wstring& filePath)
 	{
-		return std::shared_ptr<PixelShader>();
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> ps;
+		Microsoft::WRL::ComPtr<ID3D10Blob> blob;
+
+		if (!CompileShader(filePath, blob))
+		{
+			return nullptr;
+		}
+
+		if (FAILED(m_Device->CreatePixelShader(
+			blob->GetBufferPointer(),
+			blob->GetBufferSize(),
+			nullptr,
+			&ps)))
+		{
+			spdlog::error("D3D11: Failed to compile Pixel shader");
+			return nullptr;
+		}
+
+		// TEST
+		// add std::move or not
+		return std::shared_ptr<DirectXPixelShader>(new DirectXPixelShader(std::move(ps)));
 	}
 
 	std::shared_ptr<BoundShaderState> DirectXRHI::CreateBoundShaderState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd)
 	{
-		return std::shared_ptr<BoundShaderState>();
+		std::shared_ptr<DirectXVertexShader> dxvs = std::dynamic_pointer_cast<DirectXVertexShader>(vs);
+		std::shared_ptr<DirectXPixelShader> dxps = std::dynamic_pointer_cast<DirectXPixelShader>(ps);
+		std::shared_ptr<DirectXVertexDeclaration> dxvd = std::dynamic_pointer_cast<DirectXVertexDeclaration>(vd);
+
+		return std::shared_ptr<DirectXBoundShaderState>(new DirectXBoundShaderState(dxvs, dxps, dxvd, m_Device));
 	}
 
 	void DirectXRHI::SetVertexBuffer(std::shared_ptr<VertexBuffer> vb)
@@ -133,6 +180,15 @@ namespace RenderingDEMO
 
 	void DirectXRHI::SetBoundShaderState(std::shared_ptr<BoundShaderState> state)
 	{
+		std::shared_ptr<DirectXBoundShaderState> dxState = std::dynamic_pointer_cast<DirectXBoundShaderState>(state);
+
+		Microsoft::WRL::ComPtr<ID3D11VertexShader> vs = dxState->GetVertexShader();
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> ps = dxState->GetPixelShader();
+		Microsoft::WRL::ComPtr<ID3D11InputLayout> layout = dxState->GetInputLayout();
+
+		m_DeviceContext->IASetInputLayout(layout.Get());
+		m_DeviceContext->VSSetShader(vs.Get(), nullptr, 0);
+		m_DeviceContext->PSSetShader(ps.Get(), nullptr, 0);
 	}
 
 	void DirectXRHI::ClearBackBuffer()
@@ -148,6 +204,7 @@ namespace RenderingDEMO
 
 	void DirectXRHI::Draw(unsigned int count)
 	{
+		m_DeviceContext->Draw(count, 0);
 	}
 
 	void DirectXRHI::CreateSwapChainResource()
@@ -166,7 +223,7 @@ namespace RenderingDEMO
 			nullptr,
 			&m_RenderTarget)))
 		{
-			spdlog::error("Failed to create RTV from Back Buffer");
+			spdlog::error("D3D11: Failed to create RTV from Back Buffer");
 			return;
 		}
 
@@ -185,5 +242,35 @@ namespace RenderingDEMO
 
 		m_DeviceContext->RSSetViewports(1, &viewport);
 		m_DeviceContext->OMSetRenderTargets(1, m_RenderTarget.GetAddressOf(), nullptr);
+	}
+
+	bool DirectXRHI::CompileShader(const std::wstring& filePath, Microsoft::WRL::ComPtr<ID3DBlob>& shaderBlob)
+	{
+		Microsoft::WRL::ComPtr<ID3DBlob> tempShaderBlob = nullptr;
+		Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
+
+		// temp
+		// hard code entrypoint and target shader model
+		if (FAILED(D3DCompileFromFile(
+			filePath.data(),
+			nullptr,
+			D3D_COMPILE_STANDARD_FILE_INCLUDE,
+			"main",
+			"vs_5_0",
+			D3DCOMPILE_ENABLE_STRICTNESS,
+			0,
+			&tempShaderBlob,
+			&errorBlob)))
+		{
+			spdlog::error("D3D11: Failed to read shader from file");
+			if (errorBlob != nullptr)
+			{
+				spdlog::error("D3D11: With message: {0}", static_cast<const char*>(errorBlob->GetBufferPointer()));
+			}
+			return false;
+		}
+
+		shaderBlob = std::move(tempShaderBlob);
+		return true;
 	}
 }

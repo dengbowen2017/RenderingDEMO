@@ -46,7 +46,7 @@ namespace RenderingDEMO
         glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        return std::shared_ptr<OpenGLVertexBuffer>(new OpenGLVertexBuffer(size, VBO));
+        return std::shared_ptr<OpenGLVertexBuffer>(new OpenGLVertexBuffer(VBO, size));
     }
 
     std::shared_ptr<IndexBuffer> OpenGLRHI::CreateIndexBuffer(void* data, unsigned int size)
@@ -57,7 +57,7 @@ namespace RenderingDEMO
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        return std::shared_ptr<OpenGLIndexBuffer>(new OpenGLIndexBuffer(size / sizeof(unsigned int), VEO));
+        return std::shared_ptr<OpenGLIndexBuffer>(new OpenGLIndexBuffer(VEO, size / sizeof(unsigned int)));
     }
 
     std::shared_ptr<VertexDeclaration> OpenGLRHI::CreateVertexDeclaration(const std::vector<VertexElement>& elements)
@@ -65,9 +65,9 @@ namespace RenderingDEMO
         return std::shared_ptr<OpenGLVertexDeclaration>(new OpenGLVertexDeclaration(elements));
     }
 
-    std::shared_ptr<VertexShader> OpenGLRHI::CreateVertexShader(const std::string& file_path)
+    std::shared_ptr<VertexShader> OpenGLRHI::CreateVertexShader(const std::wstring& filePath)
     {
-        std::string vertexShaderSource = ReadFromFile(file_path);
+        std::string vertexShaderSource = ReadFromFile(filePath);
         const char* source = vertexShaderSource.c_str();
 
         unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -86,9 +86,9 @@ namespace RenderingDEMO
         return std::shared_ptr<OpenGLVertexShader>(new OpenGLVertexShader(vertexShader));
     }
 
-    std::shared_ptr<PixelShader> OpenGLRHI::CreatePixelShader(const std::string& file_path)
+    std::shared_ptr<PixelShader> OpenGLRHI::CreatePixelShader(const std::wstring& filePath)
     {
-        std::string pixelShaderSource = ReadFromFile(file_path);
+        std::string pixelShaderSource = ReadFromFile(filePath);
         const char* source = pixelShaderSource.c_str();
 
         unsigned int pixelShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -143,8 +143,17 @@ namespace RenderingDEMO
     void OpenGLRHI::SetBoundShaderState(std::shared_ptr<BoundShaderState> state)
     {
         std::shared_ptr<OpenGLBoundShaderState> glState = std::dynamic_pointer_cast<OpenGLBoundShaderState>(state);
+        std::shared_ptr<OpenGLVertexDeclaration> glvd = std::dynamic_pointer_cast<OpenGLVertexDeclaration>(glState->GetVertexDeclaration());
 
-        SetVertexLayout(glState->GetVertexDeclaration());
+        // bind vertex layout
+        for (const auto& e : glvd->GetElements())
+        {
+            //TODO: switch to new OpenGL api in 4.3
+            glEnableVertexAttribArray(e.Index);
+            glVertexAttribPointer(e.Index, e.Count, e.Type, GL_FALSE, glvd->GetStride(), (const void*)e.Offset);
+        }
+
+        // bind shaders
         glUseProgram(glState->GetID());
     }
 
@@ -164,7 +173,7 @@ namespace RenderingDEMO
         glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
     }
 
-    std::string OpenGLRHI::ReadFromFile(const std::string& file_path)
+    std::string OpenGLRHI::ReadFromFile(const std::wstring& filePath)
     {
         std::string shaderCode;
         std::ifstream shaderFile;
@@ -173,7 +182,7 @@ namespace RenderingDEMO
 
         try
         {
-            shaderFile.open(file_path);
+            shaderFile.open(filePath);
             std::stringstream shaderStream;
             shaderStream << shaderFile.rdbuf();
             shaderFile.close();

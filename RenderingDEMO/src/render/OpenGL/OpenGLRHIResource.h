@@ -28,30 +28,6 @@ namespace RenderingDEMO
 		unsigned int m_Stride = 0;
 	};
 
-	class OpenGLVertexBuffer :public VertexBuffer
-	{
-	public:
-		OpenGLVertexBuffer(unsigned int size, unsigned int id);
-		~OpenGLVertexBuffer();
-
-		unsigned int GetID() const { return m_ID; }
-
-	private:
-		unsigned int m_ID = 0;
-	};
-
-	class OpenGLIndexBuffer :public IndexBuffer
-	{
-	public:
-		OpenGLIndexBuffer(unsigned int count, unsigned int id);
-		~OpenGLIndexBuffer();
-
-		unsigned int GetID() const { return m_ID; }
-
-	private:
-		unsigned int m_ID;
-	};
-
 	class OpenGLVertexShader :public VertexShader
 	{
 	public:
@@ -88,5 +64,29 @@ namespace RenderingDEMO
 	private:
 		unsigned int m_ID;
 		std::shared_ptr<OpenGLVertexDeclaration> m_VertexDeclaration;
+	};
+
+	class OpenGLVertexBuffer :public VertexBuffer
+	{
+	public:
+		OpenGLVertexBuffer(unsigned int id, unsigned int size);
+		~OpenGLVertexBuffer();
+
+		unsigned int GetID() const { return m_ID; }
+
+	private:
+		unsigned int m_ID = 0;
+	};
+
+	class OpenGLIndexBuffer :public IndexBuffer
+	{
+	public:
+		OpenGLIndexBuffer(unsigned int id, unsigned int count);
+		~OpenGLIndexBuffer();
+
+		unsigned int GetID() const { return m_ID; }
+
+	private:
+		unsigned int m_ID;
 	};
 }

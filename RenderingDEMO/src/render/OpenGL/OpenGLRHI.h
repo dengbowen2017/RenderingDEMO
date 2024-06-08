@@ -18,8 +18,8 @@ namespace RenderingDEMO
 		virtual std::shared_ptr<VertexBuffer> CreateVertexBuffer(void* data, unsigned int size) override;
 		virtual std::shared_ptr<IndexBuffer> CreateIndexBuffer(void* data, unsigned int size) override;
 		virtual std::shared_ptr<VertexDeclaration> CreateVertexDeclaration(const std::vector<VertexElement>& elements) override;
-		virtual std::shared_ptr<VertexShader> CreateVertexShader(const std::string& file_path) override;
-		virtual std::shared_ptr<PixelShader> CreatePixelShader(const std::string& file_path) override;
+		virtual std::shared_ptr<VertexShader> CreateVertexShader(const std::wstring& filePath) override;
+		virtual std::shared_ptr<PixelShader> CreatePixelShader(const std::wstring& filePath) override;
 		virtual std::shared_ptr<BoundShaderState> CreateBoundShaderState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd) override;
 
 		virtual void SetVertexBuffer(std::shared_ptr<VertexBuffer> vb) override;
@@ -32,7 +32,7 @@ namespace RenderingDEMO
 		virtual void Draw(unsigned int count) override;
 
 	private:
-		std::string ReadFromFile(const std::string& file_path);
+		std::string ReadFromFile(const std::wstring& filePath);
 
 	private:
 		GLFWwindow* m_Window = nullptr;

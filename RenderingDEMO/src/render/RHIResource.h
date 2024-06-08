@@ -4,7 +4,7 @@ namespace RenderingDEMO
 {
 	enum VertexElementType
 	{
-		None = 0, Float, Float2, Float3, Float4, Mat3, Mat4, Int, Int2, Int3, Int4, Bool
+		None = 0, Float, Float2, Float3, Float4, UInt
 	};
 
 	struct VertexElement
@@ -12,9 +12,10 @@ namespace RenderingDEMO
 		std::string Name;
 		VertexElementType Type;
 		unsigned int Size;
+		unsigned int Index;			//different meaning in OpenGL and DirectX
 
-		VertexElement(const std::string& name, VertexElementType type)
-			:Name(name), Type(type), Size(0)
+		VertexElement(const std::string& name, unsigned int index, VertexElementType type)
+			:Name(name), Type(type), Size(0), Index(index)
 		{
 			switch (type)
 			{
@@ -33,35 +34,17 @@ namespace RenderingDEMO
 			case VertexElementType::Float4:
 				Size = 4 * 4;
 				break;
-			case VertexElementType::Mat3:
-				Size = 4 * 3 * 3;
-				break;
-			case VertexElementType::Mat4:
-				Size = 4 * 4 * 4;
-				break;
-			case VertexElementType::Int:
+			case VertexElementType::UInt:
 				Size = 4;
-				break;
-			case VertexElementType::Int2:
-				Size = 4 * 2;
-				break;
-			case VertexElementType::Int3:
-				Size = 4 * 3;
-				break;
-			case VertexElementType::Int4:
-				Size = 4 * 4;
-				break;
-			case VertexElementType::Bool:
-				Size = 1;
 				break;
 			}
 		}
 	};
 
-	class BoundShaderState 
+	class VertexDeclaration
 	{
 	public:
-		virtual ~BoundShaderState() = default;
+		virtual ~VertexDeclaration() = default;
 	};
 
 	class VertexShader 
@@ -76,10 +59,10 @@ namespace RenderingDEMO
 		virtual ~PixelShader() = default;
 	};
 
-	class VertexDeclaration
+	class BoundShaderState 
 	{
 	public:
-		virtual ~VertexDeclaration() = default;
+		virtual ~BoundShaderState() = default;
 	};
 
 	class VertexBuffer

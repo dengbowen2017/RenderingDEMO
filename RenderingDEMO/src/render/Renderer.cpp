@@ -31,7 +31,7 @@ namespace RenderingDEMO
 		//m_WindowUI = std::make_shared<WindowUI>();
 		//m_WindowUI->Initialize(window);
 
-		//ProcessMeshData();
+		ProcessMeshData();
 	}
 
 	void Renderer::OnUpdate()
@@ -51,7 +51,7 @@ namespace RenderingDEMO
 
 		//m_WindowUI->OnUpdate();
 
-		//m_RHI->Draw(m_IndexBuffer->GetCount());
+		m_RHI->Draw(m_IndexBuffer->GetCount());
 
 		m_RHI->SwapBuffer();
 	}
@@ -80,7 +80,7 @@ namespace RenderingDEMO
 		m_RHI->SetVertexBuffer(m_VertexBuffer);
 
 		std::vector<VertexElement> elements;
-		elements.push_back({ "Position", VertexElementType::Float3 });
+		elements.push_back({ "Position", 0, VertexElementType::Float3});
 
 		//should remove to SetBoundState
 		m_VertexDeclaration = m_RHI->CreateVertexDeclaration(elements);
@@ -94,8 +94,8 @@ namespace RenderingDEMO
 		m_IndexBuffer = m_RHI->CreateIndexBuffer(indices, sizeof(indices));
 		m_RHI->SetIndexBuffer(m_IndexBuffer);
 
-		std::shared_ptr<VertexShader> vshader = m_RHI->CreateVertexShader("../shader/vs.glsl");
-		std::shared_ptr<PixelShader> pshader = m_RHI->CreatePixelShader("../shader/ps.glsl");
+		std::shared_ptr<VertexShader> vshader = m_RHI->CreateVertexShader(L"../shader/vs.glsl");
+		std::shared_ptr<PixelShader> pshader = m_RHI->CreatePixelShader(L"../shader/ps.glsl");
 
 		m_State = m_RHI->CreateBoundShaderState(vshader, pshader, m_VertexDeclaration);
 		m_RHI->SetBoundShaderState(m_State);
