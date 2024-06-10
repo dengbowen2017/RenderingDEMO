@@ -94,7 +94,25 @@ namespace RenderingDEMO
 
 	std::shared_ptr<VertexBuffer> DirectXRHI::CreateVertexBuffer(void* data, unsigned int size)
 	{
-		return std::shared_ptr<VertexBuffer>();
+		Microsoft::WRL::ComPtr<ID3D11Buffer> vb;
+
+		D3D11_BUFFER_DESC bufferInfo = {};
+		bufferInfo.ByteWidth = size;
+		bufferInfo.Usage = D3D11_USAGE_IMMUTABLE;
+		bufferInfo.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+		D3D11_SUBRESOURCE_DATA resourceData = {};
+		resourceData.pSysMem = data;
+		if (FAILED(m_Device->CreateBuffer(
+			&bufferInfo,
+			&resourceData,
+			&vb)))
+		{
+			spdlog::error("D3D11: Failed to create triangle vertex buffer");
+			return false;
+		}
+
+		return std::shared_ptr<DirectXVertexBuffer>(new DirectXVertexBuffer(vb, size));
 	}
 
 	std::shared_ptr<IndexBuffer> DirectXRHI::CreateIndexBuffer(void* data, unsigned int size)
@@ -112,7 +130,7 @@ namespace RenderingDEMO
 		Microsoft::WRL::ComPtr<ID3D11VertexShader> vs;
 		Microsoft::WRL::ComPtr<ID3D10Blob> blob;
 
-		if (!CompileShader(filePath, blob))
+		if (!CompileShader(filePath, "vs_5_0", blob))
 		{
 			return nullptr;
 		}
@@ -127,9 +145,7 @@ namespace RenderingDEMO
 			return nullptr;
 		}
 
-		// TEST
-		// add std::move or not
-		return std::shared_ptr<DirectXVertexShader>(new DirectXVertexShader(std::move(vs), std::move(blob)));
+		return std::shared_ptr<DirectXVertexShader>(new DirectXVertexShader(vs, blob));
 	}
 
 	std::shared_ptr<PixelShader> DirectXRHI::CreatePixelShader(const std::wstring& filePath)
@@ -137,7 +153,7 @@ namespace RenderingDEMO
 		Microsoft::WRL::ComPtr<ID3D11PixelShader> ps;
 		Microsoft::WRL::ComPtr<ID3D10Blob> blob;
 
-		if (!CompileShader(filePath, blob))
+		if (!CompileShader(filePath, "ps_5_0", blob))
 		{
 			return nullptr;
 		}
@@ -152,9 +168,7 @@ namespace RenderingDEMO
 			return nullptr;
 		}
 
-		// TEST
-		// add std::move or not
-		return std::shared_ptr<DirectXPixelShader>(new DirectXPixelShader(std::move(ps)));
+		return std::shared_ptr<DirectXPixelShader>(new DirectXPixelShader(ps));
 	}
 
 	std::shared_ptr<BoundShaderState> DirectXRHI::CreateBoundShaderState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd)
@@ -168,6 +182,19 @@ namespace RenderingDEMO
 
 	void DirectXRHI::SetVertexBuffer(std::shared_ptr<VertexBuffer> vb)
 	{
+		std::shared_ptr<DirectXVertexBuffer> dxvb = std::dynamic_pointer_cast<DirectXVertexBuffer>(vb);
+
+		// temp
+		// need a variable as the offset
+		unsigned int offset = 0;
+		m_DeviceContext->IASetVertexBuffers(
+			0,
+			1,
+			dxvb->GetBuffer().GetAddressOf(),
+			&m_State.m_VertexStride,
+			&offset);
+
+		m_State.m_VertexBuffer = dxvb->GetBuffer().Get();
 	}
 
 	void DirectXRHI::SetIndexBuffer(std::shared_ptr<IndexBuffer>)
@@ -189,6 +216,11 @@ namespace RenderingDEMO
 		m_DeviceContext->IASetInputLayout(layout.Get());
 		m_DeviceContext->VSSetShader(vs.Get(), nullptr, 0);
 		m_DeviceContext->PSSetShader(ps.Get(), nullptr, 0);
+
+		m_State.m_VertexShader = vs.Get();
+		m_State.m_PixelShader = ps.Get();
+		m_State.m_InputLayout = layout.Get();
+		m_State.m_VertexStride = dxState->GetStride();
 	}
 
 	void DirectXRHI::ClearBackBuffer()
@@ -202,9 +234,12 @@ namespace RenderingDEMO
 		m_SwapChain->Present(1, 0);
 	}
 
-	void DirectXRHI::Draw(unsigned int count)
+	void DirectXRHI::Draw()
 	{
-		m_DeviceContext->Draw(count, 0);
+		// need to set render target for every frame
+		m_DeviceContext->OMSetRenderTargets(1, m_RenderTarget.GetAddressOf(), nullptr);
+		m_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		m_DeviceContext->Draw(3, 0);
 	}
 
 	void DirectXRHI::CreateSwapChainResource()
@@ -244,19 +279,19 @@ namespace RenderingDEMO
 		m_DeviceContext->OMSetRenderTargets(1, m_RenderTarget.GetAddressOf(), nullptr);
 	}
 
-	bool DirectXRHI::CompileShader(const std::wstring& filePath, Microsoft::WRL::ComPtr<ID3DBlob>& shaderBlob)
+	bool DirectXRHI::CompileShader(const std::wstring& filePath, const std::string& profile, Microsoft::WRL::ComPtr<ID3DBlob>& shaderBlob)
 	{
 		Microsoft::WRL::ComPtr<ID3DBlob> tempShaderBlob = nullptr;
 		Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
 
 		// temp
-		// hard code entrypoint and target shader model
+		// hard code entrypoint
 		if (FAILED(D3DCompileFromFile(
 			filePath.data(),
 			nullptr,
 			D3D_COMPILE_STANDARD_FILE_INCLUDE,
 			"main",
-			"vs_5_0",
+			profile.data(),
 			D3DCOMPILE_ENABLE_STRICTNESS,
 			0,
 			&tempShaderBlob,

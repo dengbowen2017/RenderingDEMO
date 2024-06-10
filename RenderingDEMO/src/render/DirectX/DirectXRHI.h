@@ -2,6 +2,7 @@
 
 #include "render/RHI.h"
 #include "core/Window.h"
+#include "DirectXState.h"
 
 //TODO: temp
 #include <d3d11.h>
@@ -34,16 +35,18 @@ namespace RenderingDEMO
 
 		virtual void ClearBackBuffer() override;
 		virtual void SwapBuffer() override;
-		virtual void Draw(unsigned int count) override;
+		virtual void Draw() override;
 
 	private:
 		void CreateSwapChainResource();
 		void SetViewportAndRenderTarget();
-		bool CompileShader(const std::wstring& filePath,Microsoft::WRL::ComPtr<ID3DBlob>& shaderBlob);
+		bool CompileShader(const std::wstring& filePath, const std::string& profile, Microsoft::WRL::ComPtr<ID3DBlob>& shaderBlob);
 
 	private:
 		HWND m_WindowHandler = nullptr;
 		std::array<int, 2> m_WindowSize = { 0 ,0 };
+
+		DirectXState m_State = {};
 
 		Microsoft::WRL::ComPtr<IDXGISwapChain1> m_SwapChain;
 		Microsoft::WRL::ComPtr<ID3D11Device> m_Device;

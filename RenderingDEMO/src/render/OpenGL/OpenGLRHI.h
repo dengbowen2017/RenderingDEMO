@@ -2,6 +2,7 @@
 
 #include "render/RHI.h"
 #include "core/Window.h"
+#include "OpenGLState.h"
 
 namespace RenderingDEMO
 {
@@ -29,7 +30,7 @@ namespace RenderingDEMO
 
 		virtual void ClearBackBuffer() override;
 		virtual void SwapBuffer() override;
-		virtual void Draw(unsigned int count) override;
+		virtual void Draw() override;
 
 	private:
 		std::string ReadFromFile(const std::wstring& filePath);
@@ -38,6 +39,6 @@ namespace RenderingDEMO
 		GLFWwindow* m_Window = nullptr;
 		std::array<int, 2> m_WindowSize = {0 ,0};
 
-		unsigned int m_VAO = 0;
+		OpenGLPiplineState m_State = {};
 	};
 }

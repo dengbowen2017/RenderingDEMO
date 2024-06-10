@@ -27,8 +27,11 @@ namespace RenderingDEMO
         //TODO: add window resize callback to reset the viewport
         glViewport(0, 0, m_WindowSize[0], m_WindowSize[1]);
 
-        glCreateVertexArrays(1, &m_VAO);
-        glBindVertexArray(m_VAO);
+        unsigned int vao;
+        glCreateVertexArrays(1, &vao);
+        glBindVertexArray(vao);
+
+        m_State.m_VAO = vao;
     }
 
     void OpenGLRHI::RecreateSwapChain(int width, int height)
@@ -120,12 +123,17 @@ namespace RenderingDEMO
     {
         std::shared_ptr<OpenGLVertexBuffer> glVB = std::dynamic_pointer_cast<OpenGLVertexBuffer>(vb);
         glBindBuffer(GL_ARRAY_BUFFER, glVB->GetID());
+
+        m_State.m_VertexBuffer = glVB->GetID();
     }
 
     void OpenGLRHI::SetIndexBuffer(std::shared_ptr<IndexBuffer> ib)
     {
         std::shared_ptr<OpenGLIndexBuffer> glIB = std::dynamic_pointer_cast<OpenGLIndexBuffer>(ib);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glIB->GetID());
+
+        m_State.m_IndexBuffer = glIB->GetID();
+        m_State.m_IndexCount = glIB->GetCount();
     }
 
     void OpenGLRHI::SetVertexLayout(std::shared_ptr<VertexDeclaration> vd)
@@ -155,6 +163,9 @@ namespace RenderingDEMO
 
         // bind shaders
         glUseProgram(glState->GetID());
+
+        m_State.m_VertexDeclaration = glvd.get();
+        m_State.m_ShaderProgram = glState->GetID();
     }
 
     void OpenGLRHI::ClearBackBuffer()
@@ -168,9 +179,9 @@ namespace RenderingDEMO
         glfwSwapBuffers(m_Window);
     }
 
-    void OpenGLRHI::Draw(unsigned int count)
+    void OpenGLRHI::Draw()
     {
-        glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, m_State.m_IndexCount, GL_UNSIGNED_INT, nullptr);
     }
 
     std::string OpenGLRHI::ReadFromFile(const std::wstring& filePath)

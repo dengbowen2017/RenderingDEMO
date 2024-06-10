@@ -7,14 +7,13 @@ This is my implementation of a simple game engine with only editor mode. The mai
 For now, this engine only supports Windows. Please clone the repository, open it with Visual Studio 2022, and run the source code in Visual Studio.
 
 ## TODO list
-1. Render a triangle by using DirectX and HLSL
-2. Add camera system which supports 3D rendering
-3. Add Phone Lighting
-4. Add UI system
-5. Add resource loader to load 3D model and texture
-6. Add batch rendering
-7. Add PBR
-8. Add cross compiling
+- Add camera system which supports 3D rendering
+- Add Phone Lighting
+- Add UI system
+- Add resource loader to load 3D model and texture
+- Add batch rendering
+- Add PBR
+- Add cross compiling
 
 ## References
 

@@ -11,8 +11,9 @@ namespace RenderingDEMO
 		RenderResource() = default;
 		~RenderResource() = default;
 
-	private:
-		std::shared_ptr<RHI> m_RHI;
+
+	// temp
+	public:
 
 		std::vector<std::shared_ptr<VertexBuffer>> m_VertexBuffers;
 		std::vector<std::shared_ptr<IndexBuffer>> m_IndexBuffers;

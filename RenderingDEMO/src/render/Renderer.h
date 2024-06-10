@@ -1,11 +1,20 @@
 #pragma once
 
 #include "RHI.h"
+#include "RenderResource.h"
 #include "core/Window.h"
 #include "core/WindowUI.h"
 
+
+#include <d3d11.h>
+#include <dxgi1_3.h>
+#include <d3dcompiler.h>
+
+#include <iostream>
+
 namespace RenderingDEMO
 {
+
 	enum RenderAPI
 	{
 		Unknown = 0, OpenGL, DirectX
@@ -19,23 +28,14 @@ namespace RenderingDEMO
 
 		void Initialize(std::shared_ptr<Window> window, RenderAPI api);
 		void OnUpdate();
-		void ProcessMeshData();
+		void PreProcess();
+		void SetPipline();
 
 		std::shared_ptr<RHI> GetRHI() const { return m_RHI; }
 
 	private:
 		std::shared_ptr<RHI> m_RHI;
 		std::shared_ptr<WindowUI> m_WindowUI;
-
-		//std::shared_ptr<RenderResource> 
-		//std::shared_ptr<ShaderState>
-		//std::shared_ptr<RenderPipline>
-		//std::shared_ptr<RenderCamera>
-
-		//temp
-		std::shared_ptr<VertexBuffer> m_VertexBuffer;
-		std::shared_ptr<VertexDeclaration> m_VertexDeclaration;
-		std::shared_ptr<IndexBuffer> m_IndexBuffer;
-		std::shared_ptr<BoundShaderState> m_State;
+		std::shared_ptr<RenderResource> m_RenderResource;
 	};
 }

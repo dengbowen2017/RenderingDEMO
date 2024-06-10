@@ -17,7 +17,7 @@ namespace RenderingDEMO
 
 		// TODO: Pass render information from main
 		// Set API here
-		m_Renderer->Initialize(m_Window, RenderAPI::OpenGL);
+		m_Renderer->Initialize(m_Window, RenderAPI::DirectX);
 		m_Window->RegisterOnWindowSizeFunc(std::bind(&RHI::RecreateSwapChain, m_Renderer->GetRHI().get(), std::placeholders::_1, std::placeholders::_2));
 	}
 

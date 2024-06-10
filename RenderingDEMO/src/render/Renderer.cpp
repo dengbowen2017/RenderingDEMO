@@ -28,76 +28,72 @@ namespace RenderingDEMO
 
 		m_RHI->Initialize(window);
 
+		m_RenderResource = std::make_shared<RenderResource>();
+
 		//m_WindowUI = std::make_shared<WindowUI>();
 		//m_WindowUI->Initialize(window);
 
-		ProcessMeshData();
+		PreProcess();
+		SetPipline();
 	}
 
 	void Renderer::OnUpdate()
 	{
-		// need a pipline to specify which type of rendering we need
-		// for now we only have forward rendering so we don't need pipline
-		
-		// forward rendering
-		// just render a triangle 
-		// clear framebuffer
-		// set render resource
-		// set shader
-		// draw 
-		// swap buffer
-
 		m_RHI->ClearBackBuffer();
 
 		//m_WindowUI->OnUpdate();
 
-		m_RHI->Draw(m_IndexBuffer->GetCount());
-
+		m_RHI->Draw();
 		m_RHI->SwapBuffer();
 	}
 
-	void Renderer::ProcessMeshData()
+	void Renderer::PreProcess()
 	{
-		// need a asset manager to manage all the raw mesh and texture data
-		// and then create render buffer from asset manager 
-		// now we hard code mesh data here and upload data to render buffer
+		//// anticlockwise
+		//// default setting for OpenGL
+		//float vertices[3 * 3] =
+		//{
+		//	-0.5f, -0.5f, 0.0f,
+		//	 0.5f, -0.5f, 0.0f,
+		//	 0.0f,  0.5f, 0.0f
+		//};
 
-		// all the render buffer is stored in the RenderResource
-		// whether in ID3DBuffer* or Guint
-
-
-		// create shader and shader layout according to mesh data layout
-		// maybe we need a new function SetupRenderingContext to create shader and set shader layout
-
+		// clockwise
+		// default setting for DirectX
 		float vertices[3 * 3] =
 		{
-			-0.5f, -0.5f, 0.0f,
+			 0.0f, 0.5f, 0.0f,
 			 0.5f, -0.5f, 0.0f,
-			 0.0f,  0.5f, 0.0f
+			-0.5f, -0.5f, 0.0f
 		};
 
-		m_VertexBuffer = m_RHI->CreateVertexBuffer(vertices, sizeof(vertices));
-		m_RHI->SetVertexBuffer(m_VertexBuffer);
+		//unsigned int indices[3] =
+		//{
+		//	0, 1, 2
+		//};
 
 		std::vector<VertexElement> elements;
-		elements.push_back({ "Position", 0, VertexElementType::Float3});
+		elements.push_back({ "POSITION", 0, VertexElementType::Float3 });
 
-		//should remove to SetBoundState
-		m_VertexDeclaration = m_RHI->CreateVertexDeclaration(elements);
-		//m_RHI->SetVertexLayout(m_VertexDeclaration);
+		std::shared_ptr<VertexBuffer> vb = m_RHI->CreateVertexBuffer(vertices, sizeof(vertices));
+		//std::shared_ptr<IndexBuffer> ib = m_RHI->CreateIndexBuffer(indices, sizeof(indices));
+		std::shared_ptr<VertexDeclaration> vd = m_RHI->CreateVertexDeclaration(elements);
+		std::shared_ptr<VertexShader> vs = m_RHI->CreateVertexShader(L"../shader/vs.hlsl");
+		std::shared_ptr<PixelShader> ps = m_RHI->CreatePixelShader(L"../shader/ps.hlsl");
+		std::shared_ptr<BoundShaderState> ss = m_RHI->CreateBoundShaderState(vs, ps, vd);
 
-		unsigned int indices[3] =
-		{
-			0, 1, 2
-		};
+		m_RenderResource->m_VertexBuffers.push_back(vb);
+		//m_RenderResource->m_IndexBuffers.push_back(ib);
+		m_RenderResource->m_VertexDeclarations.insert({ "default", vd });
+		m_RenderResource->m_VertexShaders.insert({ "default", vs });
+		m_RenderResource->m_PixelShaders.insert({ "default" , ps });
+		m_RenderResource->m_BoundShaderStates.insert({ "default" , ss });
+	}
 
-		m_IndexBuffer = m_RHI->CreateIndexBuffer(indices, sizeof(indices));
-		m_RHI->SetIndexBuffer(m_IndexBuffer);
-
-		std::shared_ptr<VertexShader> vshader = m_RHI->CreateVertexShader(L"../shader/vs.glsl");
-		std::shared_ptr<PixelShader> pshader = m_RHI->CreatePixelShader(L"../shader/ps.glsl");
-
-		m_State = m_RHI->CreateBoundShaderState(vshader, pshader, m_VertexDeclaration);
-		m_RHI->SetBoundShaderState(m_State);
+	void Renderer::SetPipline()
+	{
+		m_RHI->SetBoundShaderState(m_RenderResource->m_BoundShaderStates["default"]);
+		m_RHI->SetVertexBuffer(m_RenderResource->m_VertexBuffers[0]);
+		//m_RHI->SetIndexBuffer(m_RenderResource->m_IndexBuffers[0]);
 	}
 }

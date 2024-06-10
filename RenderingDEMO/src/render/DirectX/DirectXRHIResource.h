@@ -64,6 +64,7 @@ namespace RenderingDEMO
 		const Microsoft::WRL::ComPtr<ID3D11InputLayout>& GetInputLayout() const { return m_InputLayout; }
 		const Microsoft::WRL::ComPtr<ID3D11VertexShader>& GetVertexShader() const { return m_VertexShader; }
 		const Microsoft::WRL::ComPtr<ID3D11PixelShader>& GetPixelShader() const { return m_PixelShader; }
+		unsigned int GetStride() const { return m_Stride; }
 
 	private:
 		Microsoft::WRL::ComPtr<ID3D11InputLayout> m_InputLayout;
@@ -80,6 +81,8 @@ namespace RenderingDEMO
 		{}
 		~DirectXVertexBuffer() = default;
 
+		const Microsoft::WRL::ComPtr<ID3D11Buffer>& GetBuffer() const { return m_Buffer; }
+
 	private:
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_Buffer;
 	};
@@ -91,6 +94,8 @@ namespace RenderingDEMO
 			:m_Buffer(buffer), IndexBuffer(count)
 		{}
 		~DirectXIndexBuffer() = default;
+
+		const Microsoft::WRL::ComPtr<ID3D11Buffer>& GetBuffer() const { return m_Buffer; }
 
 	private:
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_Buffer;
