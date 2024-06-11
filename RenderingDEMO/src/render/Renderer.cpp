@@ -40,50 +40,41 @@ namespace RenderingDEMO
 	void Renderer::OnUpdate()
 	{
 		m_RHI->ClearBackBuffer();
-
 		//m_WindowUI->OnUpdate();
-
 		m_RHI->Draw();
 		m_RHI->SwapBuffer();
 	}
 
 	void Renderer::PreProcess()
 	{
-		//// anticlockwise
-		//// default setting for OpenGL
-		//float vertices[3 * 3] =
-		//{
-		//	-0.5f, -0.5f, 0.0f,
-		//	 0.5f, -0.5f, 0.0f,
-		//	 0.0f,  0.5f, 0.0f
-		//};
-
-		// clockwise
-		// default setting for DirectX
-		float vertices[3 * 3] =
+		float vertices[] =
 		{
-			 0.0f, 0.5f, 0.0f,
-			 0.5f, -0.5f, 0.0f,
-			-0.5f, -0.5f, 0.0f
+			 0.0f,  0.5f, 0.0f, 0.2f, 0.7f, 0.4f,
+			 0.5f, -0.5f, 0.0f, 0.9f, 0.2f, 0.6f,
+			-0.5f, -0.5f, 0.0f, 0.3f, 0.9f, 0.8f
 		};
 
-		//unsigned int indices[3] =
-		//{
-		//	0, 1, 2
-		//};
+		// anticlockwise is the default setting for OpenGL
+		// clockwise is the default setting for DirectX
+		// set rasterizer state to change to anticlockwise
+		unsigned int indices[] =
+		{
+			2, 1, 0
+		};
 
 		std::vector<VertexElement> elements;
 		elements.push_back({ "POSITION", 0, VertexElementType::Float3 });
+		elements.push_back({ "COLOR", 0, VertexElementType::Float3 });
 
 		std::shared_ptr<VertexBuffer> vb = m_RHI->CreateVertexBuffer(vertices, sizeof(vertices));
-		//std::shared_ptr<IndexBuffer> ib = m_RHI->CreateIndexBuffer(indices, sizeof(indices));
+		std::shared_ptr<IndexBuffer> ib = m_RHI->CreateIndexBuffer(indices, sizeof(indices));
 		std::shared_ptr<VertexDeclaration> vd = m_RHI->CreateVertexDeclaration(elements);
 		std::shared_ptr<VertexShader> vs = m_RHI->CreateVertexShader(L"../shader/vs.hlsl");
 		std::shared_ptr<PixelShader> ps = m_RHI->CreatePixelShader(L"../shader/ps.hlsl");
 		std::shared_ptr<BoundShaderState> ss = m_RHI->CreateBoundShaderState(vs, ps, vd);
 
 		m_RenderResource->m_VertexBuffers.push_back(vb);
-		//m_RenderResource->m_IndexBuffers.push_back(ib);
+		m_RenderResource->m_IndexBuffers.push_back(ib);
 		m_RenderResource->m_VertexDeclarations.insert({ "default", vd });
 		m_RenderResource->m_VertexShaders.insert({ "default", vs });
 		m_RenderResource->m_PixelShaders.insert({ "default" , ps });
@@ -94,6 +85,6 @@ namespace RenderingDEMO
 	{
 		m_RHI->SetBoundShaderState(m_RenderResource->m_BoundShaderStates["default"]);
 		m_RHI->SetVertexBuffer(m_RenderResource->m_VertexBuffers[0]);
-		//m_RHI->SetIndexBuffer(m_RenderResource->m_IndexBuffers[0]);
+		m_RHI->SetIndexBuffer(m_RenderResource->m_IndexBuffers[0]);
 	}
 }

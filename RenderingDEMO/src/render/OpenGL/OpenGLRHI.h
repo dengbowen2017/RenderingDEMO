@@ -24,7 +24,7 @@ namespace RenderingDEMO
 		virtual std::shared_ptr<BoundShaderState> CreateBoundShaderState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd) override;
 
 		virtual void SetVertexBuffer(std::shared_ptr<VertexBuffer> vb) override;
-		virtual void SetIndexBuffer(std::shared_ptr<IndexBuffer>) override;
+		virtual void SetIndexBuffer(std::shared_ptr<IndexBuffer> ib) override;
 		virtual void SetVertexLayout(std::shared_ptr<VertexDeclaration> vd) override;
 		virtual void SetBoundShaderState(std::shared_ptr<BoundShaderState> state) override;
 

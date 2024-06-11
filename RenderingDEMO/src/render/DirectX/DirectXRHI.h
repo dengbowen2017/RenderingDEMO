@@ -29,7 +29,7 @@ namespace RenderingDEMO
 		virtual std::shared_ptr<BoundShaderState> CreateBoundShaderState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd) override;
 
 		virtual void SetVertexBuffer(std::shared_ptr<VertexBuffer> vb) override;
-		virtual void SetIndexBuffer(std::shared_ptr<IndexBuffer>) override;
+		virtual void SetIndexBuffer(std::shared_ptr<IndexBuffer> ib) override;
 		virtual void SetVertexLayout(std::shared_ptr<VertexDeclaration> vd) override;
 		virtual void SetBoundShaderState(std::shared_ptr<BoundShaderState> state) override;
 
@@ -40,6 +40,7 @@ namespace RenderingDEMO
 	private:
 		void CreateSwapChainResource();
 		void SetViewportAndRenderTarget();
+		void CreateRasterizerStates();
 		bool CompileShader(const std::wstring& filePath, const std::string& profile, Microsoft::WRL::ComPtr<ID3DBlob>& shaderBlob);
 
 	private:
@@ -53,5 +54,6 @@ namespace RenderingDEMO
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_DeviceContext;
 		Microsoft::WRL::ComPtr<IDXGIFactory2> m_DXGIFactory;
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_RenderTarget;
+		Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_RasterizerState;
 	};
 }

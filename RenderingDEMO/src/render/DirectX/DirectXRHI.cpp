@@ -70,6 +70,9 @@ namespace RenderingDEMO
 		}
 		
 		CreateSwapChainResource();
+
+		//Create RasterizerState
+		CreateRasterizerStates();
 	}
 
 	void DirectXRHI::RecreateSwapChain(int width, int height)
@@ -108,7 +111,7 @@ namespace RenderingDEMO
 			&resourceData,
 			&vb)))
 		{
-			spdlog::error("D3D11: Failed to create triangle vertex buffer");
+			spdlog::error("D3D11: Failed to create vertex buffer");
 			return false;
 		}
 
@@ -117,7 +120,25 @@ namespace RenderingDEMO
 
 	std::shared_ptr<IndexBuffer> DirectXRHI::CreateIndexBuffer(void* data, unsigned int size)
 	{
-		return std::shared_ptr<IndexBuffer>();
+		Microsoft::WRL::ComPtr<ID3D11Buffer> ib;
+
+		D3D11_BUFFER_DESC bufferInfo = {};
+		bufferInfo.ByteWidth = size;
+		bufferInfo.Usage = D3D11_USAGE_IMMUTABLE;
+		bufferInfo.BindFlags = D3D11_BIND_INDEX_BUFFER;
+
+		D3D11_SUBRESOURCE_DATA resourceData = {};
+		resourceData.pSysMem = data;
+		if (FAILED(m_Device->CreateBuffer(
+			&bufferInfo,
+			&resourceData,
+			&ib)))
+		{
+			spdlog::error("D3D11: Failed to create index buffer");
+			return false;
+		}
+
+		return std::shared_ptr<DirectXIndexBuffer>(new DirectXIndexBuffer(ib, size / sizeof(unsigned int)));
 	}
 
 	std::shared_ptr<VertexDeclaration> DirectXRHI::CreateVertexDeclaration(const std::vector<VertexElement>& elements)
@@ -197,8 +218,20 @@ namespace RenderingDEMO
 		m_State.m_VertexBuffer = dxvb->GetBuffer().Get();
 	}
 
-	void DirectXRHI::SetIndexBuffer(std::shared_ptr<IndexBuffer>)
+	void DirectXRHI::SetIndexBuffer(std::shared_ptr<IndexBuffer> ib)
 	{
+		std::shared_ptr<DirectXIndexBuffer> dxib = std::dynamic_pointer_cast<DirectXIndexBuffer>(ib);
+
+		//temp
+		unsigned int offset = 0;
+		m_DeviceContext->IASetIndexBuffer(
+			dxib->GetBuffer().Get(),
+			DXGI_FORMAT_R32_UINT,
+			offset
+		);
+
+		m_State.m_IndexBuffer = dxib->GetBuffer().Get();
+		m_State.m_IndexCount = dxib->GetCount();
 	}
 
 	void DirectXRHI::SetVertexLayout(std::shared_ptr<VertexDeclaration> vd)
@@ -237,9 +270,10 @@ namespace RenderingDEMO
 	void DirectXRHI::Draw()
 	{
 		// need to set render target for every frame
+		m_DeviceContext->RSSetState(m_RasterizerState.Get());
 		m_DeviceContext->OMSetRenderTargets(1, m_RenderTarget.GetAddressOf(), nullptr);
 		m_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		m_DeviceContext->Draw(3, 0);
+		m_DeviceContext->DrawIndexed(m_State.m_IndexCount, 0, 0);
 	}
 
 	void DirectXRHI::CreateSwapChainResource()
@@ -277,6 +311,27 @@ namespace RenderingDEMO
 
 		m_DeviceContext->RSSetViewports(1, &viewport);
 		m_DeviceContext->OMSetRenderTargets(1, m_RenderTarget.GetAddressOf(), nullptr);
+	}
+
+	void DirectXRHI::CreateRasterizerStates()
+	{
+		D3D11_RASTERIZER_DESC rasterizerStateDescriptor = {};
+		rasterizerStateDescriptor.AntialiasedLineEnable = false;
+		rasterizerStateDescriptor.DepthBias = 0;
+		rasterizerStateDescriptor.DepthBiasClamp = 0.0f;
+		rasterizerStateDescriptor.DepthClipEnable = false;
+		rasterizerStateDescriptor.FrontCounterClockwise = true;
+		rasterizerStateDescriptor.MultisampleEnable = false;
+		rasterizerStateDescriptor.ScissorEnable = false;
+		rasterizerStateDescriptor.SlopeScaledDepthBias = 0.0f;
+		rasterizerStateDescriptor.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
+		rasterizerStateDescriptor.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
+
+		if (FAILED(m_Device->CreateRasterizerState(&rasterizerStateDescriptor, &m_RasterizerState)))
+		{
+			spdlog::error("D3D11: Failed to create rasterizer state");
+			return;
+		}
 	}
 
 	bool DirectXRHI::CompileShader(const std::wstring& filePath, const std::string& profile, Microsoft::WRL::ComPtr<ID3DBlob>& shaderBlob)
