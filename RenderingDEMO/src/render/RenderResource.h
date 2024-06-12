@@ -11,16 +11,16 @@ namespace RenderingDEMO
 		RenderResource() = default;
 		~RenderResource() = default;
 
-
-	// temp
+	// temp 
+	// need Mesh and Object class to manage all the buffers
 	public:
-
 		std::vector<std::shared_ptr<VertexBuffer>> m_VertexBuffers;
 		std::vector<std::shared_ptr<IndexBuffer>> m_IndexBuffers;
 		
 		std::unordered_map<std::string, std::shared_ptr<VertexDeclaration>> m_VertexDeclarations;
 		std::unordered_map<std::string, std::shared_ptr<VertexShader>> m_VertexShaders;
 		std::unordered_map<std::string, std::shared_ptr<PixelShader>> m_PixelShaders;
-		std::unordered_map<std::string, std::shared_ptr<BoundShaderState>> m_BoundShaderStates;
+
+		std::shared_ptr<PipelineState> m_PipelineState;
 	};
 }

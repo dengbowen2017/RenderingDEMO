@@ -2,7 +2,6 @@
 
 #include "render/RHI.h"
 #include "core/Window.h"
-#include "DirectXState.h"
 
 //TODO: temp
 #include <d3d11.h>
@@ -21,21 +20,19 @@ namespace RenderingDEMO
 		//TODO: should change to swapChainResource since we only have to change the size of the back buffer rather than recreate the whole swapchain?
 		virtual void RecreateSwapChain(int width, int height) override;
 
-		virtual std::shared_ptr<VertexBuffer> CreateVertexBuffer(void* data, unsigned int size) override;
+		virtual std::shared_ptr<VertexBuffer> CreateVertexBuffer(void* data, unsigned int size, unsigned int stride) override;
 		virtual std::shared_ptr<IndexBuffer> CreateIndexBuffer(void* data, unsigned int size) override;
 		virtual std::shared_ptr<VertexDeclaration> CreateVertexDeclaration(const std::vector<VertexElement>& elements) override;
 		virtual std::shared_ptr<VertexShader> CreateVertexShader(const std::wstring& filePath) override;
 		virtual std::shared_ptr<PixelShader> CreatePixelShader(const std::wstring& filePath) override;
-		virtual std::shared_ptr<BoundShaderState> CreateBoundShaderState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd) override;
+		virtual std::shared_ptr<PipelineState> CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd) override;
 
 		virtual void SetVertexBuffer(std::shared_ptr<VertexBuffer> vb) override;
-		virtual void SetIndexBuffer(std::shared_ptr<IndexBuffer> ib) override;
-		virtual void SetVertexLayout(std::shared_ptr<VertexDeclaration> vd) override;
-		virtual void SetBoundShaderState(std::shared_ptr<BoundShaderState> state) override;
+		virtual void SetPipelineState(std::shared_ptr<PipelineState> state) override;
 
 		virtual void ClearBackBuffer() override;
 		virtual void SwapBuffer() override;
-		virtual void Draw() override;
+		virtual void Draw(std::shared_ptr<IndexBuffer> ib) override;
 
 	private:
 		void CreateSwapChainResource();
@@ -46,8 +43,6 @@ namespace RenderingDEMO
 	private:
 		HWND m_WindowHandler = nullptr;
 		std::array<int, 2> m_WindowSize = { 0 ,0 };
-
-		DirectXState m_State = {};
 
 		Microsoft::WRL::ComPtr<IDXGISwapChain1> m_SwapChain;
 		Microsoft::WRL::ComPtr<ID3D11Device> m_Device;

@@ -23,15 +23,12 @@ namespace RenderingDEMO
             return;
         }
 
-        //create swapchain
-        //TODO: add window resize callback to reset the viewport
         glViewport(0, 0, m_WindowSize[0], m_WindowSize[1]);
 
         unsigned int vao;
         glCreateVertexArrays(1, &vao);
         glBindVertexArray(vao);
-
-        m_State.m_VAO = vao;
+        m_VAO = vao;
     }
 
     void OpenGLRHI::RecreateSwapChain(int width, int height)
@@ -41,7 +38,7 @@ namespace RenderingDEMO
         spdlog::info("Window Size:{0}, {1}", m_WindowSize[0], m_WindowSize[1]);
     }
 
-    std::shared_ptr<VertexBuffer> OpenGLRHI::CreateVertexBuffer(void* data, unsigned int size)
+    std::shared_ptr<VertexBuffer> OpenGLRHI::CreateVertexBuffer(void* data, unsigned int size, unsigned int stride)
     {
         unsigned int VBO;
         glCreateBuffers(1, &VBO);
@@ -49,7 +46,7 @@ namespace RenderingDEMO
         glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        return std::shared_ptr<OpenGLVertexBuffer>(new OpenGLVertexBuffer(VBO, size));
+        return std::shared_ptr<OpenGLVertexBuffer>(new OpenGLVertexBuffer(VBO, size, stride));
     }
 
     std::shared_ptr<IndexBuffer> OpenGLRHI::CreateIndexBuffer(void* data, unsigned int size)
@@ -110,62 +107,42 @@ namespace RenderingDEMO
         return std::shared_ptr<OpenGLPixelShader>(new OpenGLPixelShader(pixelShader));
     }
 
-    std::shared_ptr<BoundShaderState> OpenGLRHI::CreateBoundShaderState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd)
+    std::shared_ptr<PipelineState> OpenGLRHI::CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd)
     {
         std::shared_ptr<OpenGLVertexShader> glvs = std::dynamic_pointer_cast<OpenGLVertexShader>(vs);
         std::shared_ptr<OpenGLPixelShader> glps = std::dynamic_pointer_cast<OpenGLPixelShader>(ps);
         std::shared_ptr<OpenGLVertexDeclaration> glvd = std::dynamic_pointer_cast<OpenGLVertexDeclaration>(vd);
 
-        return std::shared_ptr<BoundShaderState>(new OpenGLBoundShaderState(glvs, glps, glvd));
+        return std::shared_ptr<OpenGLPipelineState>(new OpenGLPipelineState(glvs, glps, glvd));
     }
 
     void OpenGLRHI::SetVertexBuffer(std::shared_ptr<VertexBuffer> vb)
     {
-        std::shared_ptr<OpenGLVertexBuffer> glVB = std::dynamic_pointer_cast<OpenGLVertexBuffer>(vb);
-        glBindBuffer(GL_ARRAY_BUFFER, glVB->GetID());
-
-        m_State.m_VertexBuffer = glVB->GetID();
-    }
-
-    void OpenGLRHI::SetIndexBuffer(std::shared_ptr<IndexBuffer> ib)
-    {
-        std::shared_ptr<OpenGLIndexBuffer> glIB = std::dynamic_pointer_cast<OpenGLIndexBuffer>(ib);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glIB->GetID());
-
-        m_State.m_IndexBuffer = glIB->GetID();
-        m_State.m_IndexCount = glIB->GetCount();
-    }
-
-    void OpenGLRHI::SetVertexLayout(std::shared_ptr<VertexDeclaration> vd)
-    {
-        std::shared_ptr<OpenGLVertexDeclaration> glvd = std::dynamic_pointer_cast<OpenGLVertexDeclaration>(vd);
+        std::shared_ptr<OpenGLVertexBuffer> glvb = std::dynamic_pointer_cast<OpenGLVertexBuffer>(vb);
         
-        for (const auto& e : glvd->GetElements())
-        {
-            //TODO: switch to new OpenGL api in 4.3
-            glEnableVertexAttribArray(e.Index);
-            glVertexAttribPointer(e.Index, e.Count, e.Type, GL_FALSE, glvd->GetStride(), (const void*)e.Offset);
-        }
+        // temp
+        unsigned int bindindex = 0;
+        unsigned int offset = 0;
+        glBindVertexBuffer(bindindex, glvb->GetID(), offset, glvb->GetStride());
     }
 
-    void OpenGLRHI::SetBoundShaderState(std::shared_ptr<BoundShaderState> state)
+    void OpenGLRHI::SetPipelineState(std::shared_ptr<PipelineState> state)
     {
-        std::shared_ptr<OpenGLBoundShaderState> glState = std::dynamic_pointer_cast<OpenGLBoundShaderState>(state);
-        std::shared_ptr<OpenGLVertexDeclaration> glvd = std::dynamic_pointer_cast<OpenGLVertexDeclaration>(glState->GetVertexDeclaration());
+        std::shared_ptr<OpenGLPipelineState> glState = std::dynamic_pointer_cast<OpenGLPipelineState>(state);
+        std::shared_ptr<OpenGLVertexDeclaration> glvd = glState->m_VertexDeclaration;
 
         // bind vertex layout
         for (const auto& e : glvd->GetElements())
-        {
-            //TODO: switch to new OpenGL api in 4.3
+        {     
+            // OpenGL 4.3 ++
+            unsigned int bindindex = 0;
             glEnableVertexAttribArray(e.Index);
-            glVertexAttribPointer(e.Index, e.Count, e.Type, GL_FALSE, glvd->GetStride(), (const void*)e.Offset);
+            glVertexAttribFormat(e.Index, e.Count, e.Type, GL_FALSE, e.Offset);
+            glVertexAttribBinding(e.Index, bindindex);
         }
 
         // bind shaders
-        glUseProgram(glState->GetID());
-
-        m_State.m_VertexDeclaration = glvd.get();
-        m_State.m_ShaderProgram = glState->GetID();
+        glUseProgram(glState->m_ID);
     }
 
     void OpenGLRHI::ClearBackBuffer()
@@ -179,9 +156,12 @@ namespace RenderingDEMO
         glfwSwapBuffers(m_Window);
     }
 
-    void OpenGLRHI::Draw()
+    void OpenGLRHI::Draw(std::shared_ptr<IndexBuffer> ib)
     {
-        glDrawElements(GL_TRIANGLES, m_State.m_IndexCount, GL_UNSIGNED_INT, nullptr);
+        std::shared_ptr<OpenGLIndexBuffer> glib = std::dynamic_pointer_cast<OpenGLIndexBuffer>(ib);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glib->GetID());
+        glDrawElements(GL_TRIANGLES, glib->GetCount(), GL_UNSIGNED_INT, nullptr);
     }
 
     std::string OpenGLRHI::ReadFromFile(const std::wstring& filePath)

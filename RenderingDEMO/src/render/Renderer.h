@@ -5,16 +5,8 @@
 #include "core/Window.h"
 #include "core/WindowUI.h"
 
-
-#include <d3d11.h>
-#include <dxgi1_3.h>
-#include <d3dcompiler.h>
-
-#include <iostream>
-
 namespace RenderingDEMO
 {
-
 	enum RenderAPI
 	{
 		Unknown = 0, OpenGL, DirectX
@@ -37,5 +29,9 @@ namespace RenderingDEMO
 		std::shared_ptr<RHI> m_RHI;
 		std::shared_ptr<WindowUI> m_WindowUI;
 		std::shared_ptr<RenderResource> m_RenderResource;
+		RenderAPI m_CurrentAPI;
+
+		//temp
+		std::wstring m_Suffix;
 	};
 }

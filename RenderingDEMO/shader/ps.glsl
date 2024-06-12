@@ -1,9 +1,10 @@
 #version 330 core
 
+in vec3 o_Color;
+
 out vec4 Color;
-in vec3 o_Position;
 
 void main()
 {
-	Color = vec4(o_Position.x, o_Position.y, o_Position.z, 1.0f);
+	Color = vec4(o_Color, 1.0f);
 }

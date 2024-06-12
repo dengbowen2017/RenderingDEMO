@@ -10,14 +10,14 @@ namespace RenderingDEMO
 		m_InputManager = std::make_shared<InputManager>();
 		m_Renderer = std::make_shared<Renderer>();
 
-		// Initialize
+		// Initialize GLFWwindow
 		WindowProps props;
 		m_Window->Initialize(props);
 		m_Window->RegisterOnKeyFunc(std::bind(&InputManager::OnKey, m_InputManager.get(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 
 		// TODO: Pass render information from main
-		// Set API here
-		m_Renderer->Initialize(m_Window, RenderAPI::DirectX);
+		// temp: Set API here
+		m_Renderer->Initialize(m_Window, RenderAPI::OpenGL);
 		m_Window->RegisterOnWindowSizeFunc(std::bind(&RHI::RecreateSwapChain, m_Renderer->GetRHI().get(), std::placeholders::_1, std::placeholders::_2));
 	}
 

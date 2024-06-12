@@ -45,6 +45,11 @@ namespace RenderingDEMO
 	{
 	public:
 		virtual ~VertexDeclaration() = default;
+
+		unsigned int GetStride() const { return m_Stride; }
+	
+	protected:
+		unsigned int m_Stride;
 	};
 
 	class VertexShader 
@@ -65,19 +70,27 @@ namespace RenderingDEMO
 		virtual ~BoundShaderState() = default;
 	};
 
+	class PipelineState
+	{
+	public:
+		virtual ~PipelineState() = default;
+	};
+
 	class VertexBuffer
 	{
 	public:
-		VertexBuffer(unsigned int size)
-			:m_Size(size)
+		VertexBuffer(unsigned int size, unsigned int stride)
+			:m_Size(size), m_Stride(stride)
 		{
 		}
 		virtual ~VertexBuffer() = default;
 
 		unsigned int GetSize() const { return m_Size; }
+		unsigned int GetStride() const { return m_Stride; }
 
 	private:
 		unsigned int m_Size = 0;
+		unsigned int m_Stride = 0;
 	};
 
 	class IndexBuffer

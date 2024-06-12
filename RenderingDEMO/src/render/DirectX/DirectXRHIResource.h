@@ -22,11 +22,9 @@ namespace RenderingDEMO
 		~DirectXVertexDeclaration() = default;
 
 		const std::vector<DirectXVertexElement>& GetElements() const { return m_Elements; }
-		unsigned int GetStride() const { return m_Stride; }
 
 	private:
 		std::vector<DirectXVertexElement> m_Elements;
-		unsigned int m_Stride = 0;
 	};
 
 	class DirectXVertexShader :public VertexShader
@@ -73,11 +71,25 @@ namespace RenderingDEMO
 		unsigned int m_Stride;
 	};
 
+	class DirectXPipelineState :public PipelineState
+	{
+	public:
+		DirectXPipelineState(std::shared_ptr<DirectXVertexShader> vs, std::shared_ptr<DirectXPixelShader> ps, std::shared_ptr<DirectXVertexDeclaration> vd, const Microsoft::WRL::ComPtr<ID3D11Device>& device);
+		~DirectXPipelineState() = default;
+
+	public:
+		Microsoft::WRL::ComPtr<ID3D11InputLayout> m_InputLayout;
+		Microsoft::WRL::ComPtr<ID3D11VertexShader> m_VertexShader;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> m_PixelShader;
+		Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_RasterizerState;
+		D3D_PRIMITIVE_TOPOLOGY m_DrawType;
+	};
+
 	class DirectXVertexBuffer :public VertexBuffer
 	{
 	public:
-		DirectXVertexBuffer(const Microsoft::WRL::ComPtr<ID3D11Buffer>& buffer, unsigned int size)
-			:m_Buffer(buffer), VertexBuffer(size)
+		DirectXVertexBuffer(const Microsoft::WRL::ComPtr<ID3D11Buffer>& buffer, unsigned int size, unsigned int stride)
+			:m_Buffer(buffer), VertexBuffer(size, stride)
 		{}
 		~DirectXVertexBuffer() = default;
 

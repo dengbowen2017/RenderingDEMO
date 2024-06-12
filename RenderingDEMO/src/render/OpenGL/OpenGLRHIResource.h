@@ -21,11 +21,9 @@ namespace RenderingDEMO
 		~OpenGLVertexDeclaration() = default;
 
 		const std::vector<OpenGLVertexElement>& GetElements() const { return m_Elements; }
-		unsigned int GetStride() const { return m_Stride; }
 
 	private:
 		std::vector<OpenGLVertexElement> m_Elements;
-		unsigned int m_Stride = 0;
 	};
 
 	class OpenGLVertexShader :public VertexShader
@@ -66,10 +64,21 @@ namespace RenderingDEMO
 		std::shared_ptr<OpenGLVertexDeclaration> m_VertexDeclaration;
 	};
 
+	class OpenGLPipelineState :public PipelineState
+	{
+	public:
+		OpenGLPipelineState(std::shared_ptr<OpenGLVertexShader> vs, std::shared_ptr<OpenGLPixelShader> ps, std::shared_ptr<OpenGLVertexDeclaration> vd);
+		~OpenGLPipelineState();
+
+	public:
+		unsigned int m_ID;
+		std::shared_ptr<OpenGLVertexDeclaration> m_VertexDeclaration;
+	};
+
 	class OpenGLVertexBuffer :public VertexBuffer
 	{
 	public:
-		OpenGLVertexBuffer(unsigned int id, unsigned int size);
+		OpenGLVertexBuffer(unsigned int id, unsigned int size, unsigned int stride);
 		~OpenGLVertexBuffer();
 
 		unsigned int GetID() const { return m_ID; }

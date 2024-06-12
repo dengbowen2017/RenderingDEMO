@@ -95,7 +95,7 @@ namespace RenderingDEMO
 		spdlog::info("Window Size:{0}, {1}", m_WindowSize[0], m_WindowSize[1]);
 	}
 
-	std::shared_ptr<VertexBuffer> DirectXRHI::CreateVertexBuffer(void* data, unsigned int size)
+	std::shared_ptr<VertexBuffer> DirectXRHI::CreateVertexBuffer(void* data, unsigned int size, unsigned int stride)
 	{
 		Microsoft::WRL::ComPtr<ID3D11Buffer> vb;
 
@@ -115,7 +115,7 @@ namespace RenderingDEMO
 			return false;
 		}
 
-		return std::shared_ptr<DirectXVertexBuffer>(new DirectXVertexBuffer(vb, size));
+		return std::shared_ptr<DirectXVertexBuffer>(new DirectXVertexBuffer(vb, size, stride));
 	}
 
 	std::shared_ptr<IndexBuffer> DirectXRHI::CreateIndexBuffer(void* data, unsigned int size)
@@ -192,13 +192,13 @@ namespace RenderingDEMO
 		return std::shared_ptr<DirectXPixelShader>(new DirectXPixelShader(ps));
 	}
 
-	std::shared_ptr<BoundShaderState> DirectXRHI::CreateBoundShaderState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd)
+	std::shared_ptr<PipelineState> DirectXRHI::CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd)
 	{
 		std::shared_ptr<DirectXVertexShader> dxvs = std::dynamic_pointer_cast<DirectXVertexShader>(vs);
 		std::shared_ptr<DirectXPixelShader> dxps = std::dynamic_pointer_cast<DirectXPixelShader>(ps);
 		std::shared_ptr<DirectXVertexDeclaration> dxvd = std::dynamic_pointer_cast<DirectXVertexDeclaration>(vd);
 
-		return std::shared_ptr<DirectXBoundShaderState>(new DirectXBoundShaderState(dxvs, dxps, dxvd, m_Device));
+		return std::shared_ptr<DirectXPipelineState>(new DirectXPipelineState(dxvs, dxps, dxvd, m_Device));
 	}
 
 	void DirectXRHI::SetVertexBuffer(std::shared_ptr<VertexBuffer> vb)
@@ -208,52 +208,25 @@ namespace RenderingDEMO
 		// temp
 		// need a variable as the offset
 		unsigned int offset = 0;
+		unsigned int stride = dxvb->GetStride();
 		m_DeviceContext->IASetVertexBuffers(
 			0,
 			1,
 			dxvb->GetBuffer().GetAddressOf(),
-			&m_State.m_VertexStride,
-			&offset);
-
-		m_State.m_VertexBuffer = dxvb->GetBuffer().Get();
-	}
-
-	void DirectXRHI::SetIndexBuffer(std::shared_ptr<IndexBuffer> ib)
-	{
-		std::shared_ptr<DirectXIndexBuffer> dxib = std::dynamic_pointer_cast<DirectXIndexBuffer>(ib);
-
-		//temp
-		unsigned int offset = 0;
-		m_DeviceContext->IASetIndexBuffer(
-			dxib->GetBuffer().Get(),
-			DXGI_FORMAT_R32_UINT,
-			offset
+			&stride,
+			&offset
 		);
-
-		m_State.m_IndexBuffer = dxib->GetBuffer().Get();
-		m_State.m_IndexCount = dxib->GetCount();
 	}
 
-	void DirectXRHI::SetVertexLayout(std::shared_ptr<VertexDeclaration> vd)
+	void DirectXRHI::SetPipelineState(std::shared_ptr<PipelineState> state)
 	{
-	}
+		std::shared_ptr<DirectXPipelineState> dxState = std::dynamic_pointer_cast<DirectXPipelineState>(state);
 
-	void DirectXRHI::SetBoundShaderState(std::shared_ptr<BoundShaderState> state)
-	{
-		std::shared_ptr<DirectXBoundShaderState> dxState = std::dynamic_pointer_cast<DirectXBoundShaderState>(state);
-
-		Microsoft::WRL::ComPtr<ID3D11VertexShader> vs = dxState->GetVertexShader();
-		Microsoft::WRL::ComPtr<ID3D11PixelShader> ps = dxState->GetPixelShader();
-		Microsoft::WRL::ComPtr<ID3D11InputLayout> layout = dxState->GetInputLayout();
-
-		m_DeviceContext->IASetInputLayout(layout.Get());
-		m_DeviceContext->VSSetShader(vs.Get(), nullptr, 0);
-		m_DeviceContext->PSSetShader(ps.Get(), nullptr, 0);
-
-		m_State.m_VertexShader = vs.Get();
-		m_State.m_PixelShader = ps.Get();
-		m_State.m_InputLayout = layout.Get();
-		m_State.m_VertexStride = dxState->GetStride();
+		m_DeviceContext->IASetInputLayout(dxState->m_InputLayout.Get());
+		m_DeviceContext->VSSetShader(dxState->m_VertexShader.Get(), nullptr, 0);
+		m_DeviceContext->PSSetShader(dxState->m_PixelShader.Get(), nullptr, 0);
+		m_DeviceContext->RSSetState(dxState->m_RasterizerState.Get());
+		m_DeviceContext->IASetPrimitiveTopology(dxState->m_DrawType);
 	}
 
 	void DirectXRHI::ClearBackBuffer()
@@ -267,13 +240,26 @@ namespace RenderingDEMO
 		m_SwapChain->Present(1, 0);
 	}
 
-	void DirectXRHI::Draw()
+	void DirectXRHI::Draw(std::shared_ptr<IndexBuffer> ib)
 	{
+		std::shared_ptr<DirectXIndexBuffer> dxib = std::dynamic_pointer_cast<DirectXIndexBuffer>(ib);
+
+		// set indexbuffer
+		// temp
+		unsigned int offset = 0;
+		m_DeviceContext->IASetIndexBuffer(
+			dxib->GetBuffer().Get(),
+			DXGI_FORMAT_R32_UINT,
+			offset
+		);
+
+		// move to pipeline state
+		//m_DeviceContext->RSSetState(m_RasterizerState.Get());
+		//m_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	
 		// need to set render target for every frame
-		m_DeviceContext->RSSetState(m_RasterizerState.Get());
 		m_DeviceContext->OMSetRenderTargets(1, m_RenderTarget.GetAddressOf(), nullptr);
-		m_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		m_DeviceContext->DrawIndexed(m_State.m_IndexCount, 0, 0);
+		m_DeviceContext->DrawIndexed(dxib->GetCount(), 0, 0);
 	}
 
 	void DirectXRHI::CreateSwapChainResource()
