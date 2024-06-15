@@ -5,12 +5,12 @@ add_compile_definitions (GLFW_INCLUDE_NONE)
 set (DEPENDENCES_DIR ${PROJECT_SOURCE_DIR}/RenderingDEMO/dependence)
 set (SOURCE_DIR ${PROJECT_SOURCE_DIR}/RenderingDEMO/src)
 
-file(GLOB_RECURSE HEADER_FILES "*.h")
-file(GLOB_RECURSE SOURCE_FILES "*.cpp")
+file (GLOB_RECURSE HEADER_FILES "*.h")
+file (GLOB_RECURSE SOURCE_FILES "*.cpp")
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADER_FILES} ${SOURCE_FILES})
+source_group (TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADER_FILES} ${SOURCE_FILES})
 
-target_sources(${PROJECT_NAME} PUBLIC ${HEADER_FILES} ${SOURCE_FILES})
+target_sources (${PROJECT_NAME} PUBLIC ${HEADER_FILES} ${SOURCE_FILES})
 
 target_link_libraries (${PROJECT_NAME} PUBLIC
 	glfw
@@ -30,6 +30,7 @@ target_link_directories (${PROJECT_NAME} PUBLIC
 
 target_include_directories (${PROJECT_NAME} PUBLIC
 	${DEPENDENCES_DIR}/spdlog/include
+	${DEPENDENCES_DIR}/eigen
 	${SOURCE_DIR})
 
 target_precompile_headers (${PROJECT_NAME} PUBLIC pch.h)

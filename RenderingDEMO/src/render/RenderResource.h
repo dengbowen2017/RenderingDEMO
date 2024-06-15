@@ -22,5 +22,6 @@ namespace RenderingDEMO
 		std::unordered_map<std::string, std::shared_ptr<PixelShader>> m_PixelShaders;
 
 		std::shared_ptr<PipelineState> m_PipelineState;
+		std::shared_ptr<UniformBuffer> m_UniformBuffer;
 	};
 }

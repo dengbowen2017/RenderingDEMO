@@ -53,24 +53,6 @@ namespace RenderingDEMO
 		Microsoft::WRL::ComPtr<ID3D11PixelShader> m_PixelShader;
 	};
 
-	class DirectXBoundShaderState :public BoundShaderState
-	{
-	public:
-		DirectXBoundShaderState(std::shared_ptr<DirectXVertexShader> vs, std::shared_ptr<DirectXPixelShader> ps, std::shared_ptr<DirectXVertexDeclaration> vd, const Microsoft::WRL::ComPtr<ID3D11Device>& device);
-		~DirectXBoundShaderState() = default;
-
-		const Microsoft::WRL::ComPtr<ID3D11InputLayout>& GetInputLayout() const { return m_InputLayout; }
-		const Microsoft::WRL::ComPtr<ID3D11VertexShader>& GetVertexShader() const { return m_VertexShader; }
-		const Microsoft::WRL::ComPtr<ID3D11PixelShader>& GetPixelShader() const { return m_PixelShader; }
-		unsigned int GetStride() const { return m_Stride; }
-
-	private:
-		Microsoft::WRL::ComPtr<ID3D11InputLayout> m_InputLayout;
-		Microsoft::WRL::ComPtr<ID3D11VertexShader> m_VertexShader;
-		Microsoft::WRL::ComPtr<ID3D11PixelShader> m_PixelShader;
-		unsigned int m_Stride;
-	};
-
 	class DirectXPipelineState :public PipelineState
 	{
 	public:
@@ -90,7 +72,8 @@ namespace RenderingDEMO
 	public:
 		DirectXVertexBuffer(const Microsoft::WRL::ComPtr<ID3D11Buffer>& buffer, unsigned int size, unsigned int stride)
 			:m_Buffer(buffer), VertexBuffer(size, stride)
-		{}
+		{
+		}
 		~DirectXVertexBuffer() = default;
 
 		const Microsoft::WRL::ComPtr<ID3D11Buffer>& GetBuffer() const { return m_Buffer; }
@@ -104,8 +87,24 @@ namespace RenderingDEMO
 	public:
 		DirectXIndexBuffer(const Microsoft::WRL::ComPtr<ID3D11Buffer>& buffer, unsigned int count)
 			:m_Buffer(buffer), IndexBuffer(count)
-		{}
+		{
+		}
 		~DirectXIndexBuffer() = default;
+
+		const Microsoft::WRL::ComPtr<ID3D11Buffer>& GetBuffer() const { return m_Buffer; }
+
+	private:
+		Microsoft::WRL::ComPtr<ID3D11Buffer> m_Buffer;
+	};
+
+	class DirectXUniformBuffer :public UniformBuffer
+	{
+	public:
+		DirectXUniformBuffer(const Microsoft::WRL::ComPtr<ID3D11Buffer>& buffer, unsigned int size)
+			:m_Buffer(buffer), UniformBuffer(size)
+		{
+		}
+		~DirectXUniformBuffer() = default;
 
 		const Microsoft::WRL::ComPtr<ID3D11Buffer>& GetBuffer() const { return m_Buffer; }
 

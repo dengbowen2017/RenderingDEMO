@@ -64,12 +64,6 @@ namespace RenderingDEMO
 		virtual ~PixelShader() = default;
 	};
 
-	class BoundShaderState 
-	{
-	public:
-		virtual ~BoundShaderState() = default;
-	};
-
 	class PipelineState
 	{
 	public:
@@ -106,5 +100,20 @@ namespace RenderingDEMO
 
 	private:
 		unsigned int m_Count = 0;
+	};
+
+	class UniformBuffer
+	{
+	public:
+		UniformBuffer(unsigned int size)
+			:m_Size(size)
+		{
+		}
+		virtual ~UniformBuffer() = default;
+
+		unsigned int GetSize() const { return m_Size; }
+
+	private:
+		unsigned int m_Size = 0;
 	};
 }

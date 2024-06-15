@@ -54,30 +54,6 @@ namespace RenderingDEMO
 	{
 	}
 
-	DirectXBoundShaderState::DirectXBoundShaderState(std::shared_ptr<DirectXVertexShader> vs, std::shared_ptr<DirectXPixelShader> ps, std::shared_ptr<DirectXVertexDeclaration> vd, const Microsoft::WRL::ComPtr<ID3D11Device>& device)
-	{
-		m_VertexShader = vs->GetShader();
-		m_PixelShader = ps->GetShader();
-		m_Stride = vd->GetStride();
-		
-		std::vector<D3D11_INPUT_ELEMENT_DESC> layoutInfo;
-		for (const auto& e : vd->GetElements())
-		{
-			layoutInfo.push_back({ e.Name.c_str(), 0, e.Format, 0, e.Offset, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-		}
-
-		if (FAILED(device->CreateInputLayout(
-			layoutInfo.data(),
-			layoutInfo.size(),
-			vs->GetShaderBlob()->GetBufferPointer(),
-			vs->GetShaderBlob()->GetBufferSize(),
-			&m_InputLayout)))
-		{
-			spdlog::error("D3D11: Failed to create default vertex input layout");
-			return;
-		}
-	}
-
 	DirectXPipelineState::DirectXPipelineState(std::shared_ptr<DirectXVertexShader> vs, std::shared_ptr<DirectXPixelShader> ps, std::shared_ptr<DirectXVertexDeclaration> vd, const Microsoft::WRL::ComPtr<ID3D11Device>& device)
 	{
 		// set shader

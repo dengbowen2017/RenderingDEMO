@@ -50,20 +50,6 @@ namespace RenderingDEMO
 		unsigned int m_ID;
 	};
 
-	class OpenGLBoundShaderState :public BoundShaderState
-	{
-	public:
-		OpenGLBoundShaderState(std::shared_ptr<OpenGLVertexShader> vs, std::shared_ptr<OpenGLPixelShader> ps, std::shared_ptr<OpenGLVertexDeclaration> vd);
-		~OpenGLBoundShaderState();
-
-		unsigned int GetID() const { return m_ID; }
-		std::shared_ptr<OpenGLVertexDeclaration> GetVertexDeclaration() const { return m_VertexDeclaration; }
-
-	private:
-		unsigned int m_ID;
-		std::shared_ptr<OpenGLVertexDeclaration> m_VertexDeclaration;
-	};
-
 	class OpenGLPipelineState :public PipelineState
 	{
 	public:
@@ -92,6 +78,18 @@ namespace RenderingDEMO
 	public:
 		OpenGLIndexBuffer(unsigned int id, unsigned int count);
 		~OpenGLIndexBuffer();
+
+		unsigned int GetID() const { return m_ID; }
+
+	private:
+		unsigned int m_ID;
+	};
+
+	class OpenGLUniformBuffer :public UniformBuffer
+	{
+	public:
+		OpenGLUniformBuffer(unsigned int id, unsigned int size);
+		~OpenGLUniformBuffer();
 
 		unsigned int GetID() const { return m_ID; }
 

@@ -4,6 +4,11 @@
 #include "RenderResource.h"
 #include "core/Window.h"
 #include "core/WindowUI.h"
+#include "Camera.h"
+
+#include <Eigen/Dense>
+
+#include <DirectXMath.h>
 
 namespace RenderingDEMO
 {
@@ -29,6 +34,7 @@ namespace RenderingDEMO
 		std::shared_ptr<RHI> m_RHI;
 		std::shared_ptr<WindowUI> m_WindowUI;
 		std::shared_ptr<RenderResource> m_RenderResource;
+		std::shared_ptr<Camera> m_Camera;
 		RenderAPI m_CurrentAPI;
 
 		//temp

@@ -94,31 +94,6 @@ namespace RenderingDEMO
 		glDeleteShader(m_ID);
 	}
 
-	OpenGLBoundShaderState::OpenGLBoundShaderState(std::shared_ptr<OpenGLVertexShader> vs, std::shared_ptr<OpenGLPixelShader> ps, std::shared_ptr<OpenGLVertexDeclaration> vd)
-	{
-		m_VertexDeclaration = vd;
-
-		int success = 0;
-		char infoLog[512];
-		m_ID = glCreateProgram();
-		glAttachShader(m_ID, vs->GetID());
-		glAttachShader(m_ID, ps->GetID());
-		glLinkProgram(m_ID);
-
-		// check for linking errors
-		glGetProgramiv(m_ID, GL_LINK_STATUS, &success);
-		if (!success)
-		{
-			glGetProgramInfoLog(m_ID, 512, NULL, infoLog);
-			spdlog::error("OpenGL Shader Program Linking Failed:", infoLog);
-		}
-	}
-
-	OpenGLBoundShaderState::~OpenGLBoundShaderState()
-	{
-		glDeleteProgram(m_ID);
-	}
-
 	OpenGLPipelineState::OpenGLPipelineState(std::shared_ptr<OpenGLVertexShader> vs, std::shared_ptr<OpenGLPixelShader> ps, std::shared_ptr<OpenGLVertexDeclaration> vd)
 	{
 		m_VertexDeclaration = vd;
@@ -142,5 +117,15 @@ namespace RenderingDEMO
 	OpenGLPipelineState::~OpenGLPipelineState()
 	{
 		glDeleteProgram(m_ID);
+	}
+
+	OpenGLUniformBuffer::OpenGLUniformBuffer(unsigned int id, unsigned int size)
+		:m_ID(id), UniformBuffer(size)
+	{
+	}
+
+	OpenGLUniformBuffer::~OpenGLUniformBuffer()
+	{
+		glDeleteBuffers(1, &m_ID);
 	}
 }

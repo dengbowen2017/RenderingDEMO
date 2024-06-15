@@ -71,8 +71,13 @@ namespace RenderingDEMO
 		
 		CreateSwapChainResource();
 
-		//Create RasterizerState
+		// temp
+		// Create RasterizerState
 		CreateRasterizerStates();
+
+		// Create DepthState
+		CreateDepthStencilView();
+		CreateDepthStencilStates();
 	}
 
 	void DirectXRHI::RecreateSwapChain(int width, int height)
@@ -92,10 +97,10 @@ namespace RenderingDEMO
 		}
 
 		CreateSwapChainResource();
-		spdlog::info("Window Size:{0}, {1}", m_WindowSize[0], m_WindowSize[1]);
+		spdlog::info("Window Size: {0}, {1}", m_WindowSize[0], m_WindowSize[1]);
 	}
 
-	std::shared_ptr<VertexBuffer> DirectXRHI::CreateVertexBuffer(void* data, unsigned int size, unsigned int stride)
+	std::shared_ptr<VertexBuffer> DirectXRHI::CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride)
 	{
 		Microsoft::WRL::ComPtr<ID3D11Buffer> vb;
 
@@ -118,7 +123,7 @@ namespace RenderingDEMO
 		return std::shared_ptr<DirectXVertexBuffer>(new DirectXVertexBuffer(vb, size, stride));
 	}
 
-	std::shared_ptr<IndexBuffer> DirectXRHI::CreateIndexBuffer(void* data, unsigned int size)
+	std::shared_ptr<IndexBuffer> DirectXRHI::CreateIndexBuffer(const void* data, unsigned int size)
 	{
 		Microsoft::WRL::ComPtr<ID3D11Buffer> ib;
 
@@ -129,6 +134,7 @@ namespace RenderingDEMO
 
 		D3D11_SUBRESOURCE_DATA resourceData = {};
 		resourceData.pSysMem = data;
+		
 		if (FAILED(m_Device->CreateBuffer(
 			&bufferInfo,
 			&resourceData,
@@ -139,6 +145,28 @@ namespace RenderingDEMO
 		}
 
 		return std::shared_ptr<DirectXIndexBuffer>(new DirectXIndexBuffer(ib, size / sizeof(unsigned int)));
+	}
+
+	std::shared_ptr<UniformBuffer> DirectXRHI::CreateUniformBuffer(unsigned int size)
+	{
+		Microsoft::WRL::ComPtr<ID3D11Buffer> ub;
+
+		D3D11_BUFFER_DESC bufferInfo = {};
+		bufferInfo.ByteWidth = size;
+		bufferInfo.Usage = D3D11_USAGE_DYNAMIC;
+		bufferInfo.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		bufferInfo.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+		if (FAILED(m_Device->CreateBuffer(
+			&bufferInfo,
+			nullptr,
+			&ub)))
+		{
+			spdlog::error("D3D11: Failed to create constant buffer");
+			return false;
+		}
+
+		return std::shared_ptr<DirectXUniformBuffer>(new DirectXUniformBuffer(ub, size));
 	}
 
 	std::shared_ptr<VertexDeclaration> DirectXRHI::CreateVertexDeclaration(const std::vector<VertexElement>& elements)
@@ -201,6 +229,16 @@ namespace RenderingDEMO
 		return std::shared_ptr<DirectXPipelineState>(new DirectXPipelineState(dxvs, dxps, dxvd, m_Device));
 	}
 
+	void DirectXRHI::UpdateUniformBuffer(std::shared_ptr<UniformBuffer> ub, const void* data)
+	{
+		std::shared_ptr<DirectXUniformBuffer> dxub = std::dynamic_pointer_cast<DirectXUniformBuffer>(ub);
+
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		m_DeviceContext->Map(dxub->GetBuffer().Get(), 0, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+		memcpy(mappedResource.pData, data, dxub->GetSize());
+		m_DeviceContext->Unmap(dxub->GetBuffer().Get(), 0);
+	}
+
 	void DirectXRHI::SetVertexBuffer(std::shared_ptr<VertexBuffer> vb)
 	{
 		std::shared_ptr<DirectXVertexBuffer> dxvb = std::dynamic_pointer_cast<DirectXVertexBuffer>(vb);
@@ -218,6 +256,16 @@ namespace RenderingDEMO
 		);
 	}
 
+	void DirectXRHI::SetUniformBuffer(std::shared_ptr<UniformBuffer> ub, unsigned int index)
+	{
+		std::shared_ptr<DirectXUniformBuffer> dxub = std::dynamic_pointer_cast<DirectXUniformBuffer>(ub);
+
+		// temp
+		// bind uniform buffer to all shaders
+		m_DeviceContext->VSSetConstantBuffers(index, 1, dxub->GetBuffer().GetAddressOf());
+		m_DeviceContext->PSSetConstantBuffers(index, 1, dxub->GetBuffer().GetAddressOf());
+	}
+
 	void DirectXRHI::SetPipelineState(std::shared_ptr<PipelineState> state)
 	{
 		std::shared_ptr<DirectXPipelineState> dxState = std::dynamic_pointer_cast<DirectXPipelineState>(state);
@@ -232,7 +280,11 @@ namespace RenderingDEMO
 	void DirectXRHI::ClearBackBuffer()
 	{
 		constexpr float clearColor[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+		ID3D11RenderTargetView* nullRTV = nullptr;
+
+		m_DeviceContext->OMSetRenderTargets(1, &nullRTV, nullptr);
 		m_DeviceContext->ClearRenderTargetView(m_RenderTarget.Get(), clearColor);
+		m_DeviceContext->ClearDepthStencilView(m_DepthTarget.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
 	void DirectXRHI::SwapBuffer()
@@ -252,13 +304,9 @@ namespace RenderingDEMO
 			DXGI_FORMAT_R32_UINT,
 			offset
 		);
-
-		// move to pipeline state
-		//m_DeviceContext->RSSetState(m_RasterizerState.Get());
-		//m_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	
 		// need to set render target for every frame
-		m_DeviceContext->OMSetRenderTargets(1, m_RenderTarget.GetAddressOf(), nullptr);
+		m_DeviceContext->OMSetRenderTargets(1, m_RenderTarget.GetAddressOf(), m_DepthTarget.Get());
 		m_DeviceContext->DrawIndexed(dxib->GetCount(), 0, 0);
 	}
 
@@ -296,7 +344,7 @@ namespace RenderingDEMO
 		viewport.MaxDepth = 1.0f;
 
 		m_DeviceContext->RSSetViewports(1, &viewport);
-		m_DeviceContext->OMSetRenderTargets(1, m_RenderTarget.GetAddressOf(), nullptr);
+		//m_DeviceContext->OMSetRenderTargets(1, m_RenderTarget.GetAddressOf(), nullptr);
 	}
 
 	void DirectXRHI::CreateRasterizerStates()
@@ -318,6 +366,47 @@ namespace RenderingDEMO
 			spdlog::error("D3D11: Failed to create rasterizer state");
 			return;
 		}
+	}
+
+	void DirectXRHI::CreateDepthStencilStates()
+	{
+		D3D11_DEPTH_STENCIL_DESC depthDesc{};
+		depthDesc.DepthEnable = TRUE;
+		depthDesc.DepthFunc = D3D11_COMPARISON_FUNC::D3D11_COMPARISON_LESS;
+		depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+
+		m_Device->CreateDepthStencilState(&depthDesc, &m_DepthStencilState);
+	}
+
+	void DirectXRHI::CreateDepthStencilView()
+	{
+		D3D11_TEXTURE2D_DESC texDesc{};
+		texDesc.Height = m_WindowSize[1];
+		texDesc.Width = m_WindowSize[0];
+		texDesc.ArraySize = 1;
+		texDesc.SampleDesc.Count = 1;
+		texDesc.MipLevels = 1;
+		texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+		texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+
+		ID3D11Texture2D* texture = nullptr;
+		if (FAILED(m_Device->CreateTexture2D(&texDesc, nullptr, &texture)))
+		{
+			spdlog::error("D3D11: Failed to create texture for DepthStencilView");
+			return;
+		}
+
+		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+		if (FAILED(m_Device->CreateDepthStencilView(texture, &dsvDesc, &m_DepthTarget)))
+		{
+			spdlog::error("D3D11: Failed to create DepthStencilView");
+			texture->Release();
+			return;
+		}
+
+		texture->Release();
 	}
 
 	bool DirectXRHI::CompileShader(const std::wstring& filePath, const std::string& profile, Microsoft::WRL::ComPtr<ID3DBlob>& shaderBlob)

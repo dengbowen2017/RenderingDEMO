@@ -15,14 +15,18 @@ namespace RenderingDEMO
 
 		virtual void RecreateSwapChain(int width, int height) override;
 
-		virtual std::shared_ptr<VertexBuffer> CreateVertexBuffer(void* data, unsigned int size, unsigned int stride) override;
-		virtual std::shared_ptr<IndexBuffer> CreateIndexBuffer(void* data, unsigned int size) override;
+		virtual std::shared_ptr<VertexBuffer> CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride) override;
+		virtual std::shared_ptr<IndexBuffer> CreateIndexBuffer(const void* data, unsigned int size) override;
+		virtual std::shared_ptr<UniformBuffer> CreateUniformBuffer(unsigned int size) override;
 		virtual std::shared_ptr<VertexDeclaration> CreateVertexDeclaration(const std::vector<VertexElement>& elements) override;
 		virtual std::shared_ptr<VertexShader> CreateVertexShader(const std::wstring& filePath) override;
 		virtual std::shared_ptr<PixelShader> CreatePixelShader(const std::wstring& filePath) override;
 		virtual std::shared_ptr<PipelineState> CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd) override;
 
+		virtual void UpdateUniformBuffer(std::shared_ptr<UniformBuffer> ub, const void* data) override;
+
 		virtual void SetVertexBuffer(std::shared_ptr<VertexBuffer> vb) override;
+		virtual void SetUniformBuffer(std::shared_ptr<UniformBuffer> ub, unsigned int index) override;
 		virtual void SetPipelineState(std::shared_ptr<PipelineState> state) override;
 
 		virtual void ClearBackBuffer() override;

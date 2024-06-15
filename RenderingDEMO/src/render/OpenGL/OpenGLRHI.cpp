@@ -35,10 +35,10 @@ namespace RenderingDEMO
     {
         m_WindowSize = { width, height };
         glViewport(0, 0, m_WindowSize[0], m_WindowSize[1]);
-        spdlog::info("Window Size:{0}, {1}", m_WindowSize[0], m_WindowSize[1]);
+        spdlog::info("Window Size: {0}, {1}", m_WindowSize[0], m_WindowSize[1]);
     }
 
-    std::shared_ptr<VertexBuffer> OpenGLRHI::CreateVertexBuffer(void* data, unsigned int size, unsigned int stride)
+    std::shared_ptr<VertexBuffer> OpenGLRHI::CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride)
     {
         unsigned int VBO;
         glCreateBuffers(1, &VBO);
@@ -49,7 +49,7 @@ namespace RenderingDEMO
         return std::shared_ptr<OpenGLVertexBuffer>(new OpenGLVertexBuffer(VBO, size, stride));
     }
 
-    std::shared_ptr<IndexBuffer> OpenGLRHI::CreateIndexBuffer(void* data, unsigned int size)
+    std::shared_ptr<IndexBuffer> OpenGLRHI::CreateIndexBuffer(const void* data, unsigned int size)
     {
         unsigned int VEO;
         glCreateBuffers(1, &VEO);
@@ -58,6 +58,17 @@ namespace RenderingDEMO
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         return std::shared_ptr<OpenGLIndexBuffer>(new OpenGLIndexBuffer(VEO, size / sizeof(unsigned int)));
+    }
+
+    std::shared_ptr<UniformBuffer> OpenGLRHI::CreateUniformBuffer(unsigned int size)
+    {
+        unsigned int UBO;
+        glCreateBuffers(1, &UBO);
+        glBindBuffer(GL_UNIFORM_BUFFER, UBO);
+        glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+        return std::shared_ptr<OpenGLUniformBuffer>(new OpenGLUniformBuffer(UBO, size));
     }
 
     std::shared_ptr<VertexDeclaration> OpenGLRHI::CreateVertexDeclaration(const std::vector<VertexElement>& elements)
@@ -80,7 +91,7 @@ namespace RenderingDEMO
         if (!success)
         {
             glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-            spdlog::error("Shader Vertex Compilation Failed:", infoLog);
+            spdlog::error("Shader Vertex Compilation Failed: {0}", infoLog);
         }
 
         return std::shared_ptr<OpenGLVertexShader>(new OpenGLVertexShader(vertexShader));
@@ -101,7 +112,7 @@ namespace RenderingDEMO
         if (!success)
         {
             glGetShaderInfoLog(pixelShader, 512, nullptr, infoLog);
-            spdlog::error("Shader pixel Compilation Failed:", infoLog);
+            spdlog::error("Shader Pixel Compilation Failed: {0}", infoLog);
         }
 
         return std::shared_ptr<OpenGLPixelShader>(new OpenGLPixelShader(pixelShader));
@@ -116,6 +127,14 @@ namespace RenderingDEMO
         return std::shared_ptr<OpenGLPipelineState>(new OpenGLPipelineState(glvs, glps, glvd));
     }
 
+    void OpenGLRHI::UpdateUniformBuffer(std::shared_ptr<UniformBuffer> ub, const void* data)
+    {
+        std::shared_ptr<OpenGLUniformBuffer> glub = std::dynamic_pointer_cast<OpenGLUniformBuffer>(ub);
+
+        unsigned int offset = 0;
+        glNamedBufferSubData(glub->GetID(), offset, glub->GetSize(), data);
+    }
+
     void OpenGLRHI::SetVertexBuffer(std::shared_ptr<VertexBuffer> vb)
     {
         std::shared_ptr<OpenGLVertexBuffer> glvb = std::dynamic_pointer_cast<OpenGLVertexBuffer>(vb);
@@ -124,6 +143,13 @@ namespace RenderingDEMO
         unsigned int bindindex = 0;
         unsigned int offset = 0;
         glBindVertexBuffer(bindindex, glvb->GetID(), offset, glvb->GetStride());
+    }
+
+    void OpenGLRHI::SetUniformBuffer(std::shared_ptr<UniformBuffer> ub, unsigned int index)
+    {
+        std::shared_ptr<OpenGLUniformBuffer> glub = std::dynamic_pointer_cast<OpenGLUniformBuffer>(ub);
+
+        glBindBufferBase(GL_UNIFORM_BUFFER, index, glub->GetID());
     }
 
     void OpenGLRHI::SetPipelineState(std::shared_ptr<PipelineState> state)
@@ -143,12 +169,18 @@ namespace RenderingDEMO
 
         // bind shaders
         glUseProgram(glState->m_ID);
+
+        // set rasterizer state
+        glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+
+        // set depth state
+        glEnable(GL_DEPTH_TEST);
     }
 
     void OpenGLRHI::ClearBackBuffer()
     {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     void OpenGLRHI::SwapBuffer()
@@ -181,7 +213,7 @@ namespace RenderingDEMO
         }
         catch (const std::ifstream::failure& e)
         {
-            spdlog::error("Shader File Not Successfully Read:", e.what());
+            spdlog::error("Shader File Not Successfully Read: {0}", e.what());
         }
 
         return shaderCode;
