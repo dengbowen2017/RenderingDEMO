@@ -42,8 +42,10 @@ namespace RenderingDEMO
 		}
 		m_RHI->Initialize(window);
 
+		std::array<int, 2> size = window->GetWindowSize();
 		m_RenderResource = std::make_shared<RenderResource>();
-		m_Camera = std::make_shared<Camera>();
+
+		m_Camera = std::make_shared<Camera>(Eigen::Vector3f(1.0f, 1.0f, 3.0f), 90.0f, static_cast<float>(size[0]) / static_cast<float>(size[1]));
 
 		//m_WindowUI = std::make_shared<WindowUI>();
 		//m_WindowUI->Initialize(window);
@@ -52,7 +54,7 @@ namespace RenderingDEMO
 		SetPipline();
 	}
 
-	void Renderer::OnUpdate()
+	void Renderer::OnUpdate(float deltaTime)
 	{
 		/*
 		Do rendering similarly as DirectX12
@@ -72,7 +74,11 @@ namespace RenderingDEMO
 		Present the rendered image to the screen
 		*/
 		
-		Eigen::Matrix4f data = m_Camera->GetViewMatrix().transpose();
+		//Eigen::Matrix4f data = m_Camera->GetViewMatrix().transpose();
+		Eigen::Matrix4f view = m_Camera->GetViewMatrix();
+		Eigen::Matrix4f proj = m_Camera->GetProjectionMatrix();
+		Eigen::Matrix4f data = proj * view;
+
 		m_RHI->UpdateUniformBuffer(m_RenderResource->m_UniformBuffer, &data);
 
 		m_RHI->ClearBackBuffer();

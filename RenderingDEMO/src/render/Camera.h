@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Eigen/Dense>
-#include <DirectXMath.h>
 
 namespace RenderingDEMO
 {
@@ -12,48 +11,35 @@ namespace RenderingDEMO
 
 	class Camera
 	{
+		friend class InputManager;
+
 	public:
-		Eigen::Matrix4f GetViewMatrix() const
-		{ 
-			Eigen::Matrix4f ViewMatrix;
-			
-			DirectX::XMFLOAT3 pos = { m_Position.x(), m_Position.y(), m_Position.z() };
-			DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&pos);
-			DirectX::XMMATRIX view = DirectX::XMMatrixLookAtRH(camPos, DirectX::g_XMZero, { 0,1,0,1 });
+		Camera(Eigen::Vector3f position, float fov, float aspectRatio);
+		~Camera() = default;
 
-			DirectX::XMMATRIX proj = DirectX::XMMatrixPerspectiveFovRH(m_Fovy, m_Aspect, m_Near, m_Far);
-			DirectX::XMMATRIX viewProjection = DirectX::XMMatrixMultiply(view, proj);
+		void ProcessMouseMovement(float xoffset, float yoffset);
 
-			DirectX::XMFLOAT4X4 matdata;
-			XMStoreFloat4x4(&matdata, viewProjection);
-
-			for (size_t i = 0; i < 4; i++)
-			{
-				for (size_t j = 0; j < 4; j++)
-				{
-					ViewMatrix(i, j) = matdata(i, j);
-				}
-			}
-
-			return ViewMatrix; 
-		}
-		Eigen::Matrix4f GetProjectionMatrix() const
-		{
-			Eigen::Matrix4f ProjectionMatrix;
-
-
-			return ProjectionMatrix; 
-		}
+		Eigen::Matrix4f GetViewMatrix() const;
+		Eigen::Matrix4f GetProjectionMatrix() const;
 
 	private:
-		Eigen::Vector3f m_Position = { 2.0f, 2.0f, 2.0f };
-		Eigen::Vector3f	m_Forward;
-		float m_Yaw;
-		float m_Pitch;
+		void updateCameraVectors();
+
+	private:
+		const float angle2radians = 0.0174533f;
 		
+		Eigen::Vector3f m_Position = {};
+
+		Eigen::Vector3f	m_Forward = {};
+		Eigen::Vector3f m_Right = {};
+		Eigen::Vector3f m_Up = {};
+
+		float m_Yaw = -90.0f;
+		float m_Pitch = 0;
+
 		float m_Near = 0.1f;
 		float m_Far = 100.0f;
-		float m_Fovy = 90.0f * 0.0174533f;
-		float m_Aspect = 16.0f / 9.0f;
+		float m_Fovy = 0;
+		float m_AspectRatio = 0;
 	};
 }

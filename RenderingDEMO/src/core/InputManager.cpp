@@ -1,5 +1,8 @@
 #include "InputManager.h"
+
+#include <GLFW/glfw3.h>
 #include <spdlog/spdlog.h>
+#include <iostream>
 
 namespace RenderingDEMO
 {
@@ -7,31 +10,147 @@ namespace RenderingDEMO
 	{
 	}
 
-	void InputManager::OnUpdate()
+    void InputManager::Initialize(std::shared_ptr<Camera> camera)
+    {
+        m_Camera = camera;
+    }
+
+    void InputManager::OnUpdate(float deltaTime)
 	{
+        ProcessEditorCommand(deltaTime);
 	}
 
 	void InputManager::OnKey(int key, int scancode, int action, int mods)
 	{
-		if (action == GLFW_PRESS)
-		{
-			switch (key)
-			{
-			case GLFW_KEY_A:
-				spdlog::info("A is pressed");
-			default:
-				break;
-			}
-		}
-		else if (action == GLFW_RELEASE)
-		{
-			switch (key)
-			{
-			case GLFW_KEY_A:
-				spdlog::info("A is released");
-			default:
-				break;
-			}
-		}
+        if (action == GLFW_PRESS)
+        {
+            switch (key)
+            {
+            case GLFW_KEY_A:
+                m_EditorCommand |= (unsigned int)EditorCommandType::camera_left;
+                break;
+            case GLFW_KEY_S:
+                m_EditorCommand |= (unsigned int)EditorCommandType::camera_back;
+                break;
+            case GLFW_KEY_W:
+                m_EditorCommand |= (unsigned int)EditorCommandType::camera_foward;
+                break;
+            case GLFW_KEY_D:
+                m_EditorCommand |= (unsigned int)EditorCommandType::camera_right;
+                break;
+            case GLFW_KEY_Q:
+                m_EditorCommand |= (unsigned int)EditorCommandType::camera_up;
+                break;
+            case GLFW_KEY_E:
+                m_EditorCommand |= (unsigned int)EditorCommandType::camera_down;
+                break;
+            case GLFW_KEY_T:
+                m_EditorCommand |= (unsigned int)EditorCommandType::translation_mode;
+                break;
+            case GLFW_KEY_R:
+                m_EditorCommand |= (unsigned int)EditorCommandType::rotation_mode;
+                break;
+            case GLFW_KEY_C:
+                m_EditorCommand |= (unsigned int)EditorCommandType::scale_mode;
+                break;
+            case GLFW_KEY_DELETE:
+                m_EditorCommand |= (unsigned int)EditorCommandType::delete_object;
+                break;
+            default:
+                break;
+            }
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            switch (key)
+            {
+            case GLFW_KEY_ESCAPE:
+                m_EditorCommand &= (ControlCommand ^ (unsigned int)EditorCommandType::exit);
+                break;
+            case GLFW_KEY_A:
+                m_EditorCommand &= (ControlCommand ^ (unsigned int)EditorCommandType::camera_left);
+                break;
+            case GLFW_KEY_S:
+                m_EditorCommand &= (ControlCommand ^ (unsigned int)EditorCommandType::camera_back);
+                break;
+            case GLFW_KEY_W:
+                m_EditorCommand &= (ControlCommand ^ (unsigned int)EditorCommandType::camera_foward);
+                break;
+            case GLFW_KEY_D:
+                m_EditorCommand &= (ControlCommand ^ (unsigned int)EditorCommandType::camera_right);
+                break;
+            case GLFW_KEY_Q:
+                m_EditorCommand &= (ControlCommand ^ (unsigned int)EditorCommandType::camera_up);
+                break;
+            case GLFW_KEY_E:
+                m_EditorCommand &= (ControlCommand ^ (unsigned int)EditorCommandType::camera_down);
+                break;
+            case GLFW_KEY_T:
+                m_EditorCommand &= (ControlCommand ^ (unsigned int)EditorCommandType::translation_mode);
+                break;
+            case GLFW_KEY_R:
+                m_EditorCommand &= (ControlCommand ^ (unsigned int)EditorCommandType::rotation_mode);
+                break;
+            case GLFW_KEY_C:
+                m_EditorCommand &= (ControlCommand ^ (unsigned int)EditorCommandType::scale_mode);
+                break;
+            case GLFW_KEY_DELETE:
+                m_EditorCommand &= (ControlCommand ^ (unsigned int)EditorCommandType::delete_object);
+                break;
+            default:
+                break;
+            }
+        }
 	}
+
+    void InputManager::OnCursorPos(double posX, double posY)
+    {
+        float x = static_cast<float>(posX);
+        float y = static_cast<float>(posY);
+
+        if (m_FirstMouse)
+        {
+            m_MouseX = x;
+            m_MouseY = y;
+            m_FirstMouse = false;
+        }
+
+        float xoffset = (x - m_MouseX) * m_MouseSpeed;
+        float yoffset = (m_MouseY - y) * m_MouseSpeed; // reversed since y-coordinates go from bottom to top
+
+        m_MouseX = x;
+        m_MouseY = y;
+
+        m_Camera->ProcessMouseMovement(xoffset, yoffset);
+    }
+
+    void InputManager::ProcessEditorCommand(float deltaTime)
+    {
+        assert(m_Camera != nullptr);
+
+        if ((unsigned int)EditorCommandType::camera_foward & m_EditorCommand)
+        {
+            m_Camera->m_Position += m_Camera->m_Forward * m_CameraSpeed * deltaTime;
+        }
+        if ((unsigned int)EditorCommandType::camera_back & m_EditorCommand)
+        {
+            m_Camera->m_Position -= m_Camera->m_Forward * m_CameraSpeed * deltaTime; 
+        }
+        if ((unsigned int)EditorCommandType::camera_right & m_EditorCommand)
+        {
+            m_Camera->m_Position += m_Camera->m_Right * m_CameraSpeed * deltaTime;           
+        }
+        if ((unsigned int)EditorCommandType::camera_left & m_EditorCommand)
+        {
+            m_Camera->m_Position -= m_Camera->m_Right * m_CameraSpeed * deltaTime;           
+        }
+        if ((unsigned int)EditorCommandType::camera_up & m_EditorCommand)
+        {
+            m_Camera->m_Position += m_Camera->m_Up * m_CameraSpeed * deltaTime;            
+        }
+        if ((unsigned int)EditorCommandType::camera_down & m_EditorCommand)
+        {
+            m_Camera->m_Position -= m_Camera->m_Up * m_CameraSpeed * deltaTime;
+        }
+    }
 }

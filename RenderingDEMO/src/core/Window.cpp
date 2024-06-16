@@ -38,6 +38,7 @@ namespace RenderingDEMO
 		glfwSetWindowUserPointer(m_Window, this);
 		glfwSetKeyCallback(m_Window, KeyCallback);
 		glfwSetWindowSizeCallback(m_Window, WindowSizeCallback);
+		glfwSetCursorPosCallback(m_Window, CursorPosCallback);
 	}
 
 	void Window::PollEvents()
@@ -51,6 +52,15 @@ namespace RenderingDEMO
 		if (w)
 		{
 			w->OnKey(key, scancode, action, mods);
+		}
+	}
+
+	void Window::CursorPosCallback(GLFWwindow* window, double posX, double posY)
+	{
+		Window* w = (Window*)(glfwGetWindowUserPointer(window));
+		if (w)
+		{
+			w->OnCursorPos(posX, posY);
 		}
 	}
 
@@ -72,6 +82,15 @@ namespace RenderingDEMO
 			f(key, scancode, action, mods);
 		}
 	}
+
+	void Window::OnCursorPos(double posX, double posY)
+	{
+		for (auto& f : m_OnCursorPosFuncs)
+		{
+			f(posX, posY);
+		}
+	}
+
 	void Window::OnWindowSize(int width, int height)
 	{
 		for (auto& f : m_OnWindowSizeFuncs)

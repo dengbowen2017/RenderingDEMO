@@ -18,5 +18,10 @@ namespace RenderingDEMO
 		std::shared_ptr<Window> m_Window;
 		std::shared_ptr<InputManager> m_InputManager;
 		std::shared_ptr<Renderer> m_Renderer;
+
+		// temp
+		// timing
+		float deltaTime = 0.0f;
+		float lastFrame = 0.0f;
 	};
 }
