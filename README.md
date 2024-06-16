@@ -7,7 +7,7 @@ This is my implementation of a simple game engine with only editor mode. The mai
 For now, this engine only supports Windows. Please clone the repository, open it with Visual Studio 2022, and run the source code in Visual Studio.
 
 ## TODO list
-- Add camera system which supports 3D rendering
+- Add camera system which supports 3D rendering (finished)
 - Add Phone Lighting
 - Add UI system
 - Add resource loader to load 3D model and texture
