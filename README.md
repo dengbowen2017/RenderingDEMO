@@ -8,9 +8,9 @@ For now, this engine only supports Windows. Please clone the repository, open it
 
 ## TODO list
 - Add camera system which supports 3D rendering (finished)
-- Add Phone Lighting
-- Add UI system
+- Add Phong Lighting and shadow mapping
 - Add resource loader to load 3D model and texture
+- Add UI system
 - Add batch rendering
 - Add PBR
 - Add cross compiling
