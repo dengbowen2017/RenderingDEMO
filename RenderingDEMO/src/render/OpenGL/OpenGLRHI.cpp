@@ -15,7 +15,6 @@ namespace RenderingDEMO
         m_Window = window->GetWindowPointer();
         m_WindowSize = window->GetWindowSize();
 
-        //create context
         glfwMakeContextCurrent(m_Window);
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         {
@@ -35,7 +34,6 @@ namespace RenderingDEMO
     {
         m_WindowSize = { width, height };
         glViewport(0, 0, m_WindowSize[0], m_WindowSize[1]);
-        spdlog::info("Window Size: {0}, {1}", m_WindowSize[0], m_WindowSize[1]);
     }
 
     std::shared_ptr<VertexBuffer> OpenGLRHI::CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride)

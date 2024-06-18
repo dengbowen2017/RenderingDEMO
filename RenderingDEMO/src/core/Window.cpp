@@ -37,8 +37,9 @@ namespace RenderingDEMO
 
 		glfwSetWindowUserPointer(m_Window, this);
 		glfwSetKeyCallback(m_Window, KeyCallback);
-		glfwSetWindowSizeCallback(m_Window, WindowSizeCallback);
+		glfwSetFramebufferSizeCallback(m_Window, FrameBufferSizeCallback);
 		glfwSetCursorPosCallback(m_Window, CursorPosCallback);
+		glfwSetMouseButtonCallback(m_Window, MouseButtonCallback);
 	}
 
 	void Window::PollEvents()
@@ -64,14 +65,23 @@ namespace RenderingDEMO
 		}
 	}
 
-	void Window::WindowSizeCallback(GLFWwindow* window, int width, int height)
+	void Window::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+	{
+		Window* w = (Window*)(glfwGetWindowUserPointer(window));
+		if (w)
+		{
+			w->OnMouseButton(button, action, mods);
+		}
+	}
+
+	void Window::FrameBufferSizeCallback(GLFWwindow* window, int width, int height)
 	{
 		Window* w = (Window*)(glfwGetWindowUserPointer(window));
 		if (w)
 		{
 			w->m_Width = width;
 			w->m_Height = height;
-			w->OnWindowSize(width, height);
+			w->OnFrameBufferSize(width, height);
 		}
 	}
 
@@ -91,9 +101,17 @@ namespace RenderingDEMO
 		}
 	}
 
-	void Window::OnWindowSize(int width, int height)
+	void Window::OnMouseButton(int button, int action, int mods)
 	{
-		for (auto& f : m_OnWindowSizeFuncs)
+		for (auto& f : m_OnMouseButtonFuncs)
+		{
+			f(button, action, mods);
+		}
+	}
+
+	void Window::OnFrameBufferSize(int width, int height)
+	{
+		for (auto& f : m_OnFrameBufferSizeFuncs)
 		{
 			f(width, height);
 		}

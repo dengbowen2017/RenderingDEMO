@@ -1,6 +1,6 @@
 #include "Camera.h"
 
-#include <iostream>
+#include <spdlog/spdlog.h>
 
 namespace RenderingDEMO
 {
@@ -14,6 +14,8 @@ namespace RenderingDEMO
 	{
 		m_Yaw += xoffset;
 		m_Pitch += yoffset;
+
+		//spdlog::info("Yaw:{0}, Pitch:{1}", m_Yaw, m_Pitch);
 
 		if (m_Pitch > 89.0f)
 		{

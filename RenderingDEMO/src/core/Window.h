@@ -25,22 +25,26 @@ namespace RenderingDEMO
 		HWND GetWindowHandler() const { return m_WindowHandler; }
 		bool WindowShouldClose() const { return glfwWindowShouldClose(m_Window); }
 
-		typedef std::function<void(int, int, int, int)> OnKeyFunc;
-		typedef std::function<void(int, int)> OnWindowSizeFunc;
-		typedef std::function<void(double, double)> OnCursorPosFunc;
+		typedef std::function<void(int, int, int, int)>		OnKeyFunc;
+		typedef std::function<void(double, double)>			OnCursorPosFunc;
+		typedef std::function<void(int, int, int)>			OnMouseButtonFunc;
+		typedef std::function<void(int, int)>				OnFrameBufferSizeFunc;
 
 		void RegisterOnKeyFunc(OnKeyFunc f) { m_OnKeyFuncs.push_back(f); }
-		void RegisterOnWindowSizeFunc(OnWindowSizeFunc f) { m_OnWindowSizeFuncs.push_back(f); }
 		void RegisterOnCursorPosFunc(OnCursorPosFunc f) { m_OnCursorPosFuncs.push_back(f); }
+		void RegisterOnMouseButtonFunc(OnMouseButtonFunc f) { m_OnMouseButtonFuncs.push_back(f); }
+		void RegisterOnFrameBufferSizeFunc(OnFrameBufferSizeFunc f) { m_OnFrameBufferSizeFuncs.push_back(f); }
 
 	private:
 		static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 		static void CursorPosCallback(GLFWwindow* window, double posX, double posY);
-		static void WindowSizeCallback(GLFWwindow* window, int width, int height);
+		static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+		static void FrameBufferSizeCallback(GLFWwindow* window, int width, int height);
 
 		void OnKey(int key, int scancode, int action, int mods);
 		void OnCursorPos(double posX, double posY);
-		void OnWindowSize(int width, int height);
+		void OnMouseButton(int button, int action, int mods);
+		void OnFrameBufferSize(int width, int height);
 
 	private:
 		HWND m_WindowHandler = nullptr;
@@ -50,7 +54,8 @@ namespace RenderingDEMO
 
 		std::vector<OnKeyFunc> m_OnKeyFuncs;
 		std::vector<OnCursorPosFunc> m_OnCursorPosFuncs;
-		std::vector<OnWindowSizeFunc> m_OnWindowSizeFuncs;
+		std::vector<OnMouseButtonFunc> m_OnMouseButtonFuncs;
+		std::vector<OnFrameBufferSizeFunc> m_OnFrameBufferSizeFuncs;
 	};
 
 }

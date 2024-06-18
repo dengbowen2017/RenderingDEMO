@@ -2,7 +2,6 @@
 
 #include <GLFW/glfw3.h>
 #include <spdlog/spdlog.h>
-#include <iostream>
 
 namespace RenderingDEMO
 {
@@ -108,20 +107,49 @@ namespace RenderingDEMO
         float x = static_cast<float>(posX);
         float y = static_cast<float>(posY);
 
-        if (m_FirstMouse)
+        if (m_IsMouseButtonRightPressed)
         {
-            m_MouseX = x;
-            m_MouseY = y;
-            m_FirstMouse = false;
+            float xoffset = (x - m_MouseX) * m_MouseSpeed;
+            float yoffset = (m_MouseY - y) * m_MouseSpeed; // reversed since y-coordinates go from bottom to top
+            m_Camera->ProcessMouseMovement(xoffset, yoffset);
         }
-
-        float xoffset = (x - m_MouseX) * m_MouseSpeed;
-        float yoffset = (m_MouseY - y) * m_MouseSpeed; // reversed since y-coordinates go from bottom to top
 
         m_MouseX = x;
         m_MouseY = y;
+    }
 
-        m_Camera->ProcessMouseMovement(xoffset, yoffset);
+    void InputManager::OnCursorEnter(int entered)
+    {
+    }
+
+    void InputManager::OnMouseButton(int button, int action, int mods)
+    {
+        if (action == GLFW_PRESS)
+        {
+            switch (button)
+            {
+            case GLFW_MOUSE_BUTTON_RIGHT:
+                m_IsMouseButtonRightPressed = true;
+            default:
+                break;
+            }
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            switch (button)
+            {
+            case GLFW_MOUSE_BUTTON_RIGHT:
+                m_IsMouseButtonRightPressed = false;
+            default:
+                break;
+            }
+        }
+    }
+
+    void InputManager::OnWindowSize(int width, int height)
+    {
+        assert(m_Camera != nullptr);
+        m_Camera->m_AspectRatio = static_cast<float>(width) / static_cast<float>(height);
     }
 
     void InputManager::ProcessEditorCommand(float deltaTime)

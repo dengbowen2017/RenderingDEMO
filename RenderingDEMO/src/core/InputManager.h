@@ -27,8 +27,12 @@ namespace RenderingDEMO
 
         void Initialize(std::shared_ptr<Camera> camera);
 		void OnUpdate(float deltaTime);
+
 		void OnKey(int key, int scancode, int action, int mods);
         void OnCursorPos(double posX, double posY);
+        void OnCursorEnter(int entered);
+        void OnMouseButton(int button, int action, int mods);
+        void OnWindowSize(int width, int height);
 
     private:
         void ProcessEditorCommand(float deltaTime);
@@ -42,7 +46,9 @@ namespace RenderingDEMO
         float m_MouseY = 0.0f;
         float m_CameraSpeed = 1.0f;
         float m_MouseSpeed = 0.05f;
-        bool m_FirstMouse = true;
+
+        bool m_IsMouseButtonRightPressed = false;
+        bool m_Entered = false;
 
         // main camera
         std::shared_ptr<Camera> m_Camera;

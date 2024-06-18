@@ -97,7 +97,9 @@ namespace RenderingDEMO
 		}
 
 		CreateSwapChainResource();
-		spdlog::info("Window Size: {0}, {1}", m_WindowSize[0], m_WindowSize[1]);
+
+		m_DepthTarget.Reset();
+		CreateDepthStencilView();
 	}
 
 	std::shared_ptr<VertexBuffer> DirectXRHI::CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride)
@@ -330,10 +332,10 @@ namespace RenderingDEMO
 			return;
 		}
 
-		SetViewportAndRenderTarget();
+		SetViewport();
 	}
 
-	void DirectXRHI::SetViewportAndRenderTarget()
+	void DirectXRHI::SetViewport()
 	{
 		D3D11_VIEWPORT viewport = {};
 		viewport.TopLeftX = 0;
@@ -344,7 +346,6 @@ namespace RenderingDEMO
 		viewport.MaxDepth = 1.0f;
 
 		m_DeviceContext->RSSetViewports(1, &viewport);
-		//m_DeviceContext->OMSetRenderTargets(1, m_RenderTarget.GetAddressOf(), nullptr);
 	}
 
 	void DirectXRHI::CreateRasterizerStates()

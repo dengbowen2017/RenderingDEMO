@@ -45,7 +45,7 @@ namespace RenderingDEMO
 		std::array<int, 2> size = window->GetWindowSize();
 		m_RenderResource = std::make_shared<RenderResource>();
 
-		m_Camera = std::make_shared<Camera>(Eigen::Vector3f(1.0f, 1.0f, 3.0f), 90.0f, static_cast<float>(size[0]) / static_cast<float>(size[1]));
+		m_Camera = std::make_shared<Camera>(Eigen::Vector3f(0.0f, 1.0f, 3.0f), 90.0f, static_cast<float>(size[0]) / static_cast<float>(size[1]));
 
 		//m_WindowUI = std::make_shared<WindowUI>();
 		//m_WindowUI->Initialize(window);

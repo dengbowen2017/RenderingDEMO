@@ -40,7 +40,7 @@ namespace RenderingDEMO
 
 	private:
 		void CreateSwapChainResource();
-		void SetViewportAndRenderTarget();
+		void SetViewport();
 		void CreateRasterizerStates();
 		void CreateDepthStencilStates();
 		void CreateDepthStencilView();
