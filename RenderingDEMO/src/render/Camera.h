@@ -4,11 +4,6 @@
 
 namespace RenderingDEMO
 {
-	struct CameraData
-	{
-		Eigen::Matrix4f viewprojection;
-	};
-
 	class Camera
 	{
 		friend class InputManager;
@@ -21,6 +16,7 @@ namespace RenderingDEMO
 
 		Eigen::Matrix4f GetViewMatrix() const;
 		Eigen::Matrix4f GetProjectionMatrix() const;
+		Eigen::Vector3f GetCameraPos() const { return m_Position; }
 
 	private:
 		void updateCameraVectors();

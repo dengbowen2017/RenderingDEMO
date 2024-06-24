@@ -186,7 +186,12 @@ namespace RenderingDEMO
         glfwSwapBuffers(m_Window);
     }
 
-    void OpenGLRHI::Draw(std::shared_ptr<IndexBuffer> ib)
+    void OpenGLRHI::Draw(unsigned int count)
+    {
+        glDrawArrays(GL_TRIANGLES, 0, count);
+    }
+
+    void OpenGLRHI::DrawIndexed(std::shared_ptr<IndexBuffer> ib)
     {
         std::shared_ptr<OpenGLIndexBuffer> glib = std::dynamic_pointer_cast<OpenGLIndexBuffer>(ib);
 

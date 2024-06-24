@@ -294,13 +294,17 @@ namespace RenderingDEMO
 		m_SwapChain->Present(1, 0);
 	}
 
-	void DirectXRHI::Draw(std::shared_ptr<IndexBuffer> ib)
+	void DirectXRHI::Draw(unsigned int count)
+	{
+		m_DeviceContext->OMSetRenderTargets(1, m_RenderTarget.GetAddressOf(), m_DepthTarget.Get());
+		m_DeviceContext->Draw(count, 0);
+	}
+
+	void DirectXRHI::DrawIndexed(std::shared_ptr<IndexBuffer> ib)
 	{
 		std::shared_ptr<DirectXIndexBuffer> dxib = std::dynamic_pointer_cast<DirectXIndexBuffer>(ib);
 
-		// set indexbuffer
-		// temp
-		unsigned int offset = 0;
+		unsigned int offset = 0; 		// temp
 		m_DeviceContext->IASetIndexBuffer(
 			dxib->GetBuffer().Get(),
 			DXGI_FORMAT_R32_UINT,

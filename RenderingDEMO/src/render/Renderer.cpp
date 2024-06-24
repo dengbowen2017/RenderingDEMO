@@ -5,8 +5,8 @@
 #include <spdlog/spdlog.h>
 #include <Eigen/Dense>
 
-
-#include <DirectXMath.h>
+// temp
+#include "render/RenderDefinition.h"
 
 namespace RenderingDEMO
 {
@@ -73,18 +73,14 @@ namespace RenderingDEMO
 			Draw the geometry
 		Present the rendered image to the screen
 		*/
-		
-		//Eigen::Matrix4f data = m_Camera->GetViewMatrix().transpose();
-		Eigen::Matrix4f view = m_Camera->GetViewMatrix();
-		Eigen::Matrix4f proj = m_Camera->GetProjectionMatrix();
-		Eigen::Matrix4f data = proj * view;
-
-		m_RHI->UpdateUniformBuffer(m_RenderResource->m_UniformBuffer, &data);
+		UpdateConstant();
 
 		m_RHI->ClearBackBuffer();
 		//m_WindowUI->OnUpdate();
+		m_RHI->SetVertexBuffer(m_RenderResource->m_CubeVertexBuffer);
 		
-		m_RHI->Draw(m_RenderResource->m_IndexBuffers[0]);
+		m_RHI->Draw(36);
+		//m_RHI->DrawIndexed(m_RenderResource->m_CubeIndexBuffer);
 		m_RHI->SwapBuffer();
 	}
 
@@ -95,17 +91,63 @@ namespace RenderingDEMO
 		//// set DirectX rasterizer state to anticlockwise
 
 		//cube
-		float vertices[] =
+		//float vertices[] =
+		//{
+		//	//position			//color
+		//	-0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
+		//	 0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
+		//	-0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+		//	 0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f,
+		//	-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f,
+		//	 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 1.0f,
+		//	-0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
+		//	 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f
+		//};
+
+		float vertices[] = 
 		{
-			//position			//color	
-			-0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
-			 0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
-			-0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
-			 0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f,
-			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f,
-			 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 1.0f,
-			-0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-			 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f
+			//position			  //normal
+			 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+			 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+			 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+			-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+
+			-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+			 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+			 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+			 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+			-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+			-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+
+			-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+			-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+			-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+			-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+			-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+			-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+
+			 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+			 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+			 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+			 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+
+			-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+			 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+			 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+			 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+			-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+
+			-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+			 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+			 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+			-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+			-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+			 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
 		};
 
 		unsigned int indices[] =
@@ -135,11 +177,19 @@ namespace RenderingDEMO
 			7, 5, 4
 		};
 
+		PointLight pointlights[] = 
+		{ 
+			{Eigen::Vector3f(2.0f, 2.0f, 2.0f), 0.09f, Eigen::Vector3f(1.0f, 1.0f, 1.0f), 0.032f} 
+		};
+
+		m_RenderResource->m_PerFrameConstant.PointLightNum = sizeof(pointlights) / sizeof(PointLight);
+		memcpy(m_RenderResource->m_PerFrameConstant.PointLights, pointlights, sizeof(pointlights));
+
 		//VertexElement.Name is used in DirectX to set the SemanticName. OpenGL do not need this.
 		//VertexElement.Index is only used in DirectX to set the SemanticIndex
 		std::vector<VertexElement> elements;
 		elements.push_back({ "POSITION", 0, VertexElementType::Float3 });
-		elements.push_back({ "COLOR", 0, VertexElementType::Float3 });
+		elements.push_back({ "NORMAL", 0, VertexElementType::Float3 });
 		std::shared_ptr<VertexDeclaration> vd = m_RHI->CreateVertexDeclaration(elements);
 
 		std::shared_ptr<VertexBuffer> vb = m_RHI->CreateVertexBuffer(vertices, sizeof(vertices), vd->GetStride());
@@ -151,21 +201,31 @@ namespace RenderingDEMO
 
 		std::shared_ptr<PipelineState> pips = m_RHI->CreatePipelineState(vs, ps, vd);
 
-		std::shared_ptr<UniformBuffer> ub = m_RHI->CreateUniformBuffer(sizeof(CameraData));
+		std::shared_ptr<UniformBuffer> ub = m_RHI->CreateUniformBuffer(sizeof(PerFrameConstant));
 
-		m_RenderResource->m_VertexBuffers.push_back(vb);
-		m_RenderResource->m_IndexBuffers.push_back(ib);
-		m_RenderResource->m_VertexDeclarations.insert({ "default", vd });
-		m_RenderResource->m_VertexShaders.insert({ "default", vs });
-		m_RenderResource->m_PixelShaders.insert({ "default" , ps });
+		m_RenderResource->m_CubeVertexBuffer = vb;
+		m_RenderResource->m_CubeIndexBuffer = ib;
+		m_RenderResource->m_CubeVertexDeclaration = vd;
+		m_RenderResource->m_VertexShader = vs;
+		m_RenderResource->m_PixelShader = ps;
 		m_RenderResource->m_PipelineState = pips;
-		m_RenderResource->m_UniformBuffer = ub;
+		m_RenderResource->m_PerFrameUniformBuffer = ub;
 	}
 
 	void Renderer::SetPipline()
 	{
 		m_RHI->SetPipelineState(m_RenderResource->m_PipelineState);
-		m_RHI->SetVertexBuffer(m_RenderResource->m_VertexBuffers[0]);
-		m_RHI->SetUniformBuffer(m_RenderResource->m_UniformBuffer, 0);
+		m_RHI->SetUniformBuffer(m_RenderResource->m_PerFrameUniformBuffer, 0);
+	}
+
+	void Renderer::UpdateConstant()
+	{
+		m_RenderResource->m_PerFrameConstant.CameraPos = m_Camera->GetCameraPos();
+		Eigen::Matrix4f view = m_Camera->GetViewMatrix();
+		Eigen::Matrix4f proj = m_Camera->GetProjectionMatrix();
+		Eigen::Matrix4f projview = proj * view;
+		m_RenderResource->m_PerFrameConstant.ProjectionViewMatrix = projview;
+
+		m_RHI->UpdateUniformBuffer(m_RenderResource->m_PerFrameUniformBuffer, &m_RenderResource->m_PerFrameConstant);
 	}
 }

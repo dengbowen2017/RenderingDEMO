@@ -30,6 +30,8 @@ namespace RenderingDEMO
 
 		virtual void ClearBackBuffer() = 0;
 		virtual void SwapBuffer() = 0;
-		virtual void Draw(std::shared_ptr<IndexBuffer> ib) = 0;
+		virtual void Draw(unsigned int count) = 0;
+		virtual void DrawIndexed(std::shared_ptr<IndexBuffer> ib) = 0;
+		// virtual void DrawIndexedInstance() = 0;
 	};
 }

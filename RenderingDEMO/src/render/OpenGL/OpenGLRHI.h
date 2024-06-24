@@ -31,7 +31,8 @@ namespace RenderingDEMO
 
 		virtual void ClearBackBuffer() override;
 		virtual void SwapBuffer() override;
-		virtual void Draw(std::shared_ptr<IndexBuffer> ib) override;
+		virtual void Draw(unsigned int count) override;
+		virtual void DrawIndexed(std::shared_ptr<IndexBuffer> ib) override;
 
 	private:
 		std::string ReadFromFile(const std::wstring& filePath);

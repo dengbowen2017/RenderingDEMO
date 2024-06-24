@@ -7,9 +7,6 @@
 #include "Camera.h"
 
 #include <Eigen/Dense>
-
-#include <DirectXMath.h>
-
 namespace RenderingDEMO
 {
 	enum RenderAPI
@@ -25,11 +22,14 @@ namespace RenderingDEMO
 
 		void Initialize(std::shared_ptr<Window> window, RenderAPI api);
 		void OnUpdate(float deltaTime);
-		void PreProcess();
-		void SetPipline();
 
 		std::shared_ptr<RHI> GetRHI() const { return m_RHI; }
 		std::shared_ptr<Camera> GetMainCamera() const { return m_Camera; }
+
+	private:
+		void PreProcess();
+		void SetPipline();
+		void UpdateConstant();
 
 	private:
 		std::shared_ptr<RHI> m_RHI;

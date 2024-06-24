@@ -17,7 +17,6 @@ namespace RenderingDEMO
 
 		virtual void Initialize(std::shared_ptr<Window> window) override;
 
-		//TODO: should change to swapChainResource since we only have to change the size of the back buffer rather than recreate the whole swapchain?
 		virtual void RecreateSwapChain(int width, int height) override;
 
 		virtual std::shared_ptr<VertexBuffer> CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride) override;
@@ -36,7 +35,8 @@ namespace RenderingDEMO
 
 		virtual void ClearBackBuffer() override;
 		virtual void SwapBuffer() override;
-		virtual void Draw(std::shared_ptr<IndexBuffer> ib) override;
+		virtual void Draw(unsigned int count) override;
+		virtual void DrawIndexed(std::shared_ptr<IndexBuffer> ib) override;
 
 	private:
 		void CreateSwapChainResource();
