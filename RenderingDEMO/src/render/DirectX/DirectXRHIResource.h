@@ -1,8 +1,8 @@
 #pragma once
 #include "render/RenderResource.h"
 
-//temp
-#include "d3d11.h"
+//TODO: temp
+#include <d3d11.h>
 
 namespace RenderingDEMO
 {
@@ -72,8 +72,7 @@ namespace RenderingDEMO
 	public:
 		DirectXVertexBuffer(const Microsoft::WRL::ComPtr<ID3D11Buffer>& buffer, unsigned int size, unsigned int stride)
 			:m_Buffer(buffer), VertexBuffer(size, stride)
-		{
-		}
+		{}
 		~DirectXVertexBuffer() = default;
 
 		const Microsoft::WRL::ComPtr<ID3D11Buffer>& GetBuffer() const { return m_Buffer; }
@@ -87,8 +86,7 @@ namespace RenderingDEMO
 	public:
 		DirectXIndexBuffer(const Microsoft::WRL::ComPtr<ID3D11Buffer>& buffer, unsigned int count)
 			:m_Buffer(buffer), IndexBuffer(count)
-		{
-		}
+		{}
 		~DirectXIndexBuffer() = default;
 
 		const Microsoft::WRL::ComPtr<ID3D11Buffer>& GetBuffer() const { return m_Buffer; }
@@ -102,8 +100,7 @@ namespace RenderingDEMO
 	public:
 		DirectXUniformBuffer(const Microsoft::WRL::ComPtr<ID3D11Buffer>& buffer, unsigned int size)
 			:m_Buffer(buffer), UniformBuffer(size)
-		{
-		}
+		{}
 		~DirectXUniformBuffer() = default;
 
 		const Microsoft::WRL::ComPtr<ID3D11Buffer>& GetBuffer() const { return m_Buffer; }

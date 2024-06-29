@@ -5,10 +5,6 @@
 
 namespace RenderingDEMO
 {
-	InputManager::~InputManager()
-	{
-	}
-
     void InputManager::Initialize(std::shared_ptr<Camera> camera)
     {
         m_Camera = camera;

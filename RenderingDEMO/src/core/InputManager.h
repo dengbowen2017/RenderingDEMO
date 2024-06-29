@@ -23,7 +23,7 @@ namespace RenderingDEMO
 	{
 	public:
 		InputManager() = default;
-		~InputManager();
+		~InputManager() = default;
 
         void Initialize(std::shared_ptr<Camera> camera);
 		void OnUpdate(float deltaTime);

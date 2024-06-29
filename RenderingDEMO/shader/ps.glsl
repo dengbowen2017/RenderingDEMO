@@ -1,7 +1,10 @@
 #version 430 core
 
-in vec3 o_Position;
-in vec3 o_Normal;
+in VSOutput
+{
+    vec3 worldPos;
+    vec3 normal;
+} psIn;
 
 out vec4 fragColor;
 
@@ -30,28 +33,37 @@ layout(std140, binding = 0) uniform Perframe
     DirectionalLight directionalLight;
 };
 
-vec4 phongLighting(vec3 pos, vec3 norm, PointLight light)
+vec3 phongLighting(vec3 N, vec3 L, vec3 V, vec3 baseColor)
 {
-    vec3 normaldir = normalize(norm);
-    vec3 lightdir = normalize(light.position - pos);
-    vec3 viewdir = normalize(cameraPos - pos);
-    vec3 reflectdir = reflect(-lightdir, normaldir);
+    vec3 reflectdir = reflect(-L, N);
+    
+    vec3 ambient = vec3(0.1);
+    vec3 diffuse = vec3(max(dot(L, N), 0.0f));
+    vec3 specular = vec3(pow(max(dot(V, reflectdir), 0.0), 32));
 
-    vec3 ambient = 0.1 * light.intensity;
-    vec3 diffuse = max(dot(lightdir, normaldir), 0.0) * light.intensity;
-    vec3 specular = pow(max(dot(viewdir, reflectdir), 0.0), 32) * light.intensity;
-
-    vec3 objectcolor = vec3(1.0, 0.5, 0.31);
-    return vec4((ambient + diffuse + specular) * objectcolor, 1.0);
+    return (ambient + diffuse + specular) * baseColor;
 }
 
 void main()
 {
-    // remember to initialize out value
     fragColor = vec4(0);
+    vec3 outColor = vec3(0);
 
-    for(uint i = 0; i < pointLightNum; i++)
-    {
-        fragColor += phongLighting(o_Position, o_Normal, pointLights[i]);
-    }
+    vec3 normaldir = normalize(psIn.normal);
+    vec3 viewdir = normalize(cameraPos - psIn.worldPos);
+    vec3 lightdir = vec3(0);
+    vec3 baseColor = vec3(1.0f, 1.0f, 1.0f);
+    
+//    // point lights
+//    for (uint i = 0; i < pointLightNum; i++)
+//    {
+//        lightdir = normalize(pointLights[i].position - psIn.worldPos);
+//        outColor += phongLighting(normaldir, lightdir, viewdir, baseColor) * pointLights[i].intensity;
+//    }
+        
+    // directional light
+    lightdir = normalize(-directionalLight.direction);
+    outColor += phongLighting(normaldir, lightdir, viewdir, baseColor) * directionalLight.intensity;
+    
+    fragColor = vec4(outColor, 1.0f);
 }

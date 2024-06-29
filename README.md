@@ -8,9 +8,10 @@ For now, this engine only supports Windows. Please clone the repository, open it
 
 ## TODO list
 - Add camera system which supports 3D rendering (finished)
-- Add Phong Lighting and shadow mapping
-- Add resource loader to load 3D model and texture
+- Add phong lighting and shadow mapping (phong lighting finished)
+- Add textures and skybox
 - Add UI system
+- Add asset manager including model loader and scene manager
 - Add batch rendering
 - Add PBR
 - Add cross compiling

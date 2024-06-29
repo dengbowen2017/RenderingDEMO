@@ -31,6 +31,8 @@ namespace RenderingDEMO
 		void SetPipline();
 		void UpdateConstant();
 
+
+
 	private:
 		std::shared_ptr<RHI> m_RHI;
 		std::shared_ptr<WindowUI> m_WindowUI;

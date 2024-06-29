@@ -74,13 +74,21 @@ namespace RenderingDEMO
 		Present the rendered image to the screen
 		*/
 		UpdateConstant();
-
 		m_RHI->ClearBackBuffer();
-		//m_WindowUI->OnUpdate();
+
+		// shadow pass
+
+
+		// main pass
 		m_RHI->SetVertexBuffer(m_RenderResource->m_CubeVertexBuffer);
-		
 		m_RHI->Draw(36);
 		//m_RHI->DrawIndexed(m_RenderResource->m_CubeIndexBuffer);
+
+		// ui pass
+		//m_WindowUI->OnUpdate();
+
+
+
 		m_RHI->SwapBuffer();
 	}
 
@@ -177,9 +185,12 @@ namespace RenderingDEMO
 			7, 5, 4
 		};
 
+		DirectionalLight directionallight = { Eigen::Vector3f(0.0f, -0.2f, -0.2f), 0.0f, Eigen::Vector3f(1.0f, 1.0f, 1.0f), 0.0f };
+		m_RenderResource->m_PerFrameConstant.DirectionalLight = directionallight;
+
 		PointLight pointlights[] = 
 		{ 
-			{Eigen::Vector3f(2.0f, 2.0f, 2.0f), 0.09f, Eigen::Vector3f(1.0f, 1.0f, 1.0f), 0.032f} 
+			{Eigen::Vector3f(0.0f, 2.0f, 2.0f), 0.09f, Eigen::Vector3f(1.0f, 1.0f, 1.0f), 0.032f} 
 		};
 
 		m_RenderResource->m_PerFrameConstant.PointLightNum = sizeof(pointlights) / sizeof(PointLight);
@@ -199,6 +210,7 @@ namespace RenderingDEMO
 		std::shared_ptr<VertexShader> vs = m_RHI->CreateVertexShader(L"../shader/vs" + m_Suffix);
 		std::shared_ptr<PixelShader> ps = m_RHI->CreatePixelShader(L"../shader/ps" + m_Suffix);
 
+		// move to pass
 		std::shared_ptr<PipelineState> pips = m_RHI->CreatePipelineState(vs, ps, vd);
 
 		std::shared_ptr<UniformBuffer> ub = m_RHI->CreateUniformBuffer(sizeof(PerFrameConstant));
@@ -212,12 +224,14 @@ namespace RenderingDEMO
 		m_RenderResource->m_PerFrameUniformBuffer = ub;
 	}
 
+	// move to pass
 	void Renderer::SetPipline()
 	{
 		m_RHI->SetPipelineState(m_RenderResource->m_PipelineState);
 		m_RHI->SetUniformBuffer(m_RenderResource->m_PerFrameUniformBuffer, 0);
 	}
 
+	// temp, move to render resouce
 	void Renderer::UpdateConstant()
 	{
 		m_RenderResource->m_PerFrameConstant.CameraPos = m_Camera->GetCameraPos();

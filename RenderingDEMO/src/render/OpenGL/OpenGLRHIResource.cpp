@@ -110,7 +110,7 @@ namespace RenderingDEMO
 		if (!success)
 		{
 			glGetProgramInfoLog(m_ID, 512, NULL, infoLog);
-			spdlog::error("OpenGL Shader Program Linking Failed:", infoLog);
+			spdlog::error("OpenGL Shader Program Linking Failed:{0}", infoLog);
 		}
 	}
 

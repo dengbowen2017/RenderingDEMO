@@ -14,7 +14,8 @@ namespace RenderingDEMO
 		m_Window->Initialize(props);
 		// TODO: Pass render information from main
 		// temp: Set API here
-		m_Renderer->Initialize(m_Window, RenderAPI::DirectX);
+		m_Renderer->Initialize(m_Window, RenderAPI::OpenGL);
+
 		m_InputManager->Initialize(m_Renderer->GetMainCamera());
 
 		m_Window->RegisterOnKeyFunc(std::bind(&InputManager::OnKey, m_InputManager.get(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));

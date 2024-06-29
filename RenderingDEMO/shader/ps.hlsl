@@ -35,30 +35,38 @@ cbuffer PerFrame : register(b0)
     DirectionalLight directionalLight;
 };
 
-float4 phongLighting(PSInput input, PointLight light)
+float3 phongLighting(float3 N, float3 L, float3 V, float3 baseColor)
 {
-    float3 normaldir = normalize(input.normal);
-    float3 lightdir = normalize(light.position - input.worldPos);
-    float3 viewdir = normalize(cameraPos - input.worldPos);
-    float3 reflectdir = reflect(-lightdir, normaldir);
+    float3 reflectdir = reflect(-L, N);
     
-    float3 ambient = 0.1 * light.intensity;
-    float3 diffuse = max(dot(lightdir, normaldir), 0.0f) * light.intensity;
-    //float3 specular = pow(max(dot(halfdir, normaldir), 0.0f), 4.0f) * light.intensity;
-    float3 specular = pow(max(dot(viewdir, reflectdir), 0.0), 32) * light.intensity;
-    
-    float3 objectcolor = float3(1.0f, 0.5f, 0.31f);
-    return float4((ambient + diffuse + specular) * objectcolor, 1.0f);
+    float3 ambient = 0.1;
+    float3 diffuse = max(dot(L, N), 0.0f);
+    float3 specular = pow(max(dot(V, reflectdir), 0.0), 32);
+
+    return (ambient + diffuse + specular) * baseColor;
 }
 
 PSOutput main(PSInput input)
 {
     PSOutput output = (PSOutput)0;
+    float3 outColor = 0;
     
-    for (uint i = 0; i < pointLightNum; i++)
-    {
-        output.color += phongLighting(input, pointLights[i]);
-    }
+    float3 normaldir = normalize(input.normal);
+    float3 viewdir = normalize(cameraPos - input.worldPos);
+    float3 lightdir = 0;
+    float3 baseColor = float3(1.0f, 1.0f, 1.0f);
     
+    //// point lights
+    //for (uint i = 0; i < pointLightNum; i++)
+    //{
+    //    lightdir = normalize(pointLights[i].position - input.worldPos);
+    //    outColor += phongLighting(normaldir, lightdir, viewdir, baseColor) * pointLights[i].intensity;
+    //}
+        
+    // directional light
+    lightdir = normalize(-directionalLight.direction);
+    outColor += phongLighting(normaldir, lightdir, viewdir, baseColor) * directionalLight.intensity;
+    
+    output.color = float4(outColor, 1.0f);
     return output;
 }

@@ -3,8 +3,11 @@
 layout(location = 0) in vec3 i_Position;
 layout(location = 1) in vec3 i_Normal;
 
-out vec3 o_Position;
-out vec3 o_Normal;
+out VSOutput
+{
+    vec3 worldPos;
+    vec3 normal;
+} vsOut;
 
 struct PointLight
 {
@@ -34,6 +37,6 @@ layout(std140, binding = 0) uniform Perframe
 void main()
 {
 	gl_Position = projectViewMatrix * vec4(i_Position, 1.0);
-	o_Position = i_Position;
-	o_Normal = i_Normal;
+    vsOut.worldPos = i_Position;
+    vsOut.normal = i_Normal;
 }
