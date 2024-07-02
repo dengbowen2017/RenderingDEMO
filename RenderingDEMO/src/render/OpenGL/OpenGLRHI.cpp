@@ -36,6 +36,24 @@ namespace RenderingDEMO
         glViewport(0, 0, m_WindowSize[0], m_WindowSize[1]);
     }
 
+    std::shared_ptr<RasterizerState> OpenGLRHI::CreateRasterizerState()
+    {
+        OpenGLRasterizerState* state = new OpenGLRasterizerState;
+        state->m_FillMode = GL_FILL;
+        state->m_CullMode = GL_BACK;
+
+        return std::shared_ptr<OpenGLRasterizerState>(state);
+    }
+
+    std::shared_ptr<DepthStencilState> OpenGLRHI::CreateDepthStencilState()
+    {
+        OpenGLDepthStencilState* state = new OpenGLDepthStencilState;
+        state->m_DepthFunc = GL_LESS;
+        state->m_DepthMask = GL_TRUE;
+
+        return std::shared_ptr<OpenGLDepthStencilState>(state);
+    }
+
     std::shared_ptr<VertexBuffer> OpenGLRHI::CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride)
     {
         unsigned int VBO;
@@ -116,13 +134,15 @@ namespace RenderingDEMO
         return std::shared_ptr<OpenGLPixelShader>(new OpenGLPixelShader(pixelShader));
     }
 
-    std::shared_ptr<PipelineState> OpenGLRHI::CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd)
+    std::shared_ptr<PipelineState> OpenGLRHI::CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd, std::shared_ptr<RasterizerState> rasterState, std::shared_ptr<DepthStencilState> depthState)
     {
         std::shared_ptr<OpenGLVertexShader> glvs = std::dynamic_pointer_cast<OpenGLVertexShader>(vs);
         std::shared_ptr<OpenGLPixelShader> glps = std::dynamic_pointer_cast<OpenGLPixelShader>(ps);
         std::shared_ptr<OpenGLVertexDeclaration> glvd = std::dynamic_pointer_cast<OpenGLVertexDeclaration>(vd);
+        std::shared_ptr<OpenGLRasterizerState> glrasterState = std::dynamic_pointer_cast<OpenGLRasterizerState>(rasterState);
+        std::shared_ptr<OpenGLDepthStencilState> gldepthState = std::dynamic_pointer_cast<OpenGLDepthStencilState>(depthState);
 
-        return std::shared_ptr<OpenGLPipelineState>(new OpenGLPipelineState(glvs, glps, glvd));
+        return std::shared_ptr<OpenGLPipelineState>(new OpenGLPipelineState(glvs, glps, glvd, glrasterState, gldepthState));
     }
 
     void OpenGLRHI::UpdateUniformBuffer(std::shared_ptr<UniformBuffer> ub, const void* data)
@@ -170,9 +190,14 @@ namespace RenderingDEMO
 
         // set rasterizer state
         glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+        glPolygonMode(GL_FRONT, glState->m_RasterizerState->m_FillMode);
+        glEnable(GL_CULL_FACE);
+        glCullFace(glState->m_RasterizerState->m_CullMode);
 
         // set depth state
         glEnable(GL_DEPTH_TEST);
+        glDepthFunc(glState->m_DepthStencilState->m_DepthFunc);
+        glDepthMask(glState->m_DepthStencilState->m_DepthMask);
     }
 
     void OpenGLRHI::ClearBackBuffer()

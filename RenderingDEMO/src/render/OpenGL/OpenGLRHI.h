@@ -15,13 +15,15 @@ namespace RenderingDEMO
 
 		virtual void RecreateSwapChain(int width, int height) override;
 
+		virtual std::shared_ptr<RasterizerState> CreateRasterizerState() override;
+		virtual std::shared_ptr<DepthStencilState> CreateDepthStencilState() override;
 		virtual std::shared_ptr<VertexBuffer> CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride) override;
 		virtual std::shared_ptr<IndexBuffer> CreateIndexBuffer(const void* data, unsigned int size) override;
 		virtual std::shared_ptr<UniformBuffer> CreateUniformBuffer(unsigned int size) override;
 		virtual std::shared_ptr<VertexDeclaration> CreateVertexDeclaration(const std::vector<VertexElement>& elements) override;
 		virtual std::shared_ptr<VertexShader> CreateVertexShader(const std::wstring& filePath) override;
 		virtual std::shared_ptr<PixelShader> CreatePixelShader(const std::wstring& filePath) override;
-		virtual std::shared_ptr<PipelineState> CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd) override;
+		virtual std::shared_ptr<PipelineState> CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd, std::shared_ptr<RasterizerState> rasterState, std::shared_ptr<DepthStencilState> depthState) override;
 
 		virtual void UpdateUniformBuffer(std::shared_ptr<UniformBuffer> ub, const void* data) override;
 

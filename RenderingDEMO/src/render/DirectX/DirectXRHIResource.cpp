@@ -54,7 +54,7 @@ namespace RenderingDEMO
 	{
 	}
 
-	DirectXPipelineState::DirectXPipelineState(std::shared_ptr<DirectXVertexShader> vs, std::shared_ptr<DirectXPixelShader> ps, std::shared_ptr<DirectXVertexDeclaration> vd, const Microsoft::WRL::ComPtr<ID3D11Device>& device)
+	DirectXPipelineState::DirectXPipelineState(std::shared_ptr<DirectXVertexShader> vs, std::shared_ptr<DirectXPixelShader> ps, std::shared_ptr<DirectXVertexDeclaration> vd, std::shared_ptr<DirectXRasterizerState> rasterState, std::shared_ptr<DirectXDepthStencilState> depthState, const Microsoft::WRL::ComPtr<ID3D11Device>& device)
 	{
 		// set shader
 		m_VertexShader = vs->GetShader();
@@ -78,28 +78,17 @@ namespace RenderingDEMO
 			return;
 		}
 
-		// temp
-		// set rasterizer state
-		D3D11_RASTERIZER_DESC rasterizerStateDescriptor = {};
-		rasterizerStateDescriptor.AntialiasedLineEnable = false;
-		rasterizerStateDescriptor.DepthBias = 0;
-		rasterizerStateDescriptor.DepthBiasClamp = 0.0f;
-		rasterizerStateDescriptor.DepthClipEnable = false;
-		rasterizerStateDescriptor.FrontCounterClockwise = true;
-		rasterizerStateDescriptor.MultisampleEnable = false;
-		rasterizerStateDescriptor.ScissorEnable = false;
-		rasterizerStateDescriptor.SlopeScaledDepthBias = 0.0f;
-		rasterizerStateDescriptor.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
-		rasterizerStateDescriptor.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
+		m_RasterizerState = rasterState->GetState();
+		m_DepthStencilState = depthState->GetState();
+	}
 
-		if (FAILED(device->CreateRasterizerState(&rasterizerStateDescriptor, &m_RasterizerState)))
-		{
-			spdlog::error("D3D11: Failed to create rasterizer state");
-			return;
-		}
+	DirectXRasterizerState::DirectXRasterizerState(const Microsoft::WRL::ComPtr<ID3D11RasterizerState>& state)
+		:m_RasterizerState(state)
+	{
+	}
 
-		// temp
-		// set primitive topology
-		m_DrawType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	DirectXDepthStencilState::DirectXDepthStencilState(const Microsoft::WRL::ComPtr<ID3D11DepthStencilState>& state)
+		:m_DepthStencilState(state)
+	{
 	}
 }

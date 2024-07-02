@@ -185,7 +185,7 @@ namespace RenderingDEMO
 			7, 5, 4
 		};
 
-		DirectionalLight directionallight = { Eigen::Vector3f(0.0f, -0.2f, -0.2f), 0.0f, Eigen::Vector3f(1.0f, 1.0f, 1.0f), 0.0f };
+		DirectionalLight directionallight = { Eigen::Vector3f(-0.1f, -0.2f, -0.2f), 0.0f, Eigen::Vector3f(1.0f, 1.0f, 1.0f), 0.0f };
 		m_RenderResource->m_PerFrameConstant.DirectionalLight = directionallight;
 
 		PointLight pointlights[] = 
@@ -196,8 +196,6 @@ namespace RenderingDEMO
 		m_RenderResource->m_PerFrameConstant.PointLightNum = sizeof(pointlights) / sizeof(PointLight);
 		memcpy(m_RenderResource->m_PerFrameConstant.PointLights, pointlights, sizeof(pointlights));
 
-		//VertexElement.Name is used in DirectX to set the SemanticName. OpenGL do not need this.
-		//VertexElement.Index is only used in DirectX to set the SemanticIndex
 		std::vector<VertexElement> elements;
 		elements.push_back({ "POSITION", 0, VertexElementType::Float3 });
 		elements.push_back({ "NORMAL", 0, VertexElementType::Float3 });
@@ -205,21 +203,21 @@ namespace RenderingDEMO
 
 		std::shared_ptr<VertexBuffer> vb = m_RHI->CreateVertexBuffer(vertices, sizeof(vertices), vd->GetStride());
 		std::shared_ptr<IndexBuffer> ib = m_RHI->CreateIndexBuffer(indices, sizeof(indices));
+		std::shared_ptr<UniformBuffer> ub = m_RHI->CreateUniformBuffer(sizeof(PerFrameConstant));
 
+		//VertexElement.Name is used in DirectX to set the SemanticName. OpenGL do not need this.
+		//VertexElement.Index is only used in DirectX to set the SemanticIndex
 		// temp file path
 		std::shared_ptr<VertexShader> vs = m_RHI->CreateVertexShader(L"../shader/vs" + m_Suffix);
 		std::shared_ptr<PixelShader> ps = m_RHI->CreatePixelShader(L"../shader/ps" + m_Suffix);
-
+		std::shared_ptr<RasterizerState> rasterState = m_RHI->CreateRasterizerState();
+		std::shared_ptr<DepthStencilState> depthState = m_RHI->CreateDepthStencilState();
 		// move to pass
-		std::shared_ptr<PipelineState> pips = m_RHI->CreatePipelineState(vs, ps, vd);
+		std::shared_ptr<PipelineState> pips = m_RHI->CreatePipelineState(vs, ps, vd, rasterState, depthState);
 
-		std::shared_ptr<UniformBuffer> ub = m_RHI->CreateUniformBuffer(sizeof(PerFrameConstant));
 
 		m_RenderResource->m_CubeVertexBuffer = vb;
 		m_RenderResource->m_CubeIndexBuffer = ib;
-		m_RenderResource->m_CubeVertexDeclaration = vd;
-		m_RenderResource->m_VertexShader = vs;
-		m_RenderResource->m_PixelShader = ps;
 		m_RenderResource->m_PipelineState = pips;
 		m_RenderResource->m_PerFrameUniformBuffer = ub;
 	}

@@ -70,14 +70,7 @@ namespace RenderingDEMO
 		}
 		
 		CreateSwapChainResource();
-
-		// temp
-		// Create RasterizerState
-		CreateRasterizerStates();
-
-		// Create DepthState
 		CreateDepthStencilView();
-		CreateDepthStencilStates();
 	}
 
 	void DirectXRHI::RecreateSwapChain(int width, int height)
@@ -100,6 +93,49 @@ namespace RenderingDEMO
 
 		m_DepthTarget.Reset();
 		CreateDepthStencilView();
+	}
+
+	std::shared_ptr<RasterizerState> DirectXRHI::CreateRasterizerState()
+	{
+		Microsoft::WRL::ComPtr<ID3D11RasterizerState> state;
+
+		D3D11_RASTERIZER_DESC rasterizerStateDescriptor = {};
+		rasterizerStateDescriptor.DepthBias = 0;
+		rasterizerStateDescriptor.DepthBiasClamp = 0.0f;
+		rasterizerStateDescriptor.SlopeScaledDepthBias = 0.0f;
+		rasterizerStateDescriptor.FrontCounterClockwise = true;
+		rasterizerStateDescriptor.AntialiasedLineEnable = false;
+		rasterizerStateDescriptor.MultisampleEnable = false;
+		rasterizerStateDescriptor.DepthClipEnable = true;
+		rasterizerStateDescriptor.ScissorEnable = false;
+		rasterizerStateDescriptor.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
+		rasterizerStateDescriptor.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
+
+		if (FAILED(m_Device->CreateRasterizerState(&rasterizerStateDescriptor, &state)))
+		{
+			spdlog::error("D3D11: Failed to create rasterizer state");
+			return nullptr;
+		}
+
+		return std::shared_ptr<DirectXRasterizerState>(new DirectXRasterizerState(state));
+	}
+
+	std::shared_ptr<DepthStencilState> DirectXRHI::CreateDepthStencilState()
+	{
+		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> state;
+
+		D3D11_DEPTH_STENCIL_DESC depthDesc{};
+		depthDesc.DepthEnable = TRUE;
+		depthDesc.DepthFunc = D3D11_COMPARISON_FUNC::D3D11_COMPARISON_LESS;
+		depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+
+		if (FAILED(m_Device->CreateDepthStencilState(&depthDesc, &state)))
+		{
+			spdlog::error("D3D11: Failed to create depth stencil state");
+			return nullptr;
+		}
+
+		return std::shared_ptr<DirectXDepthStencilState>(new DirectXDepthStencilState(state));
 	}
 
 	std::shared_ptr<VertexBuffer> DirectXRHI::CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride)
@@ -222,13 +258,15 @@ namespace RenderingDEMO
 		return std::shared_ptr<DirectXPixelShader>(new DirectXPixelShader(ps));
 	}
 
-	std::shared_ptr<PipelineState> DirectXRHI::CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd)
+	std::shared_ptr<PipelineState> DirectXRHI::CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd, std::shared_ptr<RasterizerState> rasterState, std::shared_ptr<DepthStencilState> depthState)
 	{
 		std::shared_ptr<DirectXVertexShader> dxvs = std::dynamic_pointer_cast<DirectXVertexShader>(vs);
 		std::shared_ptr<DirectXPixelShader> dxps = std::dynamic_pointer_cast<DirectXPixelShader>(ps);
 		std::shared_ptr<DirectXVertexDeclaration> dxvd = std::dynamic_pointer_cast<DirectXVertexDeclaration>(vd);
+		std::shared_ptr<DirectXRasterizerState> dxrasterState = std::dynamic_pointer_cast<DirectXRasterizerState>(rasterState);
+		std::shared_ptr<DirectXDepthStencilState> dxdepthState = std::dynamic_pointer_cast<DirectXDepthStencilState>(depthState);
 
-		return std::shared_ptr<DirectXPipelineState>(new DirectXPipelineState(dxvs, dxps, dxvd, m_Device));
+		return std::shared_ptr<DirectXPipelineState>(new DirectXPipelineState(dxvs, dxps, dxvd, dxrasterState, dxdepthState, m_Device));
 	}
 
 	void DirectXRHI::UpdateUniformBuffer(std::shared_ptr<UniformBuffer> ub, const void* data)
@@ -276,7 +314,7 @@ namespace RenderingDEMO
 		m_DeviceContext->VSSetShader(dxState->m_VertexShader.Get(), nullptr, 0);
 		m_DeviceContext->PSSetShader(dxState->m_PixelShader.Get(), nullptr, 0);
 		m_DeviceContext->RSSetState(dxState->m_RasterizerState.Get());
-		m_DeviceContext->IASetPrimitiveTopology(dxState->m_DrawType);
+		m_DeviceContext->OMSetDepthStencilState(dxState->m_DepthStencilState.Get(), 0);
 	}
 
 	void DirectXRHI::ClearBackBuffer()
@@ -296,6 +334,7 @@ namespace RenderingDEMO
 
 	void DirectXRHI::Draw(unsigned int count)
 	{
+		m_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		m_DeviceContext->OMSetRenderTargets(1, m_RenderTarget.GetAddressOf(), m_DepthTarget.Get());
 		m_DeviceContext->Draw(count, 0);
 	}
@@ -304,7 +343,8 @@ namespace RenderingDEMO
 	{
 		std::shared_ptr<DirectXIndexBuffer> dxib = std::dynamic_pointer_cast<DirectXIndexBuffer>(ib);
 
-		unsigned int offset = 0; 		// temp
+		// temp
+		unsigned int offset = 0;
 		m_DeviceContext->IASetIndexBuffer(
 			dxib->GetBuffer().Get(),
 			DXGI_FORMAT_R32_UINT,
@@ -312,8 +352,22 @@ namespace RenderingDEMO
 		);
 	
 		// need to set render target for every frame
+		m_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		m_DeviceContext->OMSetRenderTargets(1, m_RenderTarget.GetAddressOf(), m_DepthTarget.Get());
 		m_DeviceContext->DrawIndexed(dxib->GetCount(), 0, 0);
+	}
+
+	void DirectXRHI::SetViewport()
+	{
+		D3D11_VIEWPORT viewport = {};
+		viewport.TopLeftX = 0;
+		viewport.TopLeftY = 0;
+		viewport.Width = static_cast<float>(m_WindowSize[0]);
+		viewport.Height = static_cast<float>(m_WindowSize[1]);
+		viewport.MinDepth = 0.0f;
+		viewport.MaxDepth = 1.0f;
+
+		m_DeviceContext->RSSetViewports(1, &viewport);
 	}
 
 	void DirectXRHI::CreateSwapChainResource()
@@ -337,50 +391,6 @@ namespace RenderingDEMO
 		}
 
 		SetViewport();
-	}
-
-	void DirectXRHI::SetViewport()
-	{
-		D3D11_VIEWPORT viewport = {};
-		viewport.TopLeftX = 0;
-		viewport.TopLeftY = 0;
-		viewport.Width = static_cast<float>(m_WindowSize[0]);
-		viewport.Height = static_cast<float>(m_WindowSize[1]);
-		viewport.MinDepth = 0.0f;
-		viewport.MaxDepth = 1.0f;
-
-		m_DeviceContext->RSSetViewports(1, &viewport);
-	}
-
-	void DirectXRHI::CreateRasterizerStates()
-	{
-		D3D11_RASTERIZER_DESC rasterizerStateDescriptor = {};
-		rasterizerStateDescriptor.AntialiasedLineEnable = false;
-		rasterizerStateDescriptor.DepthBias = 0;
-		rasterizerStateDescriptor.DepthBiasClamp = 0.0f;
-		rasterizerStateDescriptor.DepthClipEnable = false;
-		rasterizerStateDescriptor.FrontCounterClockwise = true;
-		rasterizerStateDescriptor.MultisampleEnable = false;
-		rasterizerStateDescriptor.ScissorEnable = false;
-		rasterizerStateDescriptor.SlopeScaledDepthBias = 0.0f;
-		rasterizerStateDescriptor.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
-		rasterizerStateDescriptor.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
-
-		if (FAILED(m_Device->CreateRasterizerState(&rasterizerStateDescriptor, &m_RasterizerState)))
-		{
-			spdlog::error("D3D11: Failed to create rasterizer state");
-			return;
-		}
-	}
-
-	void DirectXRHI::CreateDepthStencilStates()
-	{
-		D3D11_DEPTH_STENCIL_DESC depthDesc{};
-		depthDesc.DepthEnable = TRUE;
-		depthDesc.DepthFunc = D3D11_COMPARISON_FUNC::D3D11_COMPARISON_LESS;
-		depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-
-		m_Device->CreateDepthStencilState(&depthDesc, &m_DepthStencilState);
 	}
 
 	void DirectXRHI::CreateDepthStencilView()

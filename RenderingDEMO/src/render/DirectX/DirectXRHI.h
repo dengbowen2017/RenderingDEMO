@@ -19,13 +19,15 @@ namespace RenderingDEMO
 
 		virtual void RecreateSwapChain(int width, int height) override;
 
+		virtual std::shared_ptr<RasterizerState> CreateRasterizerState() override;
+		virtual std::shared_ptr<DepthStencilState> CreateDepthStencilState() override;
 		virtual std::shared_ptr<VertexBuffer> CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride) override;
 		virtual std::shared_ptr<IndexBuffer> CreateIndexBuffer(const void* data, unsigned int size) override;
 		virtual std::shared_ptr<UniformBuffer> CreateUniformBuffer(unsigned int size) override;
 		virtual std::shared_ptr<VertexDeclaration> CreateVertexDeclaration(const std::vector<VertexElement>& elements) override;
 		virtual std::shared_ptr<VertexShader> CreateVertexShader(const std::wstring& filePath) override;
 		virtual std::shared_ptr<PixelShader> CreatePixelShader(const std::wstring& filePath) override;
-		virtual std::shared_ptr<PipelineState> CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd) override;
+		virtual std::shared_ptr<PipelineState> CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd, std::shared_ptr<RasterizerState> rasterState, std::shared_ptr<DepthStencilState> depthState) override;
 
 		virtual void UpdateUniformBuffer(std::shared_ptr<UniformBuffer> ub, const void* data) override;
 
@@ -39,10 +41,8 @@ namespace RenderingDEMO
 		virtual void DrawIndexed(std::shared_ptr<IndexBuffer> ib) override;
 
 	private:
-		void CreateSwapChainResource();
 		void SetViewport();
-		void CreateRasterizerStates();
-		void CreateDepthStencilStates();
+		void CreateSwapChainResource();
 		void CreateDepthStencilView();
 		bool CompileShader(const std::wstring& filePath, const std::string& profile, Microsoft::WRL::ComPtr<ID3DBlob>& shaderBlob);
 
@@ -57,8 +57,6 @@ namespace RenderingDEMO
 		// temp
 		Microsoft::WRL::ComPtr<IDXGISwapChain1> m_SwapChain;
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_RenderTarget;
-		Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_RasterizerState;
 		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_DepthTarget;
-		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_DepthStencilState;
 	};
 }

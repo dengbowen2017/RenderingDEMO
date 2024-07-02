@@ -2,13 +2,16 @@
 
 #include "render/RHIResource.h"
 
+// temp
+#include <glad/glad.h>
+
 namespace RenderingDEMO
 {
 	struct OpenGLVertexElement
 	{
 		std::string Name;
 		unsigned int Index;
-		unsigned int Type;
+		GLenum Type;
 		unsigned int Size;
 		unsigned int Offset;
 		unsigned int Count;
@@ -50,15 +53,40 @@ namespace RenderingDEMO
 		unsigned int m_ID;
 	};
 
+	class OpenGLRasterizerState :public RasterizerState
+	{
+	public:
+		OpenGLRasterizerState() = default;
+		~OpenGLRasterizerState() = default;
+
+	public:
+		GLenum m_CullMode;
+		GLenum m_FillMode;
+	};
+
+	class OpenGLDepthStencilState :public DepthStencilState
+	{
+	public:
+		OpenGLDepthStencilState() = default;
+		~OpenGLDepthStencilState() = default;
+
+	public:
+		GLenum m_DepthFunc;
+		GLboolean m_DepthMask;
+	};
+
 	class OpenGLPipelineState :public PipelineState
 	{
 	public:
-		OpenGLPipelineState(std::shared_ptr<OpenGLVertexShader> vs, std::shared_ptr<OpenGLPixelShader> ps, std::shared_ptr<OpenGLVertexDeclaration> vd);
+		OpenGLPipelineState(std::shared_ptr<OpenGLVertexShader> vs, std::shared_ptr<OpenGLPixelShader> ps, std::shared_ptr<OpenGLVertexDeclaration> vd, 
+			std::shared_ptr<OpenGLRasterizerState> rasterState, std::shared_ptr<OpenGLDepthStencilState> depthState);
 		~OpenGLPipelineState();
 
 	public:
 		unsigned int m_ID;
 		std::shared_ptr<OpenGLVertexDeclaration> m_VertexDeclaration;
+		std::shared_ptr<OpenGLRasterizerState> m_RasterizerState;
+		std::shared_ptr<OpenGLDepthStencilState> m_DepthStencilState;
 	};
 
 	class OpenGLVertexBuffer :public VertexBuffer

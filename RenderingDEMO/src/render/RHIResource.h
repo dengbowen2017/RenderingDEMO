@@ -52,6 +52,18 @@ namespace RenderingDEMO
 		unsigned int m_Stride;
 	};
 
+	class RasterizerState
+	{
+	public:
+		virtual ~RasterizerState() = default;
+	};
+
+	class DepthStencilState
+	{
+	public:
+		virtual ~DepthStencilState() = default;
+	};
+
 	class VertexShader 
 	{
 	public:

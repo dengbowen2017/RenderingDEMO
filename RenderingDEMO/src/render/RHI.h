@@ -14,13 +14,15 @@ namespace RenderingDEMO
 
 		virtual void RecreateSwapChain(int width, int height) = 0;
 
+		virtual std::shared_ptr<RasterizerState> CreateRasterizerState() = 0;
+		virtual std::shared_ptr<DepthStencilState> CreateDepthStencilState() = 0;
 		virtual std::shared_ptr<VertexBuffer> CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride) = 0;
 		virtual std::shared_ptr<IndexBuffer> CreateIndexBuffer(const void* data, unsigned int size) = 0;
 		virtual std::shared_ptr<UniformBuffer> CreateUniformBuffer(unsigned int size) = 0;
 		virtual std::shared_ptr<VertexDeclaration> CreateVertexDeclaration(const std::vector<VertexElement>& elements) = 0;
 		virtual std::shared_ptr<VertexShader> CreateVertexShader(const std::wstring& filePath) = 0;
 		virtual std::shared_ptr<PixelShader> CreatePixelShader(const std::wstring& filePath) = 0;
-		virtual std::shared_ptr<PipelineState> CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd) = 0;
+		virtual std::shared_ptr<PipelineState> CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd, std::shared_ptr<RasterizerState> rasterState, std::shared_ptr<DepthStencilState> depthState) = 0;
 		
 		virtual void UpdateUniformBuffer(std::shared_ptr<UniformBuffer> ub, const void* data) = 0;
 
