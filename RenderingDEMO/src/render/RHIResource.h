@@ -2,7 +2,7 @@
 
 namespace RenderingDEMO
 {
-	enum VertexElementType
+	enum class VertexElementType
 	{
 		None = 0, Float, Float2, Float3, Float4, UInt
 	};
@@ -127,5 +127,62 @@ namespace RenderingDEMO
 
 	private:
 		unsigned int m_Size = 0;
+	};
+
+	enum class TextureFlags : unsigned int
+	{
+		TexRenderTarget = 1 << 0,
+		TexDepthStencilTarget = 1 << 1,
+		TexShaderResource = 1 << 2,
+		TexMips = 1 << 3,
+		TexImmutable = 1 << 4,
+		TexDefault = 1 << 5
+	};
+
+	enum class TextureFormat
+	{
+		Unknow = 0,
+		R8_UNorm,
+		R8G8_UNorm,
+		R8G8B8A8_UNorm,
+		R32_Typeless,
+		R24G8_Typeless,
+		R16G16B16A16_Float,
+	};
+
+	class Texture
+	{
+	public:
+		Texture(unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format)
+			:m_NumMips(numMips), m_NumSamples(numSamples), m_Flags(flags), m_Format(format)
+		{}
+		virtual ~Texture() = default;
+
+	private:
+		unsigned int m_NumMips;
+		unsigned int m_NumSamples;
+		unsigned int m_Flags;
+		TextureFormat m_Format;
+	};
+
+	class Texture2D :public Texture
+	{
+	public:
+		Texture2D(unsigned int width, unsigned int height, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format)
+			:m_Width(width), m_Height(height), Texture(numMips, numSamples, flags, format)
+		{}
+		virtual ~Texture2D() = default;
+
+		std::array<unsigned int, 2> GetTexSize() const { return std::array<unsigned int, 2>({ m_Width, m_Height }); }
+
+	private:
+		unsigned int m_Width;
+		unsigned int m_Height;
+	};
+
+	class SamplerState
+	{
+	public:
+		virtual ~SamplerState() = default;
 	};
 }

@@ -54,6 +54,50 @@ namespace RenderingDEMO
         return std::shared_ptr<OpenGLDepthStencilState>(state);
     }
 
+    std::shared_ptr<Texture2D> OpenGLRHI::CreateTexture2D(unsigned int width, unsigned int height, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, const void* data)
+    {
+        unsigned int texID;
+        glCreateTextures(GL_TEXTURE_2D, 1, &texID);
+
+        GLenum texFormat;
+        switch (format)
+        {
+        case RenderingDEMO::TextureFormat::Unknow:
+            texFormat = GL_NONE;
+            break;
+        case RenderingDEMO::TextureFormat::R8_UNorm:
+            texFormat = GL_R8;
+            break;
+        case RenderingDEMO::TextureFormat::R8G8_UNorm:
+            texFormat = GL_RG8;
+            break;
+        case RenderingDEMO::TextureFormat::R8G8B8A8_UNorm:
+            texFormat = GL_RGBA;
+            break;
+        case RenderingDEMO::TextureFormat::R32_Typeless:
+            texFormat = GL_DEPTH_COMPONENT;
+            break;
+        case RenderingDEMO::TextureFormat::R24G8_Typeless:
+            texFormat = GL_DEPTH24_STENCIL8;
+            break;
+        case RenderingDEMO::TextureFormat::R16G16B16A16_Float:
+            texFormat = GL_RGBA16F;
+            break;
+        default:
+            texFormat = GL_NONE;
+            break;
+        }
+
+        glTextureStorage2D(texID, numMips, texFormat, width, height);
+
+        if (data != nullptr)
+        {
+            glTextureSubImage2D(texID, 0, 0, 0, width, height, texFormat, GL_UNSIGNED_BYTE, data);
+        }
+
+        return std::shared_ptr<OpenGLTexture2D>(new OpenGLTexture2D(width, height, numMips, numSamples, flags, format, texID));
+    }
+
     std::shared_ptr<VertexBuffer> OpenGLRHI::CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride)
     {
         unsigned int VBO;
@@ -153,6 +197,12 @@ namespace RenderingDEMO
         glNamedBufferSubData(glub->GetID(), offset, glub->GetSize(), data);
     }
 
+    void OpenGLRHI::SetTexture(std::shared_ptr<Texture> texture, unsigned int index)
+    {
+        std::shared_ptr<OpenGLTexture2D> gltex = std::dynamic_pointer_cast<OpenGLTexture2D>(texture);
+        glBindTextureUnit(index, gltex->GetID());
+    }
+
     void OpenGLRHI::SetVertexBuffer(std::shared_ptr<VertexBuffer> vb)
     {
         std::shared_ptr<OpenGLVertexBuffer> glvb = std::dynamic_pointer_cast<OpenGLVertexBuffer>(vb);
@@ -163,10 +213,9 @@ namespace RenderingDEMO
         glBindVertexBuffer(bindindex, glvb->GetID(), offset, glvb->GetStride());
     }
 
-    void OpenGLRHI::SetUniformBuffer(std::shared_ptr<UniformBuffer> ub, unsigned int index)
+    void OpenGLRHI::SetUniformBuffer( std::shared_ptr<UniformBuffer> ub, unsigned int index)
     {
         std::shared_ptr<OpenGLUniformBuffer> glub = std::dynamic_pointer_cast<OpenGLUniformBuffer>(ub);
-
         glBindBufferBase(GL_UNIFORM_BUFFER, index, glub->GetID());
     }
 

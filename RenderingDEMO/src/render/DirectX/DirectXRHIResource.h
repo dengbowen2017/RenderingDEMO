@@ -133,4 +133,26 @@ namespace RenderingDEMO
 	private:
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_Buffer;
 	};
+
+	class DirectXTexture2D :public Texture2D
+	{
+	public:
+		DirectXTexture2D(unsigned int width, unsigned int height, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format,
+			const Microsoft::WRL::ComPtr<ID3D11Texture2D>& texRes,
+			const Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& srv,
+			const Microsoft::WRL::ComPtr<ID3D11RenderTargetView>& rtv,
+			const Microsoft::WRL::ComPtr<ID3D11DepthStencilView>& dsv);
+		~DirectXTexture2D() = default;
+
+		const Microsoft::WRL::ComPtr<ID3D11Texture2D>& GetTextureResource() const { return m_TextureResource; }
+		const Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& GetShaderResourceView() const { return m_TextureSRV; }
+		const Microsoft::WRL::ComPtr<ID3D11RenderTargetView>& GetRenderTargetView() const { return m_TextureRTV; }
+		const Microsoft::WRL::ComPtr<ID3D11DepthStencilView>& GetDepthStencilView() const { return m_TextureDSV; }
+
+	private:
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> m_TextureResource;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_TextureSRV;
+		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_TextureRTV;
+		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_TextureDSV;
+	};
 }

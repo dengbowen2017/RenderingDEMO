@@ -21,16 +21,21 @@ namespace RenderingDEMO
 
 		virtual std::shared_ptr<RasterizerState> CreateRasterizerState() override;
 		virtual std::shared_ptr<DepthStencilState> CreateDepthStencilState() override;
+
+		virtual std::shared_ptr<Texture2D> CreateTexture2D(unsigned int width, unsigned int height, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, const void* data) override;
+
 		virtual std::shared_ptr<VertexBuffer> CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride) override;
 		virtual std::shared_ptr<IndexBuffer> CreateIndexBuffer(const void* data, unsigned int size) override;
 		virtual std::shared_ptr<UniformBuffer> CreateUniformBuffer(unsigned int size) override;
 		virtual std::shared_ptr<VertexDeclaration> CreateVertexDeclaration(const std::vector<VertexElement>& elements) override;
 		virtual std::shared_ptr<VertexShader> CreateVertexShader(const std::wstring& filePath) override;
 		virtual std::shared_ptr<PixelShader> CreatePixelShader(const std::wstring& filePath) override;
+
 		virtual std::shared_ptr<PipelineState> CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd, std::shared_ptr<RasterizerState> rasterState, std::shared_ptr<DepthStencilState> depthState) override;
 
 		virtual void UpdateUniformBuffer(std::shared_ptr<UniformBuffer> ub, const void* data) override;
 
+		virtual void SetTexture(std::shared_ptr<Texture> texture, unsigned int index) override;
 		virtual void SetVertexBuffer(std::shared_ptr<VertexBuffer> vb) override;
 		virtual void SetUniformBuffer(std::shared_ptr<UniformBuffer> ub, unsigned int index) override;
 		virtual void SetPipelineState(std::shared_ptr<PipelineState> state) override;
@@ -45,6 +50,10 @@ namespace RenderingDEMO
 		void CreateSwapChainResource();
 		void CreateDepthStencilView();
 		bool CompileShader(const std::wstring& filePath, const std::string& profile, Microsoft::WRL::ComPtr<ID3DBlob>& shaderBlob);
+
+		DXGI_FORMAT FindTextureResourceDXGIFormat(TextureFormat resFormat);
+		DXGI_FORMAT FindShaderResourceDXGIFormat(DXGI_FORMAT resFormat);
+		DXGI_FORMAT FindDepthStencilDXGIFormat(DXGI_FORMAT resFormat);
 
 	private:
 		HWND m_WindowHandler = nullptr;

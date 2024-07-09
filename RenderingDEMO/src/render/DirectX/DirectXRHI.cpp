@@ -138,6 +138,122 @@ namespace RenderingDEMO
 		return std::shared_ptr<DirectXDepthStencilState>(new DirectXDepthStencilState(state));
 	}
 
+	std::shared_ptr<Texture2D> DirectXRHI::CreateTexture2D(unsigned int width, unsigned int height, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, const void* data)
+	{
+		D3D11_TEXTURE2D_DESC texDesc = {};
+		D3D11_SUBRESOURCE_DATA subData = {};
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> texResource = nullptr;
+		bool createRTV = false;
+		bool createDSV = false;
+		bool createSRV = false;
+
+		unsigned int bindFlags = 0;
+		if (flags & (unsigned int)TextureFlags::TexRenderTarget)
+		{
+			bindFlags |= D3D11_BIND_RENDER_TARGET;
+			createRTV = true;
+		}
+		if (flags & (unsigned int)TextureFlags::TexDepthStencilTarget)
+		{
+			bindFlags |= D3D11_BIND_DEPTH_STENCIL;
+			createDSV = true;
+		}
+		if (flags & (unsigned int)TextureFlags::TexShaderResource)
+		{
+			bindFlags |= D3D11_BIND_SHADER_RESOURCE;
+			createSRV = true;
+		}
+
+		D3D11_USAGE usageFlag = D3D11_USAGE_DEFAULT;
+		if (flags & (unsigned int)TextureFlags::TexDefault)
+		{
+			usageFlag = D3D11_USAGE_DEFAULT;
+		}
+		if (flags & (unsigned int)TextureFlags::TexImmutable)
+		{
+			usageFlag = D3D11_USAGE_IMMUTABLE;
+		}
+
+		DXGI_FORMAT texFormat = FindTextureResourceDXGIFormat(format);
+
+		texDesc.Width = width;
+		texDesc.Height = height;
+		texDesc.MipLevels = numMips;
+		texDesc.ArraySize = 1;
+		texDesc.Format = texFormat;
+		texDesc.SampleDesc.Count = numSamples;
+		texDesc.Usage = usageFlag;
+		texDesc.BindFlags = bindFlags;
+
+		if (data != nullptr)
+		{
+			subData.pSysMem = data;
+			if (texFormat == DXGI_FORMAT_R8_UNORM)
+			{
+				subData.SysMemPitch = width;
+			}
+			else if (texFormat == DXGI_FORMAT_R8G8_UNORM)
+			{
+				subData.SysMemPitch = 2 * width;
+			}
+			else if (texFormat == DXGI_FORMAT_R8G8B8A8_UNORM)
+			{
+				subData.SysMemPitch = 4 * width;
+			}
+		}
+
+		if (FAILED(m_Device->CreateTexture2D(&texDesc, data != nullptr ? &subData : nullptr, texResource.GetAddressOf())))
+		{
+			spdlog::error("D3D11: Failed to create texture resource");
+			return nullptr;
+		}
+
+		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> texRTV = nullptr;
+		if (createRTV)
+		{
+			D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+			rtvDesc.Format = FindShaderResourceDXGIFormat(texFormat);
+			rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+			if (FAILED(m_Device->CreateRenderTargetView(texResource.Get(), &rtvDesc, texRTV.GetAddressOf())))
+			{
+				spdlog::error("D3D11: Failed to create texture RTV");
+				return nullptr;
+			}
+		}
+
+		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> texDSV = nullptr;
+		if (createDSV)
+		{
+			D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+			dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+			dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+
+			if (FAILED(m_Device->CreateDepthStencilView(texResource.Get(), &dsvDesc, texDSV.GetAddressOf())))
+			{
+				spdlog::error("D3D11: Failed to create texture DSV");
+				return nullptr;
+			}
+		}
+
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> texSRV = nullptr;
+		if (createSRV)
+		{
+			D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+			srvDesc.Format = FindShaderResourceDXGIFormat(texFormat);
+			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+			srvDesc.Texture2D.MipLevels = numMips;
+
+			if (FAILED(m_Device->CreateShaderResourceView(texResource.Get(), &srvDesc, texSRV.GetAddressOf())))
+			{
+				spdlog::error("D3D11: Failed to create texture SRV");
+				return nullptr;
+			}
+		}
+
+		return std::shared_ptr<DirectXTexture2D>(new DirectXTexture2D(width, height, numMips, numSamples, flags, format, texResource, texSRV, texRTV, texDSV));
+	}
+
 	std::shared_ptr<VertexBuffer> DirectXRHI::CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride)
 	{
 		Microsoft::WRL::ComPtr<ID3D11Buffer> vb;
@@ -279,6 +395,16 @@ namespace RenderingDEMO
 		m_DeviceContext->Unmap(dxub->GetBuffer().Get(), 0);
 	}
 
+	void DirectXRHI::SetTexture(std::shared_ptr<Texture> texture, unsigned int index)
+	{
+		std::shared_ptr<DirectXTexture2D> dxtex = std::dynamic_pointer_cast<DirectXTexture2D>(texture);
+
+		// TODO: find a better way
+		// have to treat uniform texture as global parameter (same as OpenGL)
+		m_DeviceContext->VSSetShaderResources(index, 1, dxtex->GetShaderResourceView().GetAddressOf());
+		m_DeviceContext->PSSetShaderResources(index, 1, dxtex->GetShaderResourceView().GetAddressOf());
+	}
+
 	void DirectXRHI::SetVertexBuffer(std::shared_ptr<VertexBuffer> vb)
 	{
 		std::shared_ptr<DirectXVertexBuffer> dxvb = std::dynamic_pointer_cast<DirectXVertexBuffer>(vb);
@@ -287,21 +413,15 @@ namespace RenderingDEMO
 		// need a variable as the offset
 		unsigned int offset = 0;
 		unsigned int stride = dxvb->GetStride();
-		m_DeviceContext->IASetVertexBuffers(
-			0,
-			1,
-			dxvb->GetBuffer().GetAddressOf(),
-			&stride,
-			&offset
-		);
+		m_DeviceContext->IASetVertexBuffers(0, 1, dxvb->GetBuffer().GetAddressOf(), &stride, &offset);
 	}
 
 	void DirectXRHI::SetUniformBuffer(std::shared_ptr<UniformBuffer> ub, unsigned int index)
 	{
 		std::shared_ptr<DirectXUniformBuffer> dxub = std::dynamic_pointer_cast<DirectXUniformBuffer>(ub);
 
-		// temp
-		// bind uniform buffer to all shaders
+		// TODO: find a better way
+		// have to treat dxConstantBuffer as global parameter (same as OpenGL)
 		m_DeviceContext->VSSetConstantBuffers(index, 1, dxub->GetBuffer().GetAddressOf());
 		m_DeviceContext->PSSetConstantBuffers(index, 1, dxub->GetBuffer().GetAddressOf());
 	}
@@ -373,18 +493,13 @@ namespace RenderingDEMO
 	void DirectXRHI::CreateSwapChainResource()
 	{
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer = nullptr;
-		if (FAILED(m_SwapChain->GetBuffer(
-			0,
-			IID_PPV_ARGS(&backBuffer))))
+		if (FAILED(m_SwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer))))
 		{
 			spdlog::error("D3D11: Failed to get Back Buffer from the SwapChain");
 			return;
 		}
 
-		if (FAILED(m_Device->CreateRenderTargetView(
-			backBuffer.Get(),
-			nullptr,
-			&m_RenderTarget)))
+		if (FAILED(m_Device->CreateRenderTargetView(backBuffer.Get(), nullptr, &m_RenderTarget)))
 		{
 			spdlog::error("D3D11: Failed to create RTV from Back Buffer");
 			return;
@@ -395,33 +510,39 @@ namespace RenderingDEMO
 
 	void DirectXRHI::CreateDepthStencilView()
 	{
-		D3D11_TEXTURE2D_DESC texDesc{};
-		texDesc.Height = m_WindowSize[1];
-		texDesc.Width = m_WindowSize[0];
-		texDesc.ArraySize = 1;
-		texDesc.SampleDesc.Count = 1;
-		texDesc.MipLevels = 1;
-		texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-		texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+		//D3D11_TEXTURE2D_DESC texDesc{};
+		//texDesc.Height = m_WindowSize[1];
+		//texDesc.Width = m_WindowSize[0];
+		//texDesc.ArraySize = 1;
+		//texDesc.SampleDesc.Count = 1;
+		//texDesc.MipLevels = 1;
+		//texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+		//texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
 
-		ID3D11Texture2D* texture = nullptr;
-		if (FAILED(m_Device->CreateTexture2D(&texDesc, nullptr, &texture)))
-		{
-			spdlog::error("D3D11: Failed to create texture for DepthStencilView");
-			return;
-		}
+		//ID3D11Texture2D* texture = nullptr;
+		//if (FAILED(m_Device->CreateTexture2D(&texDesc, nullptr, &texture)))
+		//{
+		//	spdlog::error("D3D11: Failed to create texture for DepthStencilView");
+		//	return;
+		//}
 
-		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
-		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
-		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-		if (FAILED(m_Device->CreateDepthStencilView(texture, &dsvDesc, &m_DepthTarget)))
-		{
-			spdlog::error("D3D11: Failed to create DepthStencilView");
-			texture->Release();
-			return;
-		}
+		//D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+		//dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+		//dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+		//if (FAILED(m_Device->CreateDepthStencilView(texture, &dsvDesc, &m_DepthTarget)))
+		//{
+		//	spdlog::error("D3D11: Failed to create DepthStencilView");
+		//	texture->Release();
+		//	return;
+		//}
 
-		texture->Release();
+		//texture->Release();
+
+		unsigned int flags = (unsigned int)TextureFlags::TexDepthStencilTarget;
+		TextureFormat format = TextureFormat::R32_Typeless;
+		std::shared_ptr<DirectXTexture2D> texture = std::dynamic_pointer_cast<DirectXTexture2D>(CreateTexture2D(m_WindowSize[0], m_WindowSize[1], 1, 1, flags, format, nullptr));
+
+		m_DepthTarget = texture->GetDepthStencilView();
 	}
 
 	bool DirectXRHI::CompileShader(const std::wstring& filePath, const std::string& profile, Microsoft::WRL::ComPtr<ID3DBlob>& shaderBlob)
@@ -452,5 +573,52 @@ namespace RenderingDEMO
 
 		shaderBlob = std::move(tempShaderBlob);
 		return true;
+	}
+
+	DXGI_FORMAT DirectXRHI::FindTextureResourceDXGIFormat(TextureFormat resFormat)
+	{
+		switch (resFormat)
+		{
+		case TextureFormat::Unknow:
+			return DXGI_FORMAT_UNKNOWN;
+		case TextureFormat::R8_UNorm:
+			return DXGI_FORMAT_R8_UNORM;
+		case TextureFormat::R8G8_UNorm:
+			return DXGI_FORMAT_R8G8_UNORM;
+		case TextureFormat::R8G8B8A8_UNorm:
+			return DXGI_FORMAT_R8G8B8A8_UNORM;
+		case TextureFormat::R32_Typeless:
+			return DXGI_FORMAT_R32_TYPELESS;
+		case TextureFormat::R24G8_Typeless:
+			return DXGI_FORMAT_R24G8_TYPELESS;
+		case TextureFormat::R16G16B16A16_Float:
+			return DXGI_FORMAT_R16G16B16A16_FLOAT;
+		default:
+			return DXGI_FORMAT_UNKNOWN;
+		}
+	}
+
+	DXGI_FORMAT DirectXRHI::FindShaderResourceDXGIFormat(DXGI_FORMAT resFormat)
+	{
+		switch (resFormat)
+		{
+		case DXGI_FORMAT_R24G8_TYPELESS: 
+			return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+		case DXGI_FORMAT_R32_TYPELESS: 
+			return DXGI_FORMAT_R32_FLOAT;
+		}
+		return resFormat;
+	}
+
+	DXGI_FORMAT DirectXRHI::FindDepthStencilDXGIFormat(DXGI_FORMAT resFormat)
+	{
+		switch (resFormat)
+		{
+		case DXGI_FORMAT_R24G8_TYPELESS:
+			return DXGI_FORMAT_D24_UNORM_S8_UINT;
+		case DXGI_FORMAT_R32_TYPELESS:
+			return DXGI_FORMAT_D32_FLOAT;
+		}
+		return resFormat;
 	}
 }

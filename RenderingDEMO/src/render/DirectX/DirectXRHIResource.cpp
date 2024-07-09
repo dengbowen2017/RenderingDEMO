@@ -69,7 +69,7 @@ namespace RenderingDEMO
 
 		if (FAILED(device->CreateInputLayout(
 			layoutInfo.data(),
-			layoutInfo.size(),
+			static_cast<UINT>(layoutInfo.size()),
 			vs->GetShaderBlob()->GetBufferPointer(),
 			vs->GetShaderBlob()->GetBufferSize(),
 			&m_InputLayout)))
@@ -89,6 +89,11 @@ namespace RenderingDEMO
 
 	DirectXDepthStencilState::DirectXDepthStencilState(const Microsoft::WRL::ComPtr<ID3D11DepthStencilState>& state)
 		:m_DepthStencilState(state)
+	{
+	}
+
+	DirectXTexture2D::DirectXTexture2D(unsigned int width, unsigned int height, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, const Microsoft::WRL::ComPtr<ID3D11Texture2D>& texRes, const Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& srv, const Microsoft::WRL::ComPtr<ID3D11RenderTargetView>& rtv, const Microsoft::WRL::ComPtr<ID3D11DepthStencilView>& dsv)
+		:Texture2D(width, height, numMips, numSamples, flags, format), m_TextureResource(texRes), m_TextureSRV(srv), m_TextureDSV(dsv), m_TextureRTV(rtv)
 	{
 	}
 }
