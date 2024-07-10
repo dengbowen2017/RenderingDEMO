@@ -2,6 +2,7 @@
 
 #include "core/Window.h"
 #include "RHIResource.h"
+#include "RHIState.h"
 
 namespace RenderingDEMO
 {
@@ -14,9 +15,10 @@ namespace RenderingDEMO
 
 		virtual void RecreateSwapChain(int width, int height) = 0;
 
-		virtual std::shared_ptr<RasterizerState> CreateRasterizerState() = 0;
-		virtual std::shared_ptr<DepthStencilState> CreateDepthStencilState() = 0;
-		
+		virtual std::shared_ptr<RasterizerState> CreateRasterizerState(const RasterizerStateInitializer& initializer) = 0;
+		virtual std::shared_ptr<DepthStencilState> CreateDepthStencilState(const DepthStencilStateInitializer& initializer) = 0;
+		virtual std::shared_ptr<SamplerState> CreateSamplerState(const SamplerStateInitializer& initializer) = 0;
+
 		virtual std::shared_ptr<Texture2D> CreateTexture2D(unsigned int width, unsigned int height, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, const void* data) = 0;
 
 		virtual std::shared_ptr<VertexBuffer> CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride) = 0;
@@ -31,6 +33,7 @@ namespace RenderingDEMO
 		virtual void UpdateUniformBuffer(std::shared_ptr<UniformBuffer> ub, const void* data) = 0;
 
 		virtual void SetTexture(std::shared_ptr<Texture> texture, unsigned int index) = 0;
+		virtual void SetSamplerState(std::shared_ptr<SamplerState> sampler, unsigned int index) = 0;
 		virtual void SetVertexBuffer(std::shared_ptr<VertexBuffer> vb) = 0;
 		virtual void SetUniformBuffer(std::shared_ptr<UniformBuffer> ub, unsigned int index) = 0;
 		virtual void SetPipelineState(std::shared_ptr<PipelineState> state) = 0;

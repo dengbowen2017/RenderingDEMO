@@ -1,8 +1,8 @@
 #include "DirectXRHI.h"
 #include "DirectXRHIResource.h"
+#include "DirectXRHIState.h"
 
 #include <d3dcompiler.h>
-
 #include <spdlog/spdlog.h>
 
 namespace RenderingDEMO
@@ -95,9 +95,9 @@ namespace RenderingDEMO
 		CreateDepthStencilView();
 	}
 
-	std::shared_ptr<RasterizerState> DirectXRHI::CreateRasterizerState()
+	std::shared_ptr<RasterizerState> DirectXRHI::CreateRasterizerState(const RasterizerStateInitializer& initializer)
 	{
-		Microsoft::WRL::ComPtr<ID3D11RasterizerState> state;
+		Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterState;
 
 		D3D11_RASTERIZER_DESC rasterizerStateDescriptor = {};
 		rasterizerStateDescriptor.DepthBias = 0;
@@ -108,34 +108,62 @@ namespace RenderingDEMO
 		rasterizerStateDescriptor.MultisampleEnable = false;
 		rasterizerStateDescriptor.DepthClipEnable = true;
 		rasterizerStateDescriptor.ScissorEnable = false;
-		rasterizerStateDescriptor.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
-		rasterizerStateDescriptor.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
+		rasterizerStateDescriptor.FillMode = TranslateFillMode(initializer.FillMode);
+		rasterizerStateDescriptor.CullMode = TranslateCullMode(initializer.CullMode);
 
-		if (FAILED(m_Device->CreateRasterizerState(&rasterizerStateDescriptor, &state)))
+		if (FAILED(m_Device->CreateRasterizerState(&rasterizerStateDescriptor, rasterState.GetAddressOf())))
 		{
 			spdlog::error("D3D11: Failed to create rasterizer state");
 			return nullptr;
 		}
 
-		return std::shared_ptr<DirectXRasterizerState>(new DirectXRasterizerState(state));
+		DirectXRasterizerState* state = new DirectXRasterizerState;
+		state->m_RasterizerState = rasterState;
+
+		return std::shared_ptr<DirectXRasterizerState>(state);
 	}
 
-	std::shared_ptr<DepthStencilState> DirectXRHI::CreateDepthStencilState()
+	std::shared_ptr<DepthStencilState> DirectXRHI::CreateDepthStencilState(const DepthStencilStateInitializer& initializer)
 	{
-		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> state;
+		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> depthState;
 
 		D3D11_DEPTH_STENCIL_DESC depthDesc{};
 		depthDesc.DepthEnable = TRUE;
-		depthDesc.DepthFunc = D3D11_COMPARISON_FUNC::D3D11_COMPARISON_LESS;
-		depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		depthDesc.DepthFunc = TranslateCompareFunction(initializer.DepthTest);
+		depthDesc.DepthWriteMask = initializer.EnableDepthWrite ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
 
-		if (FAILED(m_Device->CreateDepthStencilState(&depthDesc, &state)))
+		if (FAILED(m_Device->CreateDepthStencilState(&depthDesc, depthState.GetAddressOf())))
 		{
 			spdlog::error("D3D11: Failed to create depth stencil state");
 			return nullptr;
 		}
 
-		return std::shared_ptr<DirectXDepthStencilState>(new DirectXDepthStencilState(state));
+		DirectXDepthStencilState* state = new DirectXDepthStencilState;
+		state->m_DepthStencilState = depthState;
+
+		return std::shared_ptr<DirectXDepthStencilState>(state);
+	}
+
+	std::shared_ptr<SamplerState> DirectXRHI::CreateSamplerState(const SamplerStateInitializer& initializer)
+	{
+		Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
+
+		D3D11_SAMPLER_DESC samplerDesc = {};
+		samplerDesc.Filter = TranslateSamplerFilter(initializer.Filter);
+		samplerDesc.AddressU = TranslateAddressMode(initializer.AddressU);
+		samplerDesc.AddressV = TranslateAddressMode(initializer.AddressV);
+		samplerDesc.AddressW = TranslateAddressMode(initializer.AddressW);
+
+		if (FAILED(m_Device->CreateSamplerState(&samplerDesc, samplerState.GetAddressOf())))
+		{
+			spdlog::error("D3D11: Failed to create sampler state");
+			return nullptr;
+		}
+
+		DirectXSamplerState* state = new DirectXSamplerState;
+		state->m_SamplerState = samplerState;
+
+		return std::shared_ptr<DirectXSamplerState>(state);
 	}
 
 	std::shared_ptr<Texture2D> DirectXRHI::CreateTexture2D(unsigned int width, unsigned int height, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, const void* data)
@@ -405,6 +433,16 @@ namespace RenderingDEMO
 		m_DeviceContext->PSSetShaderResources(index, 1, dxtex->GetShaderResourceView().GetAddressOf());
 	}
 
+	void DirectXRHI::SetSamplerState(std::shared_ptr<SamplerState> sampler, unsigned int index)
+	{
+		std::shared_ptr<DirectXSamplerState> dxsampler = std::dynamic_pointer_cast<DirectXSamplerState>(sampler);
+
+		// TODO: find a better way
+		// have to treat uniform texture sampler as global parameter (same as OpenGL)
+		m_DeviceContext->VSSetSamplers(index, 1, dxsampler->m_SamplerState.GetAddressOf());
+		m_DeviceContext->PSSetSamplers(index, 1, dxsampler->m_SamplerState.GetAddressOf());
+	}
+
 	void DirectXRHI::SetVertexBuffer(std::shared_ptr<VertexBuffer> vb)
 	{
 		std::shared_ptr<DirectXVertexBuffer> dxvb = std::dynamic_pointer_cast<DirectXVertexBuffer>(vb);
@@ -439,7 +477,7 @@ namespace RenderingDEMO
 
 	void DirectXRHI::ClearBackBuffer()
 	{
-		constexpr float clearColor[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+		constexpr float clearColor[] = { 0.01f, 0.01f, 0.01f, 1.0f };
 		ID3D11RenderTargetView* nullRTV = nullptr;
 
 		m_DeviceContext->OMSetRenderTargets(1, &nullRTV, nullptr);
@@ -620,5 +658,74 @@ namespace RenderingDEMO
 			return DXGI_FORMAT_D32_FLOAT;
 		}
 		return resFormat;
+	}
+
+	D3D11_TEXTURE_ADDRESS_MODE DirectXRHI::TranslateAddressMode(SamplerAddressMode addressMode)
+	{
+		switch (addressMode)
+		{
+		case SamplerAddressMode::Mirror:
+			return D3D11_TEXTURE_ADDRESS_MIRROR;
+		case SamplerAddressMode::Clamp:
+			return D3D11_TEXTURE_ADDRESS_CLAMP;
+		default:
+			return D3D11_TEXTURE_ADDRESS_WRAP;
+		}
+	}
+
+	D3D11_CULL_MODE DirectXRHI::TranslateCullMode(RasterizerCullMode cullMode)
+	{
+		switch (cullMode)
+		{
+		case RasterizerCullMode::Front:
+			return D3D11_CULL_FRONT;
+		case RasterizerCullMode::Back:
+			return D3D11_CULL_BACK;
+		default:
+			return D3D11_CULL_NONE;
+		}
+	}
+
+	D3D11_FILL_MODE DirectXRHI::TranslateFillMode(RasterizerFillMode fillMode)
+	{
+		switch (fillMode)
+		{
+		case RasterizerFillMode::Wireframe:
+			return D3D11_FILL_WIREFRAME;
+		default:
+			return D3D11_FILL_SOLID;
+		}
+	}
+
+	D3D11_COMPARISON_FUNC DirectXRHI::TranslateCompareFunction(DepthCompareFunc compareFunc)
+	{
+		switch (compareFunc)
+		{
+		case DepthCompareFunc::Less:
+			return D3D11_COMPARISON_LESS;
+		case DepthCompareFunc::LessEqual:
+			return D3D11_COMPARISON_LESS_EQUAL;
+		case DepthCompareFunc::Greater:
+			return D3D11_COMPARISON_GREATER;
+		case DepthCompareFunc::GreaterEqual:
+			return D3D11_COMPARISON_GREATER_EQUAL;
+		default:
+			return D3D11_COMPARISON_ALWAYS;
+		}
+	}
+
+	D3D11_FILTER DirectXRHI::TranslateSamplerFilter(SamplerFilter filter)
+	{
+		switch (filter)
+		{
+		case SamplerFilter::Nearest:
+			return D3D11_FILTER_MIN_MAG_MIP_POINT;
+		case SamplerFilter::Bilinear:
+			return D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+		case SamplerFilter::Trilinear:
+			return D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		default:
+			return D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		}
 	}
 }

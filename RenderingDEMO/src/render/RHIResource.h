@@ -1,12 +1,9 @@
 #pragma once
 
+#include "RHIDefinition.h"
+
 namespace RenderingDEMO
 {
-	enum class VertexElementType
-	{
-		None = 0, Float, Float2, Float3, Float4, UInt
-	};
-
 	struct VertexElement
 	{
 		std::string Name;
@@ -52,18 +49,6 @@ namespace RenderingDEMO
 		unsigned int m_Stride;
 	};
 
-	class RasterizerState
-	{
-	public:
-		virtual ~RasterizerState() = default;
-	};
-
-	class DepthStencilState
-	{
-	public:
-		virtual ~DepthStencilState() = default;
-	};
-
 	class VertexShader 
 	{
 	public:
@@ -74,12 +59,6 @@ namespace RenderingDEMO
 	{
 	public:
 		virtual ~PixelShader() = default;
-	};
-
-	class PipelineState
-	{
-	public:
-		virtual ~PipelineState() = default;
 	};
 
 	class VertexBuffer
@@ -129,27 +108,6 @@ namespace RenderingDEMO
 		unsigned int m_Size = 0;
 	};
 
-	enum class TextureFlags : unsigned int
-	{
-		TexRenderTarget = 1 << 0,
-		TexDepthStencilTarget = 1 << 1,
-		TexShaderResource = 1 << 2,
-		TexMips = 1 << 3,
-		TexImmutable = 1 << 4,
-		TexDefault = 1 << 5
-	};
-
-	enum class TextureFormat
-	{
-		Unknow = 0,
-		R8_UNorm,
-		R8G8_UNorm,
-		R8G8B8A8_UNorm,
-		R32_Typeless,
-		R24G8_Typeless,
-		R16G16B16A16_Float,
-	};
-
 	class Texture
 	{
 	public:
@@ -178,11 +136,5 @@ namespace RenderingDEMO
 	private:
 		unsigned int m_Width;
 		unsigned int m_Height;
-	};
-
-	class SamplerState
-	{
-	public:
-		virtual ~SamplerState() = default;
 	};
 }

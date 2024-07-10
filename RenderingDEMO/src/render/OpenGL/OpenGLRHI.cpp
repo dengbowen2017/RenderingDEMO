@@ -1,5 +1,6 @@
 #include "OpenGLRHI.h"
 #include "OpenGLRHIResource.h"
+#include "OpenGLRHIState.h"
 
 #include <spdlog/spdlog.h>
 #include <glad/glad.h>
@@ -36,22 +37,53 @@ namespace RenderingDEMO
         glViewport(0, 0, m_WindowSize[0], m_WindowSize[1]);
     }
 
-    std::shared_ptr<RasterizerState> OpenGLRHI::CreateRasterizerState()
+    std::shared_ptr<RasterizerState> OpenGLRHI::CreateRasterizerState(const RasterizerStateInitializer& initializer)
     {
         OpenGLRasterizerState* state = new OpenGLRasterizerState;
-        state->m_FillMode = GL_FILL;
-        state->m_CullMode = GL_BACK;
+        state->m_FillMode = TranslateFillMode(initializer.FillMode);
+        state->m_CullMode = TranslateCullMode(initializer.CullMode);
 
         return std::shared_ptr<OpenGLRasterizerState>(state);
     }
 
-    std::shared_ptr<DepthStencilState> OpenGLRHI::CreateDepthStencilState()
+    std::shared_ptr<DepthStencilState> OpenGLRHI::CreateDepthStencilState(const DepthStencilStateInitializer& initializer)
     {
         OpenGLDepthStencilState* state = new OpenGLDepthStencilState;
-        state->m_DepthFunc = GL_LESS;
-        state->m_DepthMask = GL_TRUE;
+        state->m_DepthFunc = TranslateCompareFunction(initializer.DepthTest);
+        state->m_DepthMask = initializer.EnableDepthWrite ? GL_TRUE : GL_FALSE;
 
         return std::shared_ptr<OpenGLDepthStencilState>(state);
+    }
+
+    std::shared_ptr<SamplerState> OpenGLRHI::CreateSamplerState(const SamplerStateInitializer& initializer)
+    {
+        unsigned int samplerID;
+        glCreateSamplers(1, &samplerID);
+        
+        switch (initializer.Filter)
+        {
+        case SamplerFilter::Nearest:
+            glSamplerParameteri(samplerID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glSamplerParameteri(samplerID, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+            break;
+        case SamplerFilter::Bilinear:
+            glSamplerParameteri(samplerID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glSamplerParameteri(samplerID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+            break;
+        case SamplerFilter::Trilinear:
+            glSamplerParameteri(samplerID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glSamplerParameteri(samplerID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            break;
+        }
+
+        glSamplerParameteri(samplerID, GL_TEXTURE_WRAP_S, TranslateAddressMode(initializer.AddressU));
+        glSamplerParameteri(samplerID, GL_TEXTURE_WRAP_T, TranslateAddressMode(initializer.AddressV));
+        glSamplerParameteri(samplerID, GL_TEXTURE_WRAP_R, TranslateAddressMode(initializer.AddressW));
+
+        OpenGLSamplerState* state = new OpenGLSamplerState;
+        state->m_ID = samplerID;
+
+        return std::shared_ptr<SamplerState>(state);
     }
 
     std::shared_ptr<Texture2D> OpenGLRHI::CreateTexture2D(unsigned int width, unsigned int height, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, const void* data)
@@ -203,6 +235,12 @@ namespace RenderingDEMO
         glBindTextureUnit(index, gltex->GetID());
     }
 
+    void OpenGLRHI::SetSamplerState(std::shared_ptr<SamplerState> sampler, unsigned int index)
+    {
+        std::shared_ptr<OpenGLSamplerState> glsampler = std::dynamic_pointer_cast<OpenGLSamplerState>(sampler);
+        glBindSampler(index, glsampler->m_ID);
+    }
+
     void OpenGLRHI::SetVertexBuffer(std::shared_ptr<VertexBuffer> vb)
     {
         std::shared_ptr<OpenGLVertexBuffer> glvb = std::dynamic_pointer_cast<OpenGLVertexBuffer>(vb);
@@ -251,7 +289,7 @@ namespace RenderingDEMO
 
     void OpenGLRHI::ClearBackBuffer()
     {
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClearColor(0.01f, 0.01f, 0.01f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
@@ -294,5 +332,59 @@ namespace RenderingDEMO
         }
 
         return shaderCode;
+    }
+
+    GLint OpenGLRHI::TranslateAddressMode(SamplerAddressMode addressMode)
+    {
+        switch (addressMode)
+        {
+        case SamplerAddressMode::Mirror:
+            return GL_MIRRORED_REPEAT;
+        case SamplerAddressMode::Clamp:
+            return GL_CLAMP_TO_EDGE;
+        default:
+            return GL_REPEAT;
+        }
+    }
+
+    GLenum OpenGLRHI::TranslateCullMode(RasterizerCullMode cullMode)
+    {
+        switch (cullMode)
+        {
+        case RasterizerCullMode::Front:
+            return GL_FRONT;
+        case RasterizerCullMode::Back:
+            return GL_BACK;
+        default:
+            return GL_NONE;
+        };
+    }
+
+    GLenum OpenGLRHI::TranslateFillMode(RasterizerFillMode fillMode)
+    {
+        switch (fillMode)
+        {
+        case RenderingDEMO::RasterizerFillMode::Wireframe:
+            return GL_LINE;
+        default:
+            return GL_FILL;
+        }
+    }
+
+    GLenum OpenGLRHI::TranslateCompareFunction(DepthCompareFunc compareFunc)
+    {
+        switch (compareFunc)
+        {
+        case RenderingDEMO::DepthCompareFunc::Less:
+            return GL_LESS;
+        case RenderingDEMO::DepthCompareFunc::LessEqual:
+            return GL_LEQUAL;
+        case RenderingDEMO::DepthCompareFunc::Greater:
+            return GL_GREATER;
+        case RenderingDEMO::DepthCompareFunc::GreaterEqual:
+            return GL_GEQUAL;
+        default:
+            return GL_ALWAYS;
+        }
     }
 }

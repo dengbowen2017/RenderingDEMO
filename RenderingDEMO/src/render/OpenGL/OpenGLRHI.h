@@ -3,6 +3,9 @@
 #include "render/RHI.h"
 #include "core/Window.h"
 
+// temp
+#include "glad/glad.h"
+
 namespace RenderingDEMO
 {
 	class OpenGLRHI :public RHI
@@ -15,8 +18,9 @@ namespace RenderingDEMO
 
 		virtual void RecreateSwapChain(int width, int height) override;
 
-		virtual std::shared_ptr<RasterizerState> CreateRasterizerState() override;
-		virtual std::shared_ptr<DepthStencilState> CreateDepthStencilState() override;
+		virtual std::shared_ptr<RasterizerState> CreateRasterizerState(const RasterizerStateInitializer& initializer) override;
+		virtual std::shared_ptr<DepthStencilState> CreateDepthStencilState(const DepthStencilStateInitializer& initializer) override;
+		virtual std::shared_ptr<SamplerState> CreateSamplerState(const SamplerStateInitializer& initializer) override;
 
 		virtual std::shared_ptr<Texture2D> CreateTexture2D(unsigned int width, unsigned int height, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, const void* data) override;
 
@@ -32,6 +36,7 @@ namespace RenderingDEMO
 		virtual void UpdateUniformBuffer(std::shared_ptr<UniformBuffer> ub, const void* data) override;
 
 		virtual void SetTexture(std::shared_ptr<Texture> texture, unsigned int index) override;
+		virtual void SetSamplerState(std::shared_ptr<SamplerState> sampler, unsigned int index) override;
 		virtual void SetVertexBuffer(std::shared_ptr<VertexBuffer> vb) override;
 		virtual void SetUniformBuffer(std::shared_ptr<UniformBuffer> ub, unsigned int index) override;
 		virtual void SetPipelineState(std::shared_ptr<PipelineState> state) override;
@@ -43,6 +48,11 @@ namespace RenderingDEMO
 
 	private:
 		std::string ReadFromFile(const std::wstring& filePath);
+
+		GLint TranslateAddressMode(SamplerAddressMode addressMode);
+		GLenum TranslateCullMode(RasterizerCullMode cullMode);
+		GLenum TranslateFillMode(RasterizerFillMode fillMode);
+		GLenum TranslateCompareFunction(DepthCompareFunc compareFunc);
 
 	private:
 		GLFWwindow* m_Window = nullptr;

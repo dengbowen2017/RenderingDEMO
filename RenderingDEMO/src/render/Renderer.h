@@ -6,7 +6,6 @@
 #include "core/WindowUI.h"
 #include "Camera.h"
 
-#include <Eigen/Dense>
 namespace RenderingDEMO
 {
 	enum RenderAPI

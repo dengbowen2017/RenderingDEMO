@@ -53,45 +53,6 @@ namespace RenderingDEMO
 		Microsoft::WRL::ComPtr<ID3D11PixelShader> m_PixelShader;
 	};
 
-	class DirectXRasterizerState :public RasterizerState
-	{
-	public:
-		DirectXRasterizerState(const Microsoft::WRL::ComPtr<ID3D11RasterizerState>& state);
-		~DirectXRasterizerState() = default;
-
-		const Microsoft::WRL::ComPtr<ID3D11RasterizerState>& GetState() const { return m_RasterizerState; }
-
-	private:
-		Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_RasterizerState;
-	};
-
-	class DirectXDepthStencilState :public DepthStencilState
-	{
-	public:
-		DirectXDepthStencilState(const Microsoft::WRL::ComPtr<ID3D11DepthStencilState>& state);
-		~DirectXDepthStencilState() = default;
-
-		const Microsoft::WRL::ComPtr<ID3D11DepthStencilState>& GetState() const { return m_DepthStencilState; }
-
-	private:
-		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_DepthStencilState;
-	};
-
-	class DirectXPipelineState :public PipelineState
-	{
-	public:
-		DirectXPipelineState(std::shared_ptr<DirectXVertexShader> vs, std::shared_ptr<DirectXPixelShader> ps, std::shared_ptr<DirectXVertexDeclaration> vd, 
-			std::shared_ptr<DirectXRasterizerState> rasterState, std::shared_ptr<DirectXDepthStencilState> depthState, const Microsoft::WRL::ComPtr<ID3D11Device>& device);
-		~DirectXPipelineState() = default;
-
-	public:
-		Microsoft::WRL::ComPtr<ID3D11InputLayout> m_InputLayout;
-		Microsoft::WRL::ComPtr<ID3D11VertexShader> m_VertexShader;
-		Microsoft::WRL::ComPtr<ID3D11PixelShader> m_PixelShader;
-		Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_RasterizerState;
-		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_DepthStencilState;
-	};
-
 	class DirectXVertexBuffer :public VertexBuffer
 	{
 	public:

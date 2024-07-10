@@ -210,11 +210,21 @@ namespace RenderingDEMO
 		// temp file path
 		std::shared_ptr<VertexShader> vs = m_RHI->CreateVertexShader(L"../shader/vs" + m_Suffix);
 		std::shared_ptr<PixelShader> ps = m_RHI->CreatePixelShader(L"../shader/ps" + m_Suffix);
-		std::shared_ptr<RasterizerState> rasterState = m_RHI->CreateRasterizerState();
-		std::shared_ptr<DepthStencilState> depthState = m_RHI->CreateDepthStencilState();
+
+		RasterizerStateInitializer rsInit;
+		rsInit.CullMode = RasterizerCullMode::Back;
+		rsInit.FillMode = RasterizerFillMode::Solid;
+
+		std::shared_ptr<RasterizerState> rasterState = m_RHI->CreateRasterizerState(rsInit);
+
+		DepthStencilStateInitializer dsInit;
+		dsInit.DepthTest = DepthCompareFunc::Less;
+		dsInit.EnableDepthWrite = TRUE;
+
+		std::shared_ptr<DepthStencilState> depthState = m_RHI->CreateDepthStencilState(dsInit);
+
 		// move to pass
 		std::shared_ptr<PipelineState> pips = m_RHI->CreatePipelineState(vs, ps, vd, rasterState, depthState);
-
 
 		m_RenderResource->m_CubeVertexBuffer = vb;
 		m_RenderResource->m_CubeIndexBuffer = ib;
