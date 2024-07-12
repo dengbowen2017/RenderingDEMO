@@ -168,8 +168,10 @@ namespace RenderingDEMO
         return std::shared_ptr<OpenGLVertexDeclaration>(new OpenGLVertexDeclaration(elements));
     }
 
-    std::shared_ptr<VertexShader> OpenGLRHI::CreateVertexShader(const std::wstring& filePath)
+    std::shared_ptr<VertexShader> OpenGLRHI::CreateVertexShader(const std::wstring& fileName)
     {
+        std::wstring filePath = fileName + L".glsl";
+
         std::string vertexShaderSource = ReadFromFile(filePath);
         const char* source = vertexShaderSource.c_str();
 
@@ -189,8 +191,10 @@ namespace RenderingDEMO
         return std::shared_ptr<OpenGLVertexShader>(new OpenGLVertexShader(vertexShader));
     }
 
-    std::shared_ptr<PixelShader> OpenGLRHI::CreatePixelShader(const std::wstring& filePath)
+    std::shared_ptr<PixelShader> OpenGLRHI::CreatePixelShader(const std::wstring& fileName)
     {
+        std::wstring filePath = fileName + L".glsl";
+
         std::string pixelShaderSource = ReadFromFile(filePath);
         const char* source = pixelShaderSource.c_str();
 
@@ -255,6 +259,19 @@ namespace RenderingDEMO
     {
         std::shared_ptr<OpenGLUniformBuffer> glub = std::dynamic_pointer_cast<OpenGLUniformBuffer>(ub);
         glBindBufferBase(GL_UNIFORM_BUFFER, index, glub->GetID());
+    }
+
+    void OpenGLRHI::SetRenderTarget(std::shared_ptr<RenderTarget> rt)
+    {
+        if (rt == nullptr)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
+    }
+
+    void OpenGLRHI::SetViewPort(float width, float height)
+    {
+        glViewport(0, 0, static_cast<GLuint>(width), static_cast<GLuint>(height));
     }
 
     void OpenGLRHI::SetPipelineState(std::shared_ptr<PipelineState> state)

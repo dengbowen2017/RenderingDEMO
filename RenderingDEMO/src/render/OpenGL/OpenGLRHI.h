@@ -11,7 +11,6 @@ namespace RenderingDEMO
 	class OpenGLRHI :public RHI
 	{
 	public:
-		OpenGLRHI() = default;
 		~OpenGLRHI();
 
 		virtual void Initialize(std::shared_ptr<Window> window) override;
@@ -28,8 +27,8 @@ namespace RenderingDEMO
 		virtual std::shared_ptr<IndexBuffer> CreateIndexBuffer(const void* data, unsigned int size) override;
 		virtual std::shared_ptr<UniformBuffer> CreateUniformBuffer(unsigned int size) override;
 		virtual std::shared_ptr<VertexDeclaration> CreateVertexDeclaration(const std::vector<VertexElement>& elements) override;
-		virtual std::shared_ptr<VertexShader> CreateVertexShader(const std::wstring& filePath) override;
-		virtual std::shared_ptr<PixelShader> CreatePixelShader(const std::wstring& filePath) override;
+		virtual std::shared_ptr<VertexShader> CreateVertexShader(const std::wstring& fileName) override;
+		virtual std::shared_ptr<PixelShader> CreatePixelShader(const std::wstring& fileName) override;
 
 		virtual std::shared_ptr<PipelineState> CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd, std::shared_ptr<RasterizerState> rasterState, std::shared_ptr<DepthStencilState> depthState) override;
 
@@ -39,6 +38,8 @@ namespace RenderingDEMO
 		virtual void SetSamplerState(std::shared_ptr<SamplerState> sampler, unsigned int index) override;
 		virtual void SetVertexBuffer(std::shared_ptr<VertexBuffer> vb) override;
 		virtual void SetUniformBuffer(std::shared_ptr<UniformBuffer> ub, unsigned int index) override;
+		virtual void SetRenderTarget(std::shared_ptr<RenderTarget> rt) override;
+		virtual void SetViewPort(float width, float height) override;
 		virtual void SetPipelineState(std::shared_ptr<PipelineState> state) override;
 
 		virtual void ClearBackBuffer() override;

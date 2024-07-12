@@ -2,6 +2,7 @@
 
 #include "RHI.h"
 #include "RenderResource.h"
+#include "RHIState.h"
 
 namespace RenderingDEMO
 {
@@ -18,5 +19,6 @@ namespace RenderingDEMO
 	protected:
 		std::shared_ptr<RHI> m_RHI;
 		std::shared_ptr<RenderResource> m_RenderResource;
+		std::shared_ptr<PipelineState> m_PiplineState;
 	};
 }

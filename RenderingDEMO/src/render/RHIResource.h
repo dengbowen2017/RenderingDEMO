@@ -137,4 +137,19 @@ namespace RenderingDEMO
 		unsigned int m_Width;
 		unsigned int m_Height;
 	};
+
+	class RenderTarget
+	{
+	public:
+		RenderTarget(std::shared_ptr<Texture2D> rtvTex, std::shared_ptr<Texture2D> dsvTex)
+		{}
+		virtual ~RenderTarget() = default;
+
+		std::shared_ptr<Texture2D> GetRenderTargetTexture() const { return m_RenderTargetTexture; }
+		std::shared_ptr<Texture2D> GetDepthStencilTexture() const { return m_DepthStencilTexture; }
+
+	protected:
+		std::shared_ptr<Texture2D> m_RenderTargetTexture;
+		std::shared_ptr<Texture2D> m_DepthStencilTexture;
+	};
 }

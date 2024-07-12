@@ -2,6 +2,7 @@
 
 #include "RHI.h"
 #include "RenderResource.h"
+#include "RenderPipline.h"
 #include "core/Window.h"
 #include "core/WindowUI.h"
 #include "Camera.h"
@@ -26,19 +27,12 @@ namespace RenderingDEMO
 		std::shared_ptr<Camera> GetMainCamera() const { return m_Camera; }
 
 	private:
-		void PreProcess();
-		void SetPipline();
-		void UpdateConstant();
-
-	private:
 		std::shared_ptr<RHI> m_RHI;
 		std::shared_ptr<WindowUI> m_WindowUI;
 		std::shared_ptr<RenderResource> m_RenderResource;
+		std::shared_ptr<RenderPipline> m_RenderPipeline;
 		std::shared_ptr<Camera> m_Camera;
 
 		RenderAPI m_CurrentAPI = RenderAPI::Unknown;
-
-		//temp
-		std::wstring m_Suffix;
 	};
 }

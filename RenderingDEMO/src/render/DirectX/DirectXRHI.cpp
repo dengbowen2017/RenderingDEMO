@@ -70,14 +70,15 @@ namespace RenderingDEMO
 		}
 		
 		CreateSwapChainResource();
-		CreateDepthStencilView();
 	}
 
 	void DirectXRHI::RecreateSwapChain(int width, int height)
 	{
 		m_WindowSize = { width, height };
 		m_DeviceContext->Flush();
-		m_RenderTarget.Reset();
+		m_SwapChainRenderTarget.Reset();
+		m_SwapChainDepthTarget.Reset();
+
 		if (FAILED(m_SwapChain->ResizeBuffers(
 			0,
 			width,
@@ -90,9 +91,6 @@ namespace RenderingDEMO
 		}
 
 		CreateSwapChainResource();
-
-		m_DepthTarget.Reset();
-		CreateDepthStencilView();
 	}
 
 	std::shared_ptr<RasterizerState> DirectXRHI::CreateRasterizerState(const RasterizerStateInitializer& initializer)
@@ -356,8 +354,10 @@ namespace RenderingDEMO
 		return std::shared_ptr<DirectXVertexDeclaration>(new DirectXVertexDeclaration(elements));
 	}
 
-	std::shared_ptr<VertexShader> DirectXRHI::CreateVertexShader(const std::wstring& filePath)
+	std::shared_ptr<VertexShader> DirectXRHI::CreateVertexShader(const std::wstring& fileName)
 	{
+		std::wstring filePath = fileName + L".hlsl";
+
 		Microsoft::WRL::ComPtr<ID3D11VertexShader> vs;
 		Microsoft::WRL::ComPtr<ID3D10Blob> blob;
 
@@ -379,8 +379,10 @@ namespace RenderingDEMO
 		return std::shared_ptr<DirectXVertexShader>(new DirectXVertexShader(vs, blob));
 	}
 
-	std::shared_ptr<PixelShader> DirectXRHI::CreatePixelShader(const std::wstring& filePath)
+	std::shared_ptr<PixelShader> DirectXRHI::CreatePixelShader(const std::wstring& fileName)
 	{
+		std::wstring filePath = fileName + L".hlsl";
+
 		Microsoft::WRL::ComPtr<ID3D11PixelShader> ps;
 		Microsoft::WRL::ComPtr<ID3D10Blob> blob;
 
@@ -464,6 +466,27 @@ namespace RenderingDEMO
 		m_DeviceContext->PSSetConstantBuffers(index, 1, dxub->GetBuffer().GetAddressOf());
 	}
 
+	void DirectXRHI::SetRenderTarget(std::shared_ptr<RenderTarget> rt)
+	{
+		if (rt == nullptr)
+		{
+			m_DeviceContext->OMSetRenderTargets(1, m_SwapChainRenderTarget.GetAddressOf(), m_SwapChainDepthTarget.Get());
+		}
+	}
+
+	void DirectXRHI::SetViewPort(float width, float height)
+	{
+		D3D11_VIEWPORT viewport = {};
+		viewport.TopLeftX = 0;
+		viewport.TopLeftY = 0;
+		viewport.Width = width;
+		viewport.Height = height;
+		viewport.MinDepth = 0.0f;
+		viewport.MaxDepth = 1.0f;
+
+		m_DeviceContext->RSSetViewports(1, &viewport);
+	}
+
 	void DirectXRHI::SetPipelineState(std::shared_ptr<PipelineState> state)
 	{
 		std::shared_ptr<DirectXPipelineState> dxState = std::dynamic_pointer_cast<DirectXPipelineState>(state);
@@ -481,8 +504,8 @@ namespace RenderingDEMO
 		ID3D11RenderTargetView* nullRTV = nullptr;
 
 		m_DeviceContext->OMSetRenderTargets(1, &nullRTV, nullptr);
-		m_DeviceContext->ClearRenderTargetView(m_RenderTarget.Get(), clearColor);
-		m_DeviceContext->ClearDepthStencilView(m_DepthTarget.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+		m_DeviceContext->ClearRenderTargetView(m_SwapChainRenderTarget.Get(), clearColor);
+		m_DeviceContext->ClearDepthStencilView(m_SwapChainDepthTarget.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
 	void DirectXRHI::SwapBuffer()
@@ -493,7 +516,6 @@ namespace RenderingDEMO
 	void DirectXRHI::Draw(unsigned int count)
 	{
 		m_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		m_DeviceContext->OMSetRenderTargets(1, m_RenderTarget.GetAddressOf(), m_DepthTarget.Get());
 		m_DeviceContext->Draw(count, 0);
 	}
 
@@ -508,24 +530,9 @@ namespace RenderingDEMO
 			DXGI_FORMAT_R32_UINT,
 			offset
 		);
-	
-		// need to set render target for every frame
+
 		m_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		m_DeviceContext->OMSetRenderTargets(1, m_RenderTarget.GetAddressOf(), m_DepthTarget.Get());
 		m_DeviceContext->DrawIndexed(dxib->GetCount(), 0, 0);
-	}
-
-	void DirectXRHI::SetViewport()
-	{
-		D3D11_VIEWPORT viewport = {};
-		viewport.TopLeftX = 0;
-		viewport.TopLeftY = 0;
-		viewport.Width = static_cast<float>(m_WindowSize[0]);
-		viewport.Height = static_cast<float>(m_WindowSize[1]);
-		viewport.MinDepth = 0.0f;
-		viewport.MaxDepth = 1.0f;
-
-		m_DeviceContext->RSSetViewports(1, &viewport);
 	}
 
 	void DirectXRHI::CreateSwapChainResource()
@@ -537,50 +544,18 @@ namespace RenderingDEMO
 			return;
 		}
 
-		if (FAILED(m_Device->CreateRenderTargetView(backBuffer.Get(), nullptr, &m_RenderTarget)))
+		if (FAILED(m_Device->CreateRenderTargetView(backBuffer.Get(), nullptr, &m_SwapChainRenderTarget)))
 		{
 			spdlog::error("D3D11: Failed to create RTV from Back Buffer");
 			return;
 		}
 
-		SetViewport();
-	}
-
-	void DirectXRHI::CreateDepthStencilView()
-	{
-		//D3D11_TEXTURE2D_DESC texDesc{};
-		//texDesc.Height = m_WindowSize[1];
-		//texDesc.Width = m_WindowSize[0];
-		//texDesc.ArraySize = 1;
-		//texDesc.SampleDesc.Count = 1;
-		//texDesc.MipLevels = 1;
-		//texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-		//texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
-
-		//ID3D11Texture2D* texture = nullptr;
-		//if (FAILED(m_Device->CreateTexture2D(&texDesc, nullptr, &texture)))
-		//{
-		//	spdlog::error("D3D11: Failed to create texture for DepthStencilView");
-		//	return;
-		//}
-
-		//D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
-		//dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
-		//dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-		//if (FAILED(m_Device->CreateDepthStencilView(texture, &dsvDesc, &m_DepthTarget)))
-		//{
-		//	spdlog::error("D3D11: Failed to create DepthStencilView");
-		//	texture->Release();
-		//	return;
-		//}
-
-		//texture->Release();
-
 		unsigned int flags = (unsigned int)TextureFlags::TexDepthStencilTarget;
 		TextureFormat format = TextureFormat::R32_Typeless;
 		std::shared_ptr<DirectXTexture2D> texture = std::dynamic_pointer_cast<DirectXTexture2D>(CreateTexture2D(m_WindowSize[0], m_WindowSize[1], 1, 1, flags, format, nullptr));
+		m_SwapChainDepthTarget = texture->GetDepthStencilView();
 
-		m_DepthTarget = texture->GetDepthStencilView();
+		SetViewPort(static_cast<float>(m_WindowSize[0]), static_cast<float>(m_WindowSize[1]));
 	}
 
 	bool DirectXRHI::CompileShader(const std::wstring& filePath, const std::string& profile, Microsoft::WRL::ComPtr<ID3DBlob>& shaderBlob)

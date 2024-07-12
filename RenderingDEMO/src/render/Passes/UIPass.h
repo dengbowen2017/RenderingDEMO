@@ -4,8 +4,11 @@
 
 namespace RenderingDEMO
 {
-	class ShadowPass :public RenderPass
+	class UIPass :public RenderPass
 	{
+	public:
+
+	private:
 
 	};
 }
