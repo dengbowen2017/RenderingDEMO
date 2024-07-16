@@ -1,28 +1,41 @@
 # RenderingDEMO
 
 ## Outline
-This is my implementation of a simple game engine with only editor mode. The main concept is to use RHI to manage different rendering APIs. For now, it can support OpenGL and DirectX11.
+This is my implementation of a simple game engine. The main concept is to use RHI to manage different rendering APIs. For now, it can support OpenGL and DirectX11.
 
 ## How to use
-For now, this engine only supports Windows. Please clone the repository, open it with Visual Studio 2022, and run the source code in Visual Studio.
+After cloning the repository
+### Windows
+#### Method 1
+Open the root folder with Visual Studio and run the cmake file 
+#### Method 2
+```
+$ cd RenderingDEMO
+$ mkdir build
+$ cd build
+$ cmake ..
+```
+Then run the .sln file.
+
+## Finished 
+- basic RHI 
+- basic 3D rendering camera system
+- basic render pass
+- phong lighting
+- simple shadow mapping
 
 ## TODO list
-- Add camera system which supports 3D rendering (finished)
-- Add phong lighting and shadow mapping (phong lighting finished)
-- Add textures and skybox
-- Add UI system
-- Add asset manager including model loader and scene manager
+- Add editor (including ECS and UI)
+- Add scene manager
 - Add batch rendering
 - Add PBR
 - Add cross compiling
 
 ## References
-
 ### Rendering API
 [LearnOpenGL](https://learnopengl.com/Getting-started/OpenGL)
 
 [LearnD3D11](https://graphicsprogramming.github.io/learnd3d11/1-introduction/1-1-getting-started/1-1-0-overview/)
-
 ### Engine Framework
 [UnrealEngine](https://github.com/folgerwang/UnrealEngine)
 
