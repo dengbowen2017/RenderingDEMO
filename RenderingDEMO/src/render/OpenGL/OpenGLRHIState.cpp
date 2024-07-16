@@ -4,6 +4,11 @@
 
 namespace RenderingDEMO
 {
+	OpenGLSamplerState::~OpenGLSamplerState()
+	{
+		glDeleteSamplers(1, &m_ID);
+	}
+
 	OpenGLPipelineState::OpenGLPipelineState(std::shared_ptr<OpenGLVertexShader> vs, std::shared_ptr<OpenGLPixelShader> ps, std::shared_ptr<OpenGLVertexDeclaration> vd, std::shared_ptr<OpenGLRasterizerState> rasterState, std::shared_ptr<OpenGLDepthStencilState> depthState)
 	{
 		m_VertexDeclaration = vd;

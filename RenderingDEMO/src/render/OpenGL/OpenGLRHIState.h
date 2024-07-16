@@ -7,6 +7,8 @@ namespace RenderingDEMO
 	class OpenGLSamplerState :public SamplerState
 	{
 	public:
+		~OpenGLSamplerState();
+	public:
 		unsigned int m_ID;
 	};
 

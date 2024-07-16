@@ -151,6 +151,12 @@ namespace RenderingDEMO
 		samplerDesc.AddressU = TranslateAddressMode(initializer.AddressU);
 		samplerDesc.AddressV = TranslateAddressMode(initializer.AddressV);
 		samplerDesc.AddressW = TranslateAddressMode(initializer.AddressW);
+		samplerDesc.MinLOD = initializer.MinMipLevel;
+		samplerDesc.MaxLOD = initializer.MaxMipLevel;
+		samplerDesc.BorderColor[0] = initializer.BorderColor[0];
+		samplerDesc.BorderColor[1] = initializer.BorderColor[1];
+		samplerDesc.BorderColor[2] = initializer.BorderColor[2];
+		samplerDesc.BorderColor[3] = initializer.BorderColor[3];
 
 		if (FAILED(m_Device->CreateSamplerState(&samplerDesc, samplerState.GetAddressOf())))
 		{
@@ -356,7 +362,7 @@ namespace RenderingDEMO
 
 	std::shared_ptr<VertexShader> DirectXRHI::CreateVertexShader(const std::wstring& fileName)
 	{
-		std::wstring filePath = fileName + L".hlsl";
+		std::wstring filePath = L"../shader/DirectX/" + fileName + L".hlsl";
 
 		Microsoft::WRL::ComPtr<ID3D11VertexShader> vs;
 		Microsoft::WRL::ComPtr<ID3D10Blob> blob;
@@ -381,7 +387,7 @@ namespace RenderingDEMO
 
 	std::shared_ptr<PixelShader> DirectXRHI::CreatePixelShader(const std::wstring& fileName)
 	{
-		std::wstring filePath = fileName + L".hlsl";
+		std::wstring filePath = L"../shader/DirectX/" + fileName + L".hlsl";
 
 		Microsoft::WRL::ComPtr<ID3D11PixelShader> ps;
 		Microsoft::WRL::ComPtr<ID3D10Blob> blob;
@@ -402,6 +408,11 @@ namespace RenderingDEMO
 		}
 
 		return std::shared_ptr<DirectXPixelShader>(new DirectXPixelShader(ps));
+	}
+
+	std::shared_ptr<RenderTarget> DirectXRHI::CreateRenderTarget(std::shared_ptr<Texture2D> colorTex, std::shared_ptr<Texture2D> depthTex)
+	{
+		return std::shared_ptr<RenderTarget>(new RenderTarget(colorTex, depthTex));
 	}
 
 	std::shared_ptr<PipelineState> DirectXRHI::CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd, std::shared_ptr<RasterizerState> rasterState, std::shared_ptr<DepthStencilState> depthState)
@@ -472,6 +483,14 @@ namespace RenderingDEMO
 		{
 			m_DeviceContext->OMSetRenderTargets(1, m_SwapChainRenderTarget.GetAddressOf(), m_SwapChainDepthTarget.Get());
 		}
+		else
+		{
+			std::shared_ptr<DirectXTexture2D> dxColorTex = std::dynamic_pointer_cast<DirectXTexture2D>(rt->GetRenderTargetTexture());
+			std::shared_ptr<DirectXTexture2D> dxDepthTex = std::dynamic_pointer_cast<DirectXTexture2D>(rt->GetDepthStencilTexture());
+
+			ID3D11RenderTargetView* nullTarget[1] = { 0 };
+			m_DeviceContext->OMSetRenderTargets(1, dxColorTex != nullptr ? dxColorTex->GetRenderTargetView().GetAddressOf() : nullTarget, dxDepthTex != nullptr ? dxDepthTex->GetDepthStencilView().Get() : nullptr);
+		}
 	}
 
 	void DirectXRHI::SetViewPort(float width, float height)
@@ -479,8 +498,18 @@ namespace RenderingDEMO
 		D3D11_VIEWPORT viewport = {};
 		viewport.TopLeftX = 0;
 		viewport.TopLeftY = 0;
-		viewport.Width = width;
-		viewport.Height = height;
+
+		if (width == 0 && height == 0)
+		{
+			viewport.Width = static_cast<float>(m_WindowSize[0]);
+			viewport.Height = static_cast<float>(m_WindowSize[1]);
+		}
+		else
+		{
+			viewport.Width = width;
+			viewport.Height = height;
+		}
+
 		viewport.MinDepth = 0.0f;
 		viewport.MaxDepth = 1.0f;
 
@@ -506,6 +535,31 @@ namespace RenderingDEMO
 		m_DeviceContext->OMSetRenderTargets(1, &nullRTV, nullptr);
 		m_DeviceContext->ClearRenderTargetView(m_SwapChainRenderTarget.Get(), clearColor);
 		m_DeviceContext->ClearDepthStencilView(m_SwapChainDepthTarget.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	}
+
+	void DirectXRHI::ClearRenderTarget(std::shared_ptr<RenderTarget> target)
+	{
+		constexpr float clearColor[] = { 0.01f, 0.01f, 0.01f, 1.0f };
+
+		if (target == nullptr)
+		{
+			m_DeviceContext->ClearRenderTargetView(m_SwapChainRenderTarget.Get(), clearColor);
+			m_DeviceContext->ClearDepthStencilView(m_SwapChainDepthTarget.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+		}
+		else
+		{
+			std::shared_ptr<DirectXTexture2D> dxColorTex = std::dynamic_pointer_cast<DirectXTexture2D>(target->GetRenderTargetTexture());
+			std::shared_ptr<DirectXTexture2D> dxDepthTex = std::dynamic_pointer_cast<DirectXTexture2D>(target->GetDepthStencilTexture());
+
+			if (dxColorTex)
+			{
+				m_DeviceContext->ClearRenderTargetView(dxColorTex->GetRenderTargetView().Get(), clearColor);
+			}
+			if (dxDepthTex)
+			{
+				m_DeviceContext->ClearDepthStencilView(dxDepthTex->GetDepthStencilView().Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+			}
+		}
 	}
 
 	void DirectXRHI::SwapBuffer()
@@ -643,6 +697,8 @@ namespace RenderingDEMO
 			return D3D11_TEXTURE_ADDRESS_MIRROR;
 		case SamplerAddressMode::Clamp:
 			return D3D11_TEXTURE_ADDRESS_CLAMP;
+		case SamplerAddressMode::Border:
+			return D3D11_TEXTURE_ADDRESS_BORDER;
 		default:
 			return D3D11_TEXTURE_ADDRESS_WRAP;
 		}

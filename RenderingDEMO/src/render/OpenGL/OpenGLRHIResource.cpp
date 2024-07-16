@@ -113,4 +113,50 @@ namespace RenderingDEMO
 	{
 		glDeleteTextures(1, &m_ID);
 	}
+
+	OpenGLRenderTarget::OpenGLRenderTarget(std::shared_ptr<Texture2D> colorTex, std::shared_ptr<Texture2D> depthTex)
+		:RenderTarget(colorTex, depthTex)
+	{
+		assert(colorTex != nullptr || depthTex != nullptr);
+		std::shared_ptr<OpenGLTexture2D> glColorTex = std::dynamic_pointer_cast<OpenGLTexture2D>(colorTex);
+		std::shared_ptr<OpenGLTexture2D> glDepthTex = std::dynamic_pointer_cast<OpenGLTexture2D>(depthTex);
+
+		unsigned int id;
+		glCreateFramebuffers(1, &id);
+		glBindFramebuffer(GL_FRAMEBUFFER, id);
+
+		if (glDepthTex != nullptr && glColorTex == nullptr)
+		{
+			unsigned int depthMap = glDepthTex->GetID();
+			glBindTexture(GL_TEXTURE_2D, depthMap);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+			glDrawBuffer(GL_NONE);
+			glReadBuffer(GL_NONE);
+		}
+		else if (glDepthTex == nullptr && glColorTex != nullptr)
+		{
+			unsigned int colorMap = glColorTex->GetID();
+			glBindTexture(GL_TEXTURE_2D, colorMap);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorMap, 0);
+		}
+		else
+		{
+			unsigned int depthMap = glDepthTex->GetID();
+			glBindTexture(GL_TEXTURE_2D, depthMap);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+
+			unsigned int colorMap = glColorTex->GetID();
+			glBindTexture(GL_TEXTURE_2D, colorMap);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorMap, 0);
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		m_ID = id;
+	}
+
+	OpenGLRenderTarget::~OpenGLRenderTarget()
+	{
+		glDeleteFramebuffers(1, &m_ID);
+	}
 }

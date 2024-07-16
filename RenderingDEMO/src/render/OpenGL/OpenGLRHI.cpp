@@ -63,22 +63,47 @@ namespace RenderingDEMO
         switch (initializer.Filter)
         {
         case SamplerFilter::Nearest:
-            glSamplerParameteri(samplerID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glSamplerParameteri(samplerID, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+            if (initializer.MinMipLevel == 0 && initializer.MaxMipLevel == 0)
+            {
+                glSamplerParameteri(samplerID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glSamplerParameteri(samplerID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            }
+            else
+            {
+                glSamplerParameteri(samplerID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glSamplerParameteri(samplerID, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+            }
             break;
         case SamplerFilter::Bilinear:
-            glSamplerParameteri(samplerID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glSamplerParameteri(samplerID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+            if (initializer.MinMipLevel == 0 && initializer.MaxMipLevel == 0)
+            {
+                glSamplerParameteri(samplerID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glSamplerParameteri(samplerID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            }
+            else
+            {
+                glSamplerParameteri(samplerID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glSamplerParameteri(samplerID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+            }
             break;
         case SamplerFilter::Trilinear:
-            glSamplerParameteri(samplerID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glSamplerParameteri(samplerID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            if (initializer.MinMipLevel == 0 && initializer.MaxMipLevel == 0)
+            {
+                glSamplerParameteri(samplerID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glSamplerParameteri(samplerID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            }
+            else
+            {
+                glSamplerParameteri(samplerID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glSamplerParameteri(samplerID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            }
             break;
         }
 
         glSamplerParameteri(samplerID, GL_TEXTURE_WRAP_S, TranslateAddressMode(initializer.AddressU));
         glSamplerParameteri(samplerID, GL_TEXTURE_WRAP_T, TranslateAddressMode(initializer.AddressV));
         glSamplerParameteri(samplerID, GL_TEXTURE_WRAP_R, TranslateAddressMode(initializer.AddressW));
+        glSamplerParameterfv(samplerID, GL_TEXTURE_BORDER_COLOR, initializer.BorderColor);
 
         OpenGLSamplerState* state = new OpenGLSamplerState;
         state->m_ID = samplerID;
@@ -91,41 +116,13 @@ namespace RenderingDEMO
         unsigned int texID;
         glCreateTextures(GL_TEXTURE_2D, 1, &texID);
 
-        GLenum texFormat;
-        switch (format)
-        {
-        case RenderingDEMO::TextureFormat::Unknow:
-            texFormat = GL_NONE;
-            break;
-        case RenderingDEMO::TextureFormat::R8_UNorm:
-            texFormat = GL_R8;
-            break;
-        case RenderingDEMO::TextureFormat::R8G8_UNorm:
-            texFormat = GL_RG8;
-            break;
-        case RenderingDEMO::TextureFormat::R8G8B8A8_UNorm:
-            texFormat = GL_RGBA;
-            break;
-        case RenderingDEMO::TextureFormat::R32_Typeless:
-            texFormat = GL_DEPTH_COMPONENT;
-            break;
-        case RenderingDEMO::TextureFormat::R24G8_Typeless:
-            texFormat = GL_DEPTH24_STENCIL8;
-            break;
-        case RenderingDEMO::TextureFormat::R16G16B16A16_Float:
-            texFormat = GL_RGBA16F;
-            break;
-        default:
-            texFormat = GL_NONE;
-            break;
-        }
+        GLint texFormat = FindTextureInternalFormat(format);
+        GLenum texResFormat = FindTextureResourceFormat(texFormat);
+        GLenum texResType = FindTextureResourceType(texFormat);
 
-        glTextureStorage2D(texID, numMips, texFormat, width, height);
-
-        if (data != nullptr)
-        {
-            glTextureSubImage2D(texID, 0, 0, 0, width, height, texFormat, GL_UNSIGNED_BYTE, data);
-        }
+        glBindTexture(GL_TEXTURE_2D, texID);
+        glTexImage2D(GL_TEXTURE_2D, 0, texFormat, width, height, 0, texResFormat, texResType, data);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         return std::shared_ptr<OpenGLTexture2D>(new OpenGLTexture2D(width, height, numMips, numSamples, flags, format, texID));
     }
@@ -170,7 +167,7 @@ namespace RenderingDEMO
 
     std::shared_ptr<VertexShader> OpenGLRHI::CreateVertexShader(const std::wstring& fileName)
     {
-        std::wstring filePath = fileName + L".glsl";
+        std::wstring filePath = L"../shader/OpenGL/" + fileName + L".glsl";
 
         std::string vertexShaderSource = ReadFromFile(filePath);
         const char* source = vertexShaderSource.c_str();
@@ -193,7 +190,7 @@ namespace RenderingDEMO
 
     std::shared_ptr<PixelShader> OpenGLRHI::CreatePixelShader(const std::wstring& fileName)
     {
-        std::wstring filePath = fileName + L".glsl";
+        std::wstring filePath = L"../shader/OpenGL/" + fileName + L".glsl";
 
         std::string pixelShaderSource = ReadFromFile(filePath);
         const char* source = pixelShaderSource.c_str();
@@ -212,6 +209,11 @@ namespace RenderingDEMO
         }
 
         return std::shared_ptr<OpenGLPixelShader>(new OpenGLPixelShader(pixelShader));
+    }
+
+    std::shared_ptr<RenderTarget> OpenGLRHI::CreateRenderTarget(std::shared_ptr<Texture2D> colorTex, std::shared_ptr<Texture2D> depthTex)
+    {
+        return std::shared_ptr<OpenGLRenderTarget>(new OpenGLRenderTarget(colorTex, depthTex));
     }
 
     std::shared_ptr<PipelineState> OpenGLRHI::CreatePipelineState(std::shared_ptr<VertexShader> vs, std::shared_ptr<PixelShader> ps, std::shared_ptr<VertexDeclaration> vd, std::shared_ptr<RasterizerState> rasterState, std::shared_ptr<DepthStencilState> depthState)
@@ -267,11 +269,23 @@ namespace RenderingDEMO
         {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
+        else
+        {
+            std::shared_ptr<OpenGLRenderTarget> glTarget = std::dynamic_pointer_cast<OpenGLRenderTarget>(rt);
+            glBindFramebuffer(GL_FRAMEBUFFER, glTarget->GetID());
+        }
     }
 
     void OpenGLRHI::SetViewPort(float width, float height)
     {
-        glViewport(0, 0, static_cast<GLuint>(width), static_cast<GLuint>(height));
+        if (width == 0 && height == 0)
+        {
+            glViewport(0, 0, m_WindowSize[0], m_WindowSize[1]);
+        }
+        else
+        {
+            glViewport(0, 0, static_cast<GLuint>(width), static_cast<GLuint>(height));
+        }
     }
 
     void OpenGLRHI::SetPipelineState(std::shared_ptr<PipelineState> state)
@@ -305,6 +319,12 @@ namespace RenderingDEMO
     }
 
     void OpenGLRHI::ClearBackBuffer()
+    {
+        glClearColor(0.01f, 0.01f, 0.01f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
+    void OpenGLRHI::ClearRenderTarget(std::shared_ptr<RenderTarget> target)
     {
         glClearColor(0.01f, 0.01f, 0.01f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -351,6 +371,69 @@ namespace RenderingDEMO
         return shaderCode;
     }
 
+    GLint OpenGLRHI::FindTextureInternalFormat(TextureFormat format)
+    {
+        switch (format)
+        {
+        case TextureFormat::R8_UNorm:
+            return GL_R8;
+        case TextureFormat::R8G8_UNorm:
+            return GL_RG8;
+        case TextureFormat::R8G8B8A8_UNorm:
+            return GL_RGBA;
+        case TextureFormat::R32_Typeless:
+            return GL_DEPTH_COMPONENT;
+        case TextureFormat::R24G8_Typeless:
+            return GL_DEPTH24_STENCIL8;
+        case TextureFormat::R16G16B16A16_Float:
+            return GL_RGBA16F;
+        default:
+            return GL_NONE;
+        }
+    }
+
+    GLenum OpenGLRHI::FindTextureResourceFormat(GLint format)
+    {
+        switch (format)
+        {
+        case GL_R8:
+            return GL_RED;
+        case GL_RG8:
+            return GL_RG;
+        case GL_RGBA:
+            return GL_RGBA;
+        case GL_DEPTH_COMPONENT:
+            return GL_DEPTH_COMPONENT;
+        case GL_DEPTH24_STENCIL8:
+            return GL_DEPTH_STENCIL;
+        case GL_RGBA16F:
+            return GL_RGBA;
+        default:
+            return GL_NONE;
+        }
+    }
+
+    GLenum OpenGLRHI::FindTextureResourceType(GLint format)
+    {
+        switch (format)
+        {
+        case GL_R8:
+            return GL_UNSIGNED_BYTE;
+        case GL_RG8:
+            return GL_UNSIGNED_BYTE;
+        case GL_RGBA:
+            return GL_UNSIGNED_BYTE;
+        case GL_DEPTH_COMPONENT:
+            return GL_FLOAT;
+        case GL_DEPTH24_STENCIL8:
+            return GL_UNSIGNED_INT_24_8;
+        case GL_RGBA16F:
+            return GL_FLOAT;
+        default:
+            return GL_NONE;
+        }
+    }
+
     GLint OpenGLRHI::TranslateAddressMode(SamplerAddressMode addressMode)
     {
         switch (addressMode)
@@ -359,6 +442,8 @@ namespace RenderingDEMO
             return GL_MIRRORED_REPEAT;
         case SamplerAddressMode::Clamp:
             return GL_CLAMP_TO_EDGE;
+        case SamplerAddressMode::Border:
+            return GL_CLAMP_TO_BORDER;
         default:
             return GL_REPEAT;
         }

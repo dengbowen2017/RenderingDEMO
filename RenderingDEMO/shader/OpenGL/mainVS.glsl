@@ -7,15 +7,8 @@ out VSOutput
 {
     vec3 worldPos;
     vec3 normal;
+    vec4 lightSpacePos;
 } vsOut;
-
-struct PointLight
-{
-    vec3 position;
-    float a;
-    vec3 intensity;
-    float b;
-};
 
 struct DirectionalLight
 {
@@ -23,14 +16,14 @@ struct DirectionalLight
     float padding1;
     vec3 intensity;
     float padding2;
+    mat4 spaceMatrix;
 };
 
 layout(std140, binding = 0) uniform Perframe
 {
 	mat4 projectViewMatrix;
     vec3 cameraPos;
-    uint pointLightNum;
-    PointLight pointLights[8];
+    float padding1;
     DirectionalLight directionalLight;
 };
 
@@ -39,4 +32,5 @@ void main()
 	gl_Position = projectViewMatrix * vec4(i_Position, 1.0);
     vsOut.worldPos = i_Position;
     vsOut.normal = i_Normal;
+    vsOut.lightSpacePos = directionalLight.spaceMatrix * vec4(i_Position, 1.0);
 }

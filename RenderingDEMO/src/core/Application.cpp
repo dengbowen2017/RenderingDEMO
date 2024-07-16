@@ -14,7 +14,7 @@ namespace RenderingDEMO
 		m_Window->Initialize(props);
 		// TODO: Pass render information from main
 		// temp: Set API here
-		m_Renderer->Initialize(m_Window, RenderAPI::DirectX);
+		m_Renderer->Initialize(m_Window, RenderAPI::OpenGL);
 
 		m_InputManager->Initialize(m_Renderer->GetMainCamera());
 

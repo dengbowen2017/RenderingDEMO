@@ -101,4 +101,16 @@ namespace RenderingDEMO
 	private:
 		unsigned int m_ID;
 	};
+
+	class OpenGLRenderTarget :public RenderTarget
+	{
+	public:
+		OpenGLRenderTarget(std::shared_ptr<Texture2D> colorTex, std::shared_ptr<Texture2D> depthTex);
+		~OpenGLRenderTarget();
+
+		unsigned int GetID() const { return m_ID; }
+
+	private:
+		unsigned int m_ID;
+	};
 }

@@ -10,6 +10,9 @@ namespace RenderingDEMO
 		SamplerAddressMode AddressU;
 		SamplerAddressMode AddressV;
 		SamplerAddressMode AddressW;
+		float MinMipLevel;
+		float MaxMipLevel;
+		float BorderColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	};
 
 	struct RasterizerStateInitializer

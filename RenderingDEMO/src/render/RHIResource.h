@@ -141,7 +141,8 @@ namespace RenderingDEMO
 	class RenderTarget
 	{
 	public:
-		RenderTarget(std::shared_ptr<Texture2D> rtvTex, std::shared_ptr<Texture2D> dsvTex)
+		RenderTarget(std::shared_ptr<Texture2D> colorTex, std::shared_ptr<Texture2D> depthTex)
+			:m_RenderTargetTexture(colorTex), m_DepthStencilTexture(depthTex)
 		{}
 		virtual ~RenderTarget() = default;
 

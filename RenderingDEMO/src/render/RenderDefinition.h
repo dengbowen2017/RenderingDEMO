@@ -2,6 +2,8 @@
 
 #include <Eigen/Dense>
 
+#include <DirectXMath.h>
+
 namespace RenderingDEMO
 {
 	struct StaticMesh
@@ -21,9 +23,10 @@ namespace RenderingDEMO
 	struct DirectionalLight
 	{
 		Eigen::Vector3f Direction;
-		float _padding1;
+		float _padding1 = 0.0f;
 		Eigen::Vector3f Intensity;
-		float _padding2;
+		float _padding2 = 0.0f;
+		Eigen::Matrix4f SpaceMatrix;
 	};
 
 	struct PointLight
@@ -38,8 +41,7 @@ namespace RenderingDEMO
 	{
 		Eigen::Matrix4f ProjectionViewMatrix;
 		Eigen::Vector3f CameraPos;
-		uint32_t PointLightNum;
-		PointLight PointLights[8]; // temp, max to 8
+		float _padding1 = 0.0f;
 		DirectionalLight DirectionalLight;
 	};
 

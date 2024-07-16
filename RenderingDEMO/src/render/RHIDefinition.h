@@ -44,7 +44,8 @@ namespace RenderingDEMO
 	{
 		Repeat = 0,
 		Mirror,
-		Clamp
+		Clamp,
+		Border
 	};
 
 	enum class RasterizerFillMode

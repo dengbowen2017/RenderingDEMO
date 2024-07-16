@@ -17,7 +17,8 @@ namespace RenderingDEMO
 		virtual void Initialize() override;
 		virtual void Draw() override;
 
-	private:
-		std::shared_ptr<ShadowPass> m_ShadowPass;
+	public:
+		std::shared_ptr<Texture2D> m_DepthMap;
+		std::shared_ptr<SamplerState> m_SamplerState;
 	};
 }

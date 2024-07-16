@@ -16,15 +16,16 @@ namespace RenderingDEMO
 	public:
 		// temp 
 		// need Mesh and Object class to manage all the buffers
-		std::shared_ptr<VertexDeclaration> m_VertexDeclaration;
 		std::shared_ptr<VertexBuffer> m_CubeVertexBuffer;
-		std::shared_ptr<IndexBuffer> m_CubeIndexBuffer;
+
+		std::shared_ptr<VertexBuffer> m_PlaneVertexBuffer;
+		std::shared_ptr<IndexBuffer> m_PlaneIndexBuffer;
+
+		std::shared_ptr<VertexBuffer> m_QuadVertexBuffer;
+		std::shared_ptr<IndexBuffer> m_QuadIndexBuffer;
 
 		std::shared_ptr<UniformBuffer> m_PerFrameUniformBuffer;
-		std::shared_ptr<UniformBuffer> m_PerObjectUniformBuffer;
 
 		PerFrameConstant m_PerFrameConstant;
-
-		std::shared_ptr<PipelineState> m_PipelineState;
 	};
 }
