@@ -21,15 +21,20 @@ Then run the .sln file.
 - basic RHI 
 - basic 3D rendering camera system
 - basic render pass
+- basic forward rendering
 - phong lighting
 - simple shadow mapping
 
 ## TODO list
-- Add editor (including ECS and UI)
-- Add scene manager
+- Add basic editor (including ECS and UI)
+- Add smiple scripting system (C#)
+- Add smiple resource loader and asset manager
+- Add smiple scene manager
 - Add batch rendering
-- Add PBR
-- Add cross compiling
+- Add simple 3D physics
+- Add rendering features (PBR, Deferred Rendering...)
+- Add multi-thread (logic thread and render thread)
+- Add cross compiling (cmake presets)
 
 ## References
 ### Rendering API
