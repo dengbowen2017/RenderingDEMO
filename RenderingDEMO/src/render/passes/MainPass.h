@@ -2,7 +2,6 @@
 
 #include "render/RenderPass.h"
 #include "render/RHIState.h"
-#include "ShadowPass.h"
 
 namespace RenderingDEMO
 {

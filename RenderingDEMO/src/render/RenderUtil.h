@@ -36,16 +36,18 @@ namespace RenderingDEMO
 		inline static Eigen::Matrix4f GetPerspectiveFovMatrix(float fovy, float aspect, float znear, float zfar)
 		{
 			Eigen::Matrix4f mat = Eigen::Matrix4f::Zero();
-			Eigen::Array<float, 1, 1> halfFovy(fovy * 0.5 * 0.0174533f);
 
-			float t = halfFovy.tan()(0, 0);
-			float f = zfar / znear - zfar;
+			Eigen::Array<float, 1, 1> halfFov(0.5f * fovy * 0.0174533f);
+			float tanFov = halfFov.tan()(0, 0);
+			float h = 1.0f / tanFov;
+			float w = h / aspect;
+			float f = zfar / (znear - zfar);
 
-			mat(0, 0) = 1.0f / (aspect * t);
-			mat(1, 1) = 1.0f / t;
+			mat(0, 0) = w;
+			mat(1, 1) = h;
 			mat(2, 2) = f;
-			mat(3, 2) = -1.0f;
 			mat(2, 3) = f * znear;
+			mat(3, 2) = -1.0f;
 
 			return mat;
 		}

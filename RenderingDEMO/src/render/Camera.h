@@ -22,8 +22,6 @@ namespace RenderingDEMO
 		void updateCameraVectors();
 
 	private:
-		const float angle2radians = 0.0174533f;
-		
 		Eigen::Vector3f m_Position = {};
 
 		Eigen::Vector3f	m_Forward = {};
