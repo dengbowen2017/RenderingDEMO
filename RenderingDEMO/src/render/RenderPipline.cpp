@@ -2,6 +2,7 @@
 
 #include "Passes/MainPass.h"
 #include "Passes/ShadowPass.h"
+#include "Passes/UIPass.h"
 
 namespace RenderingDEMO
 {
@@ -12,16 +13,22 @@ namespace RenderingDEMO
 
 		std::shared_ptr<MainPass> mainPass = std::make_shared<MainPass>(rhi, resource);
 		mainPass->Initialize();
-
 		mainPass->m_DepthMap = shadowPass->m_RenderTarget->GetDepthStencilTexture();
 
 		m_MainPass = mainPass;
 		m_ShadowPass = shadowPass;
 	}
 
+	void RenderPipline::InitializeUI(std::shared_ptr<WindowUI> ui)
+	{
+		std::shared_ptr<UIPass> uiPass = std::make_shared<UIPass>(ui);
+		m_UIPass = uiPass;
+	}
+
 	void RenderPipline::ForwardRendering()
 	{
 		m_ShadowPass->Draw();
 		m_MainPass->Draw();
+		//m_UIPass->Draw();
 	}
 }

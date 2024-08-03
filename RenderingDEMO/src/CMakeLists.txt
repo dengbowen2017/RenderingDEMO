@@ -35,8 +35,6 @@ target_include_directories (${PROJECT_NAME} PUBLIC
 
 target_precompile_headers (${PROJECT_NAME} PUBLIC pch.h)
 
-# target_compile_features (${PROJECT_NAME} PRIVATE cxx_std_17)
-
 set (POST_BUILD_COMMANDS
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${SHADER_DIR} ${BIN_PROJECT_DIR}/shader)
 

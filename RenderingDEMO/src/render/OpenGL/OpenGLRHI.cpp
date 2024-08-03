@@ -3,7 +3,6 @@
 #include "OpenGLRHIState.h"
 
 #include <spdlog/spdlog.h>
-#include <glad/glad.h>
 
 namespace RenderingDEMO
 {
@@ -23,6 +22,7 @@ namespace RenderingDEMO
             return;
         }
 
+        glfwSwapInterval(1); 
         glViewport(0, 0, m_WindowSize[0], m_WindowSize[1]);
 
         unsigned int vao;

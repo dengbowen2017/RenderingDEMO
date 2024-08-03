@@ -4,10 +4,13 @@
 
 namespace RenderingDEMO
 {
+	class WindowUI;
+
 	class RenderPipline
 	{
 	public:
 		void Initialize(std::shared_ptr<RHI> rhi, std::shared_ptr<RenderResource> resource);
+		void InitializeUI(std::shared_ptr<WindowUI> ui);
 		void ForwardRendering();
 
 	private:

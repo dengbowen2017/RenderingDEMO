@@ -1,6 +1,5 @@
 #include "OpenGLRHIResource.h"
 
-#include <glad/glad.h>
 #include <spdlog/spdlog.h>
 
 namespace RenderingDEMO

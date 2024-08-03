@@ -2,20 +2,22 @@
 
 #include "render/RenderPass.h"
 
+#include "core/WindowUI.h"
+
 namespace RenderingDEMO
 {
 	class UIPass :public RenderPass
 	{
 	public:
-		UIPass(std::shared_ptr<RHI> rhi, std::shared_ptr<RenderResource> resource)
-			:RenderPass(rhi, resource)
+		UIPass(std::shared_ptr<WindowUI> ui)
+			:m_WindowUI(ui)
 		{}
 		~UIPass() = default;
 
 		virtual void Initialize() override;
 		virtual void Draw() override;
 
-	private:
-		std::shared_ptr<RenderTarget> m_RenderTarget;
+	public:
+		std::shared_ptr<WindowUI> m_WindowUI;
 	};
 }

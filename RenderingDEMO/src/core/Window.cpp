@@ -22,6 +22,7 @@ namespace RenderingDEMO
 
 		//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 		//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+		//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 		m_Width = props.Width;
 		m_Height = props.Height;
@@ -32,7 +33,6 @@ namespace RenderingDEMO
 			glfwTerminate();
 			return ;
 		}
-
 		m_WindowHandler = glfwGetWin32Window(m_Window);
 
 		glfwSetWindowUserPointer(m_Window, this);

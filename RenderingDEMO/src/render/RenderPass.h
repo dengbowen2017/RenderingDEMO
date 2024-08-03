@@ -9,6 +9,7 @@ namespace RenderingDEMO
 	class RenderPass
 	{
 	public:
+		RenderPass() = default;
 		RenderPass(std::shared_ptr<RHI> rhi, std::shared_ptr<RenderResource> resource)
 			:m_RHI(rhi), m_RenderResource(resource)
 		{}

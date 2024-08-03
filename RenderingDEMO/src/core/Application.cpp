@@ -7,14 +7,19 @@ namespace RenderingDEMO
 	Application::Application()
 	{
 		m_Window = std::make_shared<Window>();
+		//m_WindowUI = std::make_shared<WindowUI>();
 		m_InputManager = std::make_shared<InputManager>();
 		m_Renderer = std::make_shared<Renderer>();
 
 		WindowProps props;
 		m_Window->Initialize(props);
+
 		// TODO: Pass render information from main
 		// temp: Set API here
 		m_Renderer->Initialize(m_Window, RenderAPI::DirectX);
+		
+		//m_WindowUI->Initialize(m_Window);
+		//m_Renderer->InitializeUI(m_WindowUI);
 
 		m_InputManager->Initialize(m_Renderer->GetMainCamera());
 

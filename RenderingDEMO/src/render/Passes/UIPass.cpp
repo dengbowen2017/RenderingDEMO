@@ -8,5 +8,6 @@ namespace RenderingDEMO
 
 	void UIPass::Draw()
 	{
+		m_WindowUI->Draw();
 	}
 }

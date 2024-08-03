@@ -26,13 +26,17 @@ Then run the .sln file.
 - simple shadow mapping
 
 ## TODO list
+### Priority
+- 3D graphics math library
+- Add smiple resource loader (model and texture)
+- Add simple 3D rigid body physics
+- Add rendering features (PBR, Deferred Rendering...)
+- Add batch rendering
+
+### In the future
+- Add smiple scene manager
 - Add basic editor (including ECS and UI)
 - Add smiple scripting system (C#)
-- Add smiple resource loader and asset manager
-- Add smiple scene manager
-- Add batch rendering
-- Add simple 3D physics
-- Add rendering features (PBR, Deferred Rendering...)
 - Add multi-thread (logic thread and render thread)
 - Add cross compiling (cmake presets)
 

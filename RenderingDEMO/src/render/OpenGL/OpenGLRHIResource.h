@@ -3,7 +3,6 @@
 #include "render/RHIResource.h"
 #include "render/RHIState.h"
 
-// temp
 #include <glad/glad.h>
 
 namespace RenderingDEMO

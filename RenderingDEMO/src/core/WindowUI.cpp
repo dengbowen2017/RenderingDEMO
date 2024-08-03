@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_dx11.h>
 
 namespace RenderingDEMO
 {
@@ -35,16 +36,14 @@ namespace RenderingDEMO
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
-
 		//TODO: move to renderer since we need to init the UI with the api we choose
 		ImGui_ImplGlfw_InitForOpenGL(m_Window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
-		//set glsl version
-		ImGui_ImplOpenGL3_Init("#version 130");
+		ImGui_ImplOpenGL3_Init("#version 430");
 	}
 
-	void WindowUI::OnUpdate()
+	void WindowUI::Draw()
 	{
-		this->ShowWindowUI();
+		ShowWindowUI();
 	}
 
 	void WindowUI::ShowWindowUI()
@@ -52,6 +51,7 @@ namespace RenderingDEMO
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+
 		ImGui::ShowDemoWindow(&m_MenuWindowOpen);
 
 		ImGui::Render();

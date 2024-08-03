@@ -7,11 +7,10 @@ namespace RenderingDEMO
 	class WindowUI
 	{
 	public:
-		WindowUI() = default;
 		~WindowUI();
 
 		void Initialize(std::shared_ptr<Window> window);
-		void OnUpdate();
+		void Draw();
 
 	private:
 		void ShowWindowUI();

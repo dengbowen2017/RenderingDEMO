@@ -3,10 +3,6 @@
 #include "render/DirectX/DirectXRHI.h"
 
 #include <spdlog/spdlog.h>
-#include <Eigen/Dense>
-
-// temp
-#include "render/RenderDefinition.h"
 
 namespace RenderingDEMO
 {
@@ -39,6 +35,11 @@ namespace RenderingDEMO
 
 		m_RenderPipeline = std::make_shared<RenderPipline>();
 		m_RenderPipeline->Initialize(m_RHI, m_RenderResource);
+	}
+
+	void Renderer::InitializeUI(std::shared_ptr<WindowUI> ui)
+	{
+		m_RenderPipeline->InitializeUI(ui);
 	}
 
 	void Renderer::OnUpdate(float deltaTime)
