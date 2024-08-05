@@ -1,8 +1,8 @@
 #include "RenderResource.h"
-
 #include "RenderUtil.h"
 
-#include <DirectXMath.h>
+#include <stb_image.h>
+#include <spdlog/spdlog.h>
 
 namespace RenderingDEMO
 {
@@ -17,55 +17,96 @@ namespace RenderingDEMO
 		float cubeVertices[] =
 		{
 			//position			  //normal
-			 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-			 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-			-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-			 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-			-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-			-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+			// 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+			// 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+			//-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+			// 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+			//-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+			//-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 
-			-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-			 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-			 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-			 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-			-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-			-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+			//-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+			// 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+			// 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+			// 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+			//-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+			//-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
 
-			-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-			-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-			-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-			-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-			-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-			-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+			//-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+			//-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+			//-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+			//-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+			//-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+			//-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
-			 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-			 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-			 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-			 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-			 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-			 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+			// 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+			// 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+			// 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+			// 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+			// 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+			// 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
 
-			-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-			 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-			 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-			 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-			-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-			-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+			//-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+			// 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+			// 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+			// 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+			//-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+			//-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-			-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-			 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-			 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-			-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-			-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-			 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+			//-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+			// 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+			// 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+			//-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+			//-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+			// 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+			 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+			 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+			 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+			-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
+
+			-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+			 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
+			 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+			 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+			-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
+			-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+
+			-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+			-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+			-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+			-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+			-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+			-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+
+			 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+			 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+			 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+			 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+
+			-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+			 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
+			 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+			 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+			-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+
+			-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+			 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+			 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+			-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+			-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+			 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
 		};
 
 		float planeVertices[] =
 		{
-			 20.0f, -1.0f, -20.0f, 0.0f, 1.0f, 0.0f,
-			 20.0f, -1.0f,  20.0f, 0.0f, 1.0f, 0.0f,
-			-20.0f, -1.0f, -20.0f, 0.0f, 1.0f, 0.0f,
-			-20.0f, -1.0f,  20.0f, 0.0f, 1.0f, 0.0f
+			 20.0f, -1.0f, -20.0f, 0.0f, 1.0f, 0.0f, 4.0f, 4.0f,
+			 20.0f, -1.0f,  20.0f, 0.0f, 1.0f, 0.0f, 4.0f, 0.0f,
+			-20.0f, -1.0f, -20.0f, 0.0f, 1.0f, 0.0f, 0.0f, 4.0f,
+			-20.0f, -1.0f,  20.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
 		};
 
 		unsigned int planeIndices[] =
@@ -88,7 +129,7 @@ namespace RenderingDEMO
 			2, 1, 3
 		};
 
-		unsigned int stride = 24; // Float3 * 2
+		unsigned int stride = 32; // Float3 * 2 + Float2 * 1
 		std::shared_ptr<VertexBuffer> vb = rhi->CreateVertexBuffer(cubeVertices, sizeof(cubeVertices), stride);
 		m_CubeVertexBuffer = vb;
 
@@ -122,4 +163,35 @@ namespace RenderingDEMO
 		std::shared_ptr<UniformBuffer> ub = rhi->CreateUniformBuffer(sizeof(PerFrameConstant));
 		m_PerFrameUniformBuffer = ub;
     }
+
+	std::shared_ptr<Texture2D> RenderResource::LoadTexture(std::shared_ptr<RHI> rhi, std::string texPath)
+	{
+		std::shared_ptr<Texture2D> texture;
+		int width, height, channels;
+		// TODO
+		// use stbi to identify different types of texutre (16bit, hdr ...)
+		// if input channels is 3, we add a alpha channel to be compatible to DirectX
+		unsigned char* raw_data = stbi_load(texPath.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+
+		if (raw_data)
+		{
+			unsigned int flags = (unsigned int)TextureFlags::TexShaderResource | (unsigned int)TextureFlags::TexImmutable;
+			texture = rhi->CreateTexture2D(width, height, 1, 1, flags, TextureFormat::R8G8B8A8_UNorm, raw_data);
+		}
+		else
+		{
+			spdlog::error("Failed to load texture");
+		}
+		stbi_image_free(raw_data);
+		return texture;
+	}
+
+	void RenderResource::UploadTextures(std::shared_ptr<RHI> rhi)
+	{
+		std::string wall_texture_path = "../asset/texture/wall.jpg";
+		std::string box_texture_path = "../asset/texture/box.png";
+
+		m_BoxTexture = LoadTexture(rhi, box_texture_path);
+		m_WallTexture = LoadTexture(rhi, wall_texture_path);
+	}
 }

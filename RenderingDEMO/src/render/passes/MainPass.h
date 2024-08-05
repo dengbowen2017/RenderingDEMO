@@ -18,6 +18,7 @@ namespace RenderingDEMO
 
 	public:
 		std::shared_ptr<Texture2D> m_DepthMap;
-		std::shared_ptr<SamplerState> m_SamplerState;
+		std::shared_ptr<SamplerState> m_DepthSamplerState;
+		std::shared_ptr<SamplerState> m_DiffuseSamplerState;
 	};
 }

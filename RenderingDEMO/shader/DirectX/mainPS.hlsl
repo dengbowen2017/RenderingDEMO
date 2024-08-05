@@ -3,6 +3,7 @@ struct PSInput
     float4 position : SV_Position;
     float3 worldPos : POSITION0;
     float3 normal : NORMAL0;
+    float2 texcoord : TEXCOORD0;
     float4 lightSpacePos : POSITION1;
 };
 
@@ -29,8 +30,10 @@ cbuffer PerFrame : register(b0)
 };
 
 sampler depthMapSampler : register(s0);
+sampler diffuseMapSampler : register(s1);
 
 Texture2D depthMap : register(t0);
+Texture2D diffuseMap : register(t1);
 
 float3 phongLighting(float3 N, float3 L, float3 V, float3 baseColor, float shadow)
 {
@@ -83,7 +86,8 @@ PSOutput main(PSInput input)
     float3 normalDir = normalize(input.normal);
     float3 viewDir = normalize(cameraPos - input.worldPos);
     float3 lightDir = 0;
-    float3 baseColor = float3(1.0f, 1.0f, 1.0f);
+    //float3 baseColor = float3(1.0f, 1.0f, 1.0f);
+    float3 baseColor = diffuseMap.Sample(diffuseMapSampler, input.texcoord);
     
     // directional light
     lightDir = normalize(-directionalLight.direction);

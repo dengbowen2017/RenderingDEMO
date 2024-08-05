@@ -4,6 +4,7 @@ in VSOutput
 {
     vec3 worldPos;
     vec3 normal;
+    vec2 texcoord;
     vec4 lightSpacePos;
 } psIn;
 
@@ -27,6 +28,7 @@ layout(std140, binding = 0) uniform Perframe
 };
 
 layout(binding = 0) uniform sampler2D depthMap;
+layout(binding = 1) uniform sampler2D diffuseMap;
 
 vec3 phongLighting(vec3 N, vec3 L, vec3 V, vec3 baseColor, float shadow)
 {
@@ -72,8 +74,9 @@ void main()
     vec3 normalDir = normalize(psIn.normal);
     vec3 viewDir = normalize(cameraPos - psIn.worldPos);
     vec3 lightDir = vec3(0);
-    vec3 baseColor = vec3(1.0f, 1.0f, 1.0f);
-        
+    //vec3 baseColor = vec3(1.0f, 1.0f, 1.0f);
+    vec3 baseColor = texture(diffuseMap, psIn.texcoord).xyz;
+
     // directional light
     lightDir = normalize(-directionalLight.direction);
     float shadow = calculateShadow(psIn.lightSpacePos, normalDir, lightDir);

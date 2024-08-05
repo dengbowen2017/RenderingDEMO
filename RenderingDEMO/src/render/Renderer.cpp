@@ -32,6 +32,7 @@ namespace RenderingDEMO
 
 		m_RenderResource = std::make_shared<RenderResource>();
 		m_RenderResource->UpdateBuffers(m_RHI);
+		m_RenderResource->UploadTextures(m_RHI);
 
 		m_RenderPipeline = std::make_shared<RenderPipline>();
 		m_RenderPipeline->Initialize(m_RHI, m_RenderResource);

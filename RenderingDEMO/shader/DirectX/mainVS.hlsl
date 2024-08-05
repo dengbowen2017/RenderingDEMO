@@ -2,6 +2,7 @@ struct VSInput
 {
     float3 position : POSITION0;
     float3 normal : NORMAL0;
+    float2 texcoord : TEXCOORD0;
 };
 
 struct VSOutput
@@ -9,6 +10,7 @@ struct VSOutput
     float4 position : SV_Position;
     float3 worldPos : POSITION0;
     float3 normal : NORMAL0;
+    float2 texcoord : TEXCOORD0;
     float4 lightSpacePos : POSITION1;
 };
 
@@ -40,6 +42,7 @@ VSOutput main(VSInput input)
     output.position = mul(projectionViewMatrix, float4(input.position, 1.0));
     output.worldPos = input.position;
     output.normal = input.normal;
+    output.texcoord = input.texcoord;
     output.lightSpacePos = mul(directionalLight.lightSpaceMatrix, float4(input.position, 1.0));
     return output;
 }

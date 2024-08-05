@@ -11,7 +11,13 @@ namespace RenderingDEMO
 	{
 	public:
 		void UpdatePerFrameConstant(std::shared_ptr<Camera> camera);
+		
+		// temp
 		void UpdateBuffers(std::shared_ptr<RHI> rhi);
+		void UploadTextures(std::shared_ptr<RHI> rhi);
+
+	private:
+		std::shared_ptr<Texture2D> LoadTexture(std::shared_ptr<RHI> rhi, std::string texPath);
 
 	public:
 		// temp 
@@ -25,6 +31,10 @@ namespace RenderingDEMO
 		std::shared_ptr<IndexBuffer> m_QuadIndexBuffer;
 
 		std::shared_ptr<UniformBuffer> m_PerFrameUniformBuffer;
+
+		std::shared_ptr<Texture2D> m_WallTexture;
+		std::shared_ptr<Texture2D> m_BoxTexture;
+		std::shared_ptr<Texture2D> m_SkyBoxTexture;
 
 		PerFrameConstant m_PerFrameConstant;
 	};

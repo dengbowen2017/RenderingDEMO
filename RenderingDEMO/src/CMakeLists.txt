@@ -10,7 +10,7 @@ file (GLOB_RECURSE SOURCE_FILES "*.cpp")
 
 source_group (TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADER_FILES} ${SOURCE_FILES})
 
-target_sources (${PROJECT_NAME} PUBLIC ${HEADER_FILES} ${SOURCE_FILES})
+target_sources (${PROJECT_NAME} PUBLIC ${HEADER_FILES} ${SOURCE_FILES} ${DEPENDENCES_DIR}/stb_image/stb_image.cpp)
 
 target_link_libraries (${PROJECT_NAME} PUBLIC
 	glfw
@@ -30,12 +30,14 @@ target_link_directories (${PROJECT_NAME} PUBLIC
 
 target_include_directories (${PROJECT_NAME} PUBLIC
 	${DEPENDENCES_DIR}/spdlog/include
+	${DEPENDENCES_DIR}/stb_image
 	${DEPENDENCES_DIR}/eigen
 	${SOURCE_DIR})
 
 target_precompile_headers (${PROJECT_NAME} PUBLIC pch.h)
 
 set (POST_BUILD_COMMANDS
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${SHADER_DIR} ${BIN_PROJECT_DIR}/shader)
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${SHADER_DIR} ${BIN_PROJECT_DIR}/shader
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${ASSET_DIR} ${BIN_PROJECT_DIR}/asset)
 
 add_custom_command (TARGET ${PROJECT_NAME} ${POST_BUILD_COMMANDS})

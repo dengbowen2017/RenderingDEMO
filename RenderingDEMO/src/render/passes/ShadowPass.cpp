@@ -7,6 +7,7 @@ namespace RenderingDEMO
 		std::vector<VertexElement> elements;
 		elements.push_back({ "POSITION", 0, VertexElementType::Float3 });
 		elements.push_back({ "NORMAL", 0, VertexElementType::Float3 });
+		elements.push_back({ "TEXCOORD", 0, VertexElementType::Float2 });
 		std::shared_ptr<VertexDeclaration> vd = m_RHI->CreateVertexDeclaration(elements);
 
 		std::shared_ptr<VertexShader> vs = m_RHI->CreateVertexShader(L"shadowVS");
