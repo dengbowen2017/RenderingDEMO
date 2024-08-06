@@ -1,5 +1,7 @@
 #version 430 core
-layout (location = 0) in vec3 aPos;
+layout (location = 0) in vec3 i_Position;
+
+out vec3 texCoord;
 
 struct DirectionalLight
 {
@@ -21,5 +23,7 @@ layout(std140, binding = 0) uniform Perframe
 
 void main()
 {
-    gl_Position = directionalLight.spaceMatrix * vec4(aPos, 1.0);
+    texCoord = i_Position;
+    vec4 pos = projectViewNoTransMatrix * vec4(i_Position, 1.0);
+    gl_Position = pos.xyww;
 }

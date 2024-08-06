@@ -170,11 +170,10 @@ namespace RenderingDEMO
 		return std::shared_ptr<DirectXSamplerState>(state);
 	}
 
-	std::shared_ptr<Texture2D> DirectXRHI::CreateTexture2D(unsigned int width, unsigned int height, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, const void* data)
+	std::shared_ptr<Texture2D> DirectXRHI::CreateTexture2D(unsigned int width, unsigned int height, unsigned int arraySize, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, ResourceRawData& rawData)
 	{
-		D3D11_TEXTURE2D_DESC texDesc = {};
-		D3D11_SUBRESOURCE_DATA subData = {};
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> texResource = nullptr;
+
 		bool createRTV = false;
 		bool createDSV = false;
 		bool createSRV = false;
@@ -206,20 +205,39 @@ namespace RenderingDEMO
 			usageFlag = D3D11_USAGE_IMMUTABLE;
 		}
 
+		unsigned int miscFlags = 0;
+		bool isCubeMap = false;
+		if (flags & (unsigned int)TextureFlags::TexCubeMap)
+		{
+			miscFlags |= D3D11_RESOURCE_MISC_TEXTURECUBE;
+			isCubeMap = true;
+		}
+
 		DXGI_FORMAT texFormat = FindTextureResourceDXGIFormat(format);
 
+		D3D11_TEXTURE2D_DESC texDesc = {};
 		texDesc.Width = width;
 		texDesc.Height = height;
 		texDesc.MipLevels = numMips;
-		texDesc.ArraySize = 1;
+		texDesc.ArraySize = arraySize;
 		texDesc.Format = texFormat;
 		texDesc.SampleDesc.Count = numSamples;
 		texDesc.Usage = usageFlag;
 		texDesc.BindFlags = bindFlags;
+		texDesc.MiscFlags = miscFlags;
 
-		if (data != nullptr)
+		if (rawData.TextureData.size() == 0)
 		{
-			subData.pSysMem = data;
+			if (FAILED(m_Device->CreateTexture2D(&texDesc, nullptr, texResource.GetAddressOf())))
+			{
+				spdlog::error("D3D11: Failed to create texture resource without init data");
+				return nullptr;
+			}
+		}
+		else
+		{
+			std::vector<D3D11_SUBRESOURCE_DATA> subDataDescs;
+			D3D11_SUBRESOURCE_DATA subData = {};
 			if (texFormat == DXGI_FORMAT_R8_UNORM)
 			{
 				subData.SysMemPitch = width;
@@ -232,17 +250,25 @@ namespace RenderingDEMO
 			{
 				subData.SysMemPitch = 4 * width;
 			}
-		}
 
-		if (FAILED(m_Device->CreateTexture2D(&texDesc, data != nullptr ? &subData : nullptr, texResource.GetAddressOf())))
-		{
-			spdlog::error("D3D11: Failed to create texture resource");
-			return nullptr;
+			for (size_t i = 0; i < arraySize; i++)
+			{
+				subData.pSysMem = rawData.TextureData[i];
+				subDataDescs.push_back(subData);
+			}
+
+			if (FAILED(m_Device->CreateTexture2D(&texDesc, subDataDescs.data(), texResource.GetAddressOf())))
+			{
+				spdlog::error("D3D11: Failed to create texture resource with init data");
+				return nullptr;
+			}
 		}
 
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> texRTV = nullptr;
 		if (createRTV)
 		{
+			// TODO:
+			// support rtv cubemap 
 			D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 			rtvDesc.Format = FindShaderResourceDXGIFormat(texFormat);
 			rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
@@ -258,7 +284,7 @@ namespace RenderingDEMO
 		if (createDSV)
 		{
 			D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-			dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+			dsvDesc.Format = FindDepthStencilDXGIFormat(texFormat);
 			dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 
 			if (FAILED(m_Device->CreateDepthStencilView(texResource.Get(), &dsvDesc, texDSV.GetAddressOf())))
@@ -273,7 +299,7 @@ namespace RenderingDEMO
 		{
 			D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 			srvDesc.Format = FindShaderResourceDXGIFormat(texFormat);
-			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+			srvDesc.ViewDimension = isCubeMap ? D3D11_SRV_DIMENSION_TEXTURECUBE : D3D11_SRV_DIMENSION_TEXTURE2D;
 			srvDesc.Texture2D.MipLevels = numMips;
 
 			if (FAILED(m_Device->CreateShaderResourceView(texResource.Get(), &srvDesc, texSRV.GetAddressOf())))
@@ -283,7 +309,7 @@ namespace RenderingDEMO
 			}
 		}
 
-		return std::shared_ptr<DirectXTexture2D>(new DirectXTexture2D(width, height, numMips, numSamples, flags, format, texResource, texSRV, texRTV, texDSV));
+		return std::shared_ptr<DirectXTexture2D>(new DirectXTexture2D(width, height, arraySize, numMips, numSamples, flags, format, texResource, texSRV, texRTV, texDSV));
 	}
 
 	std::shared_ptr<VertexBuffer> DirectXRHI::CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride)
@@ -606,7 +632,8 @@ namespace RenderingDEMO
 
 		unsigned int flags = (unsigned int)TextureFlags::TexDepthStencilTarget;
 		TextureFormat format = TextureFormat::R32_Typeless;
-		std::shared_ptr<DirectXTexture2D> texture = std::dynamic_pointer_cast<DirectXTexture2D>(CreateTexture2D(m_WindowSize[0], m_WindowSize[1], 1, 1, flags, format, nullptr));
+		ResourceRawData raw_data;
+		std::shared_ptr<DirectXTexture2D> texture = std::dynamic_pointer_cast<DirectXTexture2D>(CreateTexture2D(m_WindowSize[0], m_WindowSize[1], 1, 1, 1, flags, format, raw_data));
 		m_SwapChainDepthTarget = texture->GetDepthStencilView();
 
 		SetViewPort(static_cast<float>(m_WindowSize[0]), static_cast<float>(m_WindowSize[1]));

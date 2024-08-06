@@ -40,6 +40,7 @@ namespace RenderingDEMO
 	struct PerFrameConstant
 	{
 		Eigen::Matrix4f ProjectionViewMatrix;
+		Eigen::Matrix4f ProjectionViewNoTransMatirx;
 		Eigen::Vector3f CameraPos;
 		float _padding1 = 0.0f;
 		DirectionalLight DirectionalLight;

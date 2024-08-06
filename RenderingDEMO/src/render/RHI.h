@@ -6,6 +6,11 @@
 
 namespace RenderingDEMO
 {
+	struct ResourceRawData
+	{
+		std::vector<void*> TextureData;
+	};
+
 	class RHI
 	{
 	public:
@@ -19,7 +24,7 @@ namespace RenderingDEMO
 		virtual std::shared_ptr<DepthStencilState> CreateDepthStencilState(const DepthStencilStateInitializer& initializer) = 0;
 		virtual std::shared_ptr<SamplerState> CreateSamplerState(const SamplerStateInitializer& initializer) = 0;
 
-		virtual std::shared_ptr<Texture2D> CreateTexture2D(unsigned int width, unsigned int height, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, const void* data) = 0;
+		virtual std::shared_ptr<Texture2D> CreateTexture2D(unsigned int width, unsigned int height, unsigned int arraySize, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, ResourceRawData& rawData) = 0;
 
 		virtual std::shared_ptr<VertexBuffer> CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride) = 0;
 		virtual std::shared_ptr<IndexBuffer> CreateIndexBuffer(const void* data, unsigned int size) = 0;

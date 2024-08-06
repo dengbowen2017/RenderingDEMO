@@ -111,7 +111,7 @@ namespace RenderingDEMO
         return std::shared_ptr<SamplerState>(state);
     }
 
-    std::shared_ptr<Texture2D> OpenGLRHI::CreateTexture2D(unsigned int width, unsigned int height, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, const void* data)
+    std::shared_ptr<Texture2D> OpenGLRHI::CreateTexture2D(unsigned int width, unsigned int height, unsigned int arraySize, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, ResourceRawData& rawData)
     {
         unsigned int texID;
         glCreateTextures(GL_TEXTURE_2D, 1, &texID);
@@ -120,11 +120,26 @@ namespace RenderingDEMO
         GLenum texResFormat = FindTextureResourceFormat(texFormat);
         GLenum texResType = FindTextureResourceType(texFormat);
 
-        glBindTexture(GL_TEXTURE_2D, texID);
-        glTexImage2D(GL_TEXTURE_2D, 0, texFormat, width, height, 0, texResFormat, texResType, data);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        if (flags & (unsigned int)TextureFlags::TexCubeMap)
+        {
+            assert(arraySize == 6);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
 
-        return std::shared_ptr<OpenGLTexture2D>(new OpenGLTexture2D(width, height, numMips, numSamples, flags, format, texID));
+            for (unsigned int i = 0; i < arraySize; i++)
+            {
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, texFormat, width, height, 0, texResFormat, texResType, rawData.TextureData[i]);
+            }
+
+            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, texID);
+            glTexImage2D(GL_TEXTURE_2D, 0, texFormat, width, height, 0, texResFormat, texResType, rawData.TextureData.size() != 0 ? rawData.TextureData[0] : nullptr);
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
+
+        return std::shared_ptr<OpenGLTexture2D>(new OpenGLTexture2D(width, height, arraySize, numMips, numSamples, flags, format, texID));
     }
 
     std::shared_ptr<VertexBuffer> OpenGLRHI::CreateVertexBuffer(const void* data, unsigned int size, unsigned int stride)
@@ -309,8 +324,16 @@ namespace RenderingDEMO
         // set rasterizer state
         glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
         glPolygonMode(GL_FRONT, glState->m_RasterizerState->m_FillMode);
-        glEnable(GL_CULL_FACE);
-        glCullFace(glState->m_RasterizerState->m_CullMode);
+
+        if (glState->m_RasterizerState->m_CullMode == GL_NONE)
+        {
+            glDisable(GL_CULL_FACE);
+        }
+        else
+        {
+            glEnable(GL_CULL_FACE);
+            glCullFace(glState->m_RasterizerState->m_CullMode);
+        }
 
         // set depth state
         glEnable(GL_DEPTH_TEST);

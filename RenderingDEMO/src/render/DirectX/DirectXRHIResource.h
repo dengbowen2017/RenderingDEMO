@@ -98,7 +98,7 @@ namespace RenderingDEMO
 	class DirectXTexture2D :public Texture2D
 	{
 	public:
-		DirectXTexture2D(unsigned int width, unsigned int height, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format,
+		DirectXTexture2D(unsigned int width, unsigned int height, unsigned int arraySize, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format,
 			const Microsoft::WRL::ComPtr<ID3D11Texture2D>& texRes,
 			const Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& srv,
 			const Microsoft::WRL::ComPtr<ID3D11RenderTargetView>& rtv,

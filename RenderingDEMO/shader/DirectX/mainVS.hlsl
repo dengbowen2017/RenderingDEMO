@@ -26,6 +26,7 @@ struct DirectionalLight
 cbuffer PerFrame : register(b0)
 {
     matrix projectionViewMatrix;
+    matrix projectionViewNoTransMatrix;
     float3 cameraPos;
     float padding1;
     DirectionalLight directionalLight;

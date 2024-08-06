@@ -17,9 +17,10 @@ namespace RenderingDEMO
 		TexRenderTarget = 1 << 0,
 		TexDepthStencilTarget = 1 << 1,
 		TexShaderResource = 1 << 2,
-		TexMips = 1 << 3,
+		TexGenMips = 1 << 3,
 		TexImmutable = 1 << 4,
-		TexDefault = 1 << 5
+		TexDefault = 1 << 5,
+		TexCubeMap = 1 << 6
 	};
 
 	enum class TextureFormat

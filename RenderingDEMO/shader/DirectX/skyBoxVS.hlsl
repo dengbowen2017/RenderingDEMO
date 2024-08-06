@@ -6,6 +6,7 @@ struct VSInput
 struct VSOutput
 {
     float4 position : SV_Position;
+    float3 texCoord : TEXCOORD0;
 };
 
 struct DirectionalLight
@@ -14,7 +15,7 @@ struct DirectionalLight
     float padding1;
     float3 intensity;
     float padding2;
-    matrix spaceMatrix;
+    matrix lightSpaceMatrix;
 };
 
 cbuffer PerFrame : register(b0)
@@ -29,6 +30,8 @@ cbuffer PerFrame : register(b0)
 VSOutput main(VSInput input)
 {
     VSOutput output = (VSOutput) 0;
-    output.position = mul(directionalLight.spaceMatrix, float4(input.position, 1.0));
+    float4 pos = mul(projectionViewNoTransMatrix, float4(input.position, 1.0));
+    output.position = pos.xyww;
+    output.texCoord = input.position;
     return output;
 }

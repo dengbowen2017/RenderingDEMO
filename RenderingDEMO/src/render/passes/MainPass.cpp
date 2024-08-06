@@ -71,6 +71,6 @@ namespace RenderingDEMO
 		//m_RHI->SetVertexBuffer(m_RenderResource->m_QuadVertexBuffer);
 		//m_RHI->DrawIndexed(m_RenderResource->m_QuadIndexBuffer);
 
-		m_RHI->SwapBuffer();
+		//m_RHI->SwapBuffer();
 	}
 }

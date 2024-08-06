@@ -1,7 +1,8 @@
 # RenderingDEMO
 
 ## Outline
-This is my implementation of a simple game engine. The main concept is to use RHI to manage different rendering APIs. For now, it can support OpenGL and DirectX11.
+This is my implementation of a simple game engine. The main concept is to use RHI to manage different rendering APIs. For now, it can support OpenGL and DirectX11 only on Windows.
+![preview](Imgs/preview.png)
 
 ## How to use
 After cloning the repository
@@ -24,11 +25,12 @@ Then run the .sln file.
 - basic forward rendering
 - phong lighting
 - simple shadow mapping
+- skybox
 
 ## TODO list
 ### Priority
 - 3D graphics math library
-- Add smiple resource loader (model and texture)
+- Add smiple resource loader
 - Add simple 3D rigid body physics
 - Add rendering features (PBR, Deferred Rendering...)
 - Add batch rendering

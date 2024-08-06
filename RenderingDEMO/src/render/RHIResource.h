@@ -126,8 +126,8 @@ namespace RenderingDEMO
 	class Texture2D :public Texture
 	{
 	public:
-		Texture2D(unsigned int width, unsigned int height, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format)
-			:m_Width(width), m_Height(height), Texture(numMips, numSamples, flags, format)
+		Texture2D(unsigned int width, unsigned int height, unsigned int arraySize, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format)
+			:m_Width(width), m_Height(height), m_ArraySize(arraySize), Texture(numMips, numSamples, flags, format)
 		{}
 		virtual ~Texture2D() = default;
 
@@ -136,6 +136,7 @@ namespace RenderingDEMO
 	private:
 		unsigned int m_Width;
 		unsigned int m_Height;
+		unsigned int m_ArraySize;
 	};
 
 	class RenderTarget

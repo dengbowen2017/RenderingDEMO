@@ -24,6 +24,7 @@ struct DirectionalLight
 layout(std140, binding = 0) uniform Perframe
 {
 	mat4 projectViewMatrix;
+    mat4 projectViewNoTransMatrix;
     vec3 cameraPos;
     float padding1;
     DirectionalLight directionalLight;

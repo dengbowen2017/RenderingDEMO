@@ -92,7 +92,7 @@ namespace RenderingDEMO
 	class OpenGLTexture2D :public Texture2D
 	{
 	public:
-		OpenGLTexture2D(unsigned int width, unsigned int height, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, unsigned int id);
+		OpenGLTexture2D(unsigned int width, unsigned int height, unsigned int arraySize, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, unsigned int id);
 		~OpenGLTexture2D();
 
 		unsigned int GetID() const { return m_ID; }

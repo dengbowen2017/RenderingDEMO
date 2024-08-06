@@ -28,7 +28,8 @@ namespace RenderingDEMO
 		m_PiplineState = pips;
 
 		unsigned int flags = (unsigned int)TextureFlags::TexDepthStencilTarget | (unsigned int)TextureFlags::TexShaderResource | (unsigned int)TextureFlags::TexDefault;
-		std::shared_ptr<Texture2D> depthTex = m_RHI->CreateTexture2D(m_ShadowMapWidth, m_ShadowMapHeight, 1, 1, flags, TextureFormat::R32_Typeless, nullptr);
+		ResourceRawData raw_data;
+		std::shared_ptr<Texture2D> depthTex = m_RHI->CreateTexture2D(m_ShadowMapWidth, m_ShadowMapHeight, 1, 1, 1, flags, TextureFormat::R32_Typeless, raw_data);
 
 		m_RenderTarget = m_RHI->CreateRenderTarget(nullptr, depthTex);
 	}

@@ -103,8 +103,8 @@ namespace RenderingDEMO
 		glDeleteBuffers(1, &m_ID);
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(unsigned int width, unsigned int height, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, unsigned int id)
-		:Texture2D(width, height, numMips, numSamples, flags, format), m_ID(id)
+	OpenGLTexture2D::OpenGLTexture2D(unsigned int width, unsigned int height, unsigned int arraySize, unsigned int numMips, unsigned int numSamples, unsigned int flags, TextureFormat format, unsigned int id)
+		:Texture2D(width, height, arraySize, numMips, numSamples, flags, format), m_ID(id)
 	{
 	}
 
