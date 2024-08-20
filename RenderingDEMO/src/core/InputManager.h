@@ -44,8 +44,6 @@ namespace RenderingDEMO
 
         float m_MouseX = 0.0f;
         float m_MouseY = 0.0f;
-        float m_CameraSpeed = 1.0f;
-        float m_MouseSpeed = 0.05f;
 
         bool m_IsMouseButtonRightPressed = false;
         bool m_Entered = false;

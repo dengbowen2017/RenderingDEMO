@@ -1,53 +1,46 @@
 #pragma once
 
-#include <Eigen/Dense>
-
-#include <DirectXMath.h>
+#include "GMathLib.h"
 
 namespace RenderingDEMO
 {
-	struct StaticMesh
-	{
-		float* MeshVertices;
-		unsigned int MeshVerticesSize;
-		unsigned int* MeshIndices;
-		unsigned int MeshIndicesSize;
-	};
+	//struct StaticMesh
+	//{
+	//	float* MeshVertices;
+	//	unsigned int MeshVerticesSize;
+	//	unsigned int* MeshIndices;
+	//	unsigned int MeshIndicesSize;
+	//};
 
-	struct RenderMesh
-	{
-		StaticMesh MeshData;
-		Eigen::Matrix4f ModelMatrix;
-	};
+	//struct RenderMesh
+	//{
+	//	StaticMesh MeshData;
+	//	Eigen::Matrix4f ModelMatrix;
+	//};
+
+	//struct PointLight
+	//{
+	//	Eigen::Vector3f Position;
+	//	float Quadratic; // a in shader
+	//	Eigen::Vector3f Intensity;
+	//	float Linear; // b in shader
+	//};
 
 	struct DirectionalLight
 	{
-		Eigen::Vector3f Direction;
+		GMath::Vector3 Direction;
 		float _padding1 = 0.0f;
-		Eigen::Vector3f Intensity;
+		GMath::Vector3 Intensity;
 		float _padding2 = 0.0f;
-		Eigen::Matrix4f SpaceMatrix;
-	};
-
-	struct PointLight
-	{
-		Eigen::Vector3f Position;
-		float Quadratic; // a in shader
-		Eigen::Vector3f Intensity;
-		float Linear; // b in shader
+		GMath::Matrix4x4 SpaceMatrix;
 	};
 
 	struct PerFrameConstant
 	{
-		Eigen::Matrix4f ProjectionViewMatrix;
-		Eigen::Matrix4f ProjectionViewNoTransMatirx;
-		Eigen::Vector3f CameraPos;
+		GMath::Matrix4x4 ProjectionViewMatrix;
+		GMath::Matrix4x4 ProjectionViewNoTransMatrix;
+		GMath::Vector3 CameraPos;
 		float _padding1 = 0.0f;
 		DirectionalLight DirectionalLight;
-	};
-
-	struct PerObjectConstant
-	{
-		Eigen::Matrix4f ObjectModelMatrix;
 	};
 }

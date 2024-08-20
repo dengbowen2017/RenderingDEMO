@@ -1,11 +1,10 @@
 #include "Camera.h"
 
 #include <spdlog/spdlog.h>
-#include "RenderUtil.h"
 
 namespace RenderingDEMO
 {
-	Camera::Camera(Eigen::Vector3f position, float fov, float aspectRatio)
+	Camera::Camera(GMath::Vector3 position, float fov, float aspectRatio)
 		:m_Position(position), m_Fovy(fov), m_AspectRatio(aspectRatio)
 	{
 		updateCameraVectors();
@@ -27,31 +26,29 @@ namespace RenderingDEMO
 		updateCameraVectors();
 	}
 
-	Eigen::Matrix4f Camera::GetViewMatrix() const
+	GMath::MMatrix Camera::GetViewMat() const
 	{
-		return Math::GetLookAtMatrix(m_Position, m_Position + m_Forward, { 0.0f, 1.0f, 0.0f });
+		GMath::MVector EyePos = GMath::LoadVector3(&m_Position);
+		return GMath::MatrixLookAtRH(EyePos, EyePos + m_Forward, m_WorldUp);
 	}
 
-	Eigen::Matrix4f Camera::GetProjectionMatrix() const
+	GMath::MMatrix Camera::GetProjectionMat() const
 	{
-		return Math::GetPerspectiveFovMatrix(m_Fovy, m_AspectRatio, m_Near, m_Far);
+		return GMath::MatrixPerspectiveFovRH(GMath::ConvertToRadians(m_Fovy), m_AspectRatio, m_Near, m_Far);
 	}
 
 	void Camera::updateCameraVectors()
 	{
-		Eigen::Vector3f forward;
-		
-		Eigen::Array<float, 1, 2> yawPitch(m_Yaw * 0.0174533f, m_Pitch * 0.0174533f);
-		Eigen::Array<float, 1, 2> sinValue = yawPitch.sin();
-		Eigen::Array<float, 1, 2> cosValue = yawPitch.cos();
+		float sinYaw = GMath::ScalarSin(GMath::ConvertToRadians(m_Yaw));
+		float cosYaw = GMath::ScalarCos(GMath::ConvertToRadians(m_Yaw));
 
-		forward(0) = cosValue(0, 0) * cosValue(0, 1);
-		forward(1) = sinValue(0, 1);
-		forward(2) = sinValue(0, 0) * cosValue(0, 1);
+		float sinPitch = GMath::ScalarSin(GMath::ConvertToRadians(m_Pitch));
+		float cosPitch = GMath::ScalarCos(GMath::ConvertToRadians(m_Pitch));
 
-		Eigen::Vector3f worldUp(0.0f, 1.0f, 0.0f);
-		m_Forward = forward.normalized();
-		m_Right = m_Forward.cross(worldUp).normalized();
-		m_Up = m_Right.cross(m_Forward).normalized();
+		GMath::Vector3 temp(cosYaw * cosPitch, sinPitch, sinYaw * cosPitch);
+
+		m_Forward = GMath::VectorNormalize(GMath::LoadVector3(&temp));
+		m_Right = GMath::VectorNormalize(GMath::VectorCross(m_Forward, m_WorldUp));
+		m_Up = GMath::VectorNormalize(GMath::VectorCross(m_Right, m_Forward));
 	}
 }

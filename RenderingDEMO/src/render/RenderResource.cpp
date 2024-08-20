@@ -1,26 +1,29 @@
 #include "RenderResource.h"
-#include "RenderUtil.h"
+#include "GMathLib.h"
 
 #include <stb_image.h>
 #include <spdlog/spdlog.h>
-
-#include <iostream>
 
 namespace RenderingDEMO
 {
     void RenderResource::UpdatePerFrameConstant(std::shared_ptr<Camera> camera)
     {
-		Eigen::Matrix4f proj = camera->GetProjectionMatrix();
-		Eigen::Matrix4f view = camera->GetViewMatrix();
+		GMath::MMatrix proj = camera->GetProjectionMat();
+		GMath::MMatrix view = camera->GetViewMat();
+
+		GMath::Matrix3x3 temp;
+		GMath::StoreMatrix3x3(&temp, view);
+		GMath::MMatrix view_no_trans = GMath::LoadMatrix3x3(&temp);
+
+		GMath::Matrix4x4 proj_view;
+		GMath::StoreMatrix4x4(&proj_view, GMath::MatrixTranspose(proj * view));
+
+		GMath::Matrix4x4 proj_view_no_trans;
+		GMath::StoreMatrix4x4(&proj_view_no_trans, GMath::MatrixTranspose(proj * view_no_trans));
 
         m_PerFrameConstant.CameraPos = camera->GetCameraPos();
-		m_PerFrameConstant.ProjectionViewMatrix = proj * view;
-
-		Eigen::Matrix4f view_no_trans = Eigen::Matrix4f::Zero();
-		Eigen::Matrix3f temp = view.block(0, 0, 3, 3);
-		view_no_trans.block<3, 3>(0, 0) = temp;
-
-		m_PerFrameConstant.ProjectionViewNoTransMatirx = proj * view_no_trans;
+		m_PerFrameConstant.ProjectionViewMatrix = proj_view;
+		m_PerFrameConstant.ProjectionViewNoTransMatrix = proj_view_no_trans;
     }
 
     void RenderResource::UpdateBuffers(std::shared_ptr<RHI> rhi)
@@ -163,12 +166,19 @@ namespace RenderingDEMO
 		m_SkyBoxVertexBuffer = vb;
 
 		// directional light looking at world zero
-		Eigen::Vector3f lightPos(-2.0f, 4.0f, -1.0f);
-		Eigen::Matrix4f view = Math::GetLookAtMatrix(lightPos, Eigen::Vector3f::Zero(), Eigen::Vector3f(0.0f, 1.0f, 0.0f));
-		Eigen::Matrix4f proj = Math::GetOrthographicMatrix(20, 20, 1.0f, 7.5f);
-		Eigen::Matrix4f lightSpaceMat = proj * view;
+		GMath::MVector light_pos = { 3.0f, 4.0f, 2.0f , 0.0f };
+		GMath::MVector zero_pos = { 0.0f, 0.0f, 0.0f, 0.0f };
+		GMath::MVector world_up = { 0.0f, 1.0f, 0.0f, 0.0f };
+		GMath::MMatrix light_view = GMath::MatrixLookAtRH(light_pos, zero_pos, world_up);
+		GMath::MMatrix light_proj = GMath::MatrixOrthographicRH(20, 20, 1.0f, 7.5f);
 
-		DirectionalLight directionallight = { -lightPos, 0.0f, Eigen::Vector3f(1.0f, 1.0f, 1.0f), 0.0f, lightSpaceMat };
+		GMath::Matrix4x4 light_space_mat;
+		GMath::StoreMatrix4x4(&light_space_mat, GMath::MatrixTranspose(light_proj* light_view));
+
+		GMath::Vector3 light_pos_neg;
+		GMath::StoreVector3(&light_pos_neg, GMath::VectorNegate(light_pos));
+
+		DirectionalLight directionallight = { light_pos_neg, 0.0f, GMath::Vector3(1.0f, 1.0f, 1.0f), 0.0f, light_space_mat };
 		m_PerFrameConstant.DirectionalLight = directionallight;
 
 		//PointLight pointlights[] =

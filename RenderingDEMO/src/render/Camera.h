@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Eigen/Dense>
+#include "GMathLib.h"
 
 namespace RenderingDEMO
 {
@@ -9,31 +9,36 @@ namespace RenderingDEMO
 		friend class InputManager;
 
 	public:
-		Camera(Eigen::Vector3f position, float fov, float aspectRatio);
+		Camera(GMath::Vector3 position, float fov, float aspectRatio);
 		~Camera() = default;
 
 		void ProcessMouseMovement(float xoffset, float yoffset);
 
-		Eigen::Matrix4f GetViewMatrix() const;
-		Eigen::Matrix4f GetProjectionMatrix() const;
-		Eigen::Vector3f GetCameraPos() const { return m_Position; }
+		GMath::MMatrix GetViewMat() const;
+		GMath::MMatrix GetProjectionMat() const;
+
+		GMath::Vector3 GetCameraPos() const { return m_Position; }
 
 	private:
 		void updateCameraVectors();
 
 	private:
-		Eigen::Vector3f m_Position = {};
+		GMath::Vector3 m_Position = {};
 
-		Eigen::Vector3f	m_Forward = {};
-		Eigen::Vector3f m_Right = {};
-		Eigen::Vector3f m_Up = {};
+		GMath::MVector m_Forward = {};
+		GMath::MVector m_Right = {};
+		GMath::MVector m_Up = {};
 
-		float m_Yaw = -90.0f;
-		float m_Pitch = 0;
-
-		float m_Near = 0.1f;
-		float m_Far = 100.0f;
 		float m_Fovy = 0;
 		float m_AspectRatio = 0;
+
+		// TODO: set at constructor
+		GMath::MVector m_WorldUp = { 0.0f, 1.0f, 0.0f, 0.0f }; 
+		float m_Yaw = -90.0f;
+		float m_Pitch = 0;
+		float m_Near = 0.1f;
+		float m_Far = 100.0f;		
+		float m_RotationSpeed = 0.04f;
+		float m_TranslationSpeed = 1.5f;
 	};
 }

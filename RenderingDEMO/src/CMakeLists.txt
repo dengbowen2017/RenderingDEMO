@@ -31,7 +31,7 @@ target_link_directories (${PROJECT_NAME} PUBLIC
 target_include_directories (${PROJECT_NAME} PUBLIC
 	${DEPENDENCES_DIR}/spdlog/include
 	${DEPENDENCES_DIR}/stb_image
-	${DEPENDENCES_DIR}/eigen
+	${DEPENDENCES_DIR}/mathlib/include
 	${SOURCE_DIR})
 
 target_precompile_headers (${PROJECT_NAME} PUBLIC pch.h)

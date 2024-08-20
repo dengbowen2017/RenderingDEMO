@@ -43,6 +43,8 @@ namespace RenderingDEMO
 			deltaTime = currentFrame - lastFrame;
 			lastFrame = currentFrame;
 
+			spdlog::info("{0} FPS", 1 / deltaTime);
+
 			m_Window->PollEvents();
 			m_InputManager->OnUpdate(deltaTime);
 			m_Renderer->OnUpdate(deltaTime);

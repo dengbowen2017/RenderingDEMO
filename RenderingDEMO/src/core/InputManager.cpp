@@ -105,8 +105,8 @@ namespace RenderingDEMO
 
         if (m_IsMouseButtonRightPressed)
         {
-            float xoffset = (x - m_MouseX) * m_MouseSpeed;
-            float yoffset = (m_MouseY - y) * m_MouseSpeed; // reversed since y-coordinates go from bottom to top
+            float xoffset = (x - m_MouseX) * m_Camera->m_RotationSpeed;
+            float yoffset = (m_MouseY - y) * m_Camera->m_RotationSpeed; // reversed since y-coordinates go from bottom to top
             m_Camera->ProcessMouseMovement(xoffset, yoffset);
         }
 
@@ -152,29 +152,33 @@ namespace RenderingDEMO
     {
         assert(m_Camera != nullptr);
 
+        GMath::MVector pos = GMath::LoadVector3(&m_Camera->m_Position);
+
         if ((unsigned int)EditorCommandType::camera_foward & m_EditorCommand)
         {
-            m_Camera->m_Position += m_Camera->m_Forward * m_CameraSpeed * deltaTime;
+            pos += m_Camera->m_Forward * m_Camera->m_TranslationSpeed * deltaTime;
         }
         if ((unsigned int)EditorCommandType::camera_back & m_EditorCommand)
         {
-            m_Camera->m_Position -= m_Camera->m_Forward * m_CameraSpeed * deltaTime; 
+            pos -= m_Camera->m_Forward * m_Camera->m_TranslationSpeed * deltaTime;
         }
         if ((unsigned int)EditorCommandType::camera_right & m_EditorCommand)
         {
-            m_Camera->m_Position += m_Camera->m_Right * m_CameraSpeed * deltaTime;           
+            pos += m_Camera->m_Right * m_Camera->m_TranslationSpeed * deltaTime;
         }
         if ((unsigned int)EditorCommandType::camera_left & m_EditorCommand)
         {
-            m_Camera->m_Position -= m_Camera->m_Right * m_CameraSpeed * deltaTime;           
+            pos -= m_Camera->m_Right * m_Camera->m_TranslationSpeed * deltaTime;
         }
         if ((unsigned int)EditorCommandType::camera_up & m_EditorCommand)
         {
-            m_Camera->m_Position += m_Camera->m_Up * m_CameraSpeed * deltaTime;            
+            pos += m_Camera->m_Up * m_Camera->m_TranslationSpeed * deltaTime;
         }
         if ((unsigned int)EditorCommandType::camera_down & m_EditorCommand)
         {
-            m_Camera->m_Position -= m_Camera->m_Up * m_CameraSpeed * deltaTime;
+            pos -= m_Camera->m_Up * m_Camera->m_TranslationSpeed * deltaTime;
         }
+
+        GMath::StoreVector3(&m_Camera->m_Position, pos);
     }
 }

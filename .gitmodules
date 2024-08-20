@@ -1,0 +1,3 @@
+[submodule "RenderingDEMO/dependence/mathlib"]
+	path = RenderingDEMO/dependence/mathlib
+	url = https://github.com/dengbowen2017/GraphicsMath.git
