@@ -2,9 +2,9 @@
 
 project ("RenderingDEMO")
 
-set (SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/RenderingDEMO/shader)
-set (ASSET_DIR ${CMAKE_CURRENT_SOURCE_DIR}/RenderingDEMO/asset)
-set (BIN_PROJECT_DIR ${CMAKE_BINARY_DIR}/${PROJECT_NAME})
+set (SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/engine/shader)
+set (ASSET_DIR ${CMAKE_CURRENT_SOURCE_DIR}/engine/asset)
+set (BIN_PROJECT_DIR ${CMAKE_BINARY_DIR}/engine)
 
-add_subdirectory ("RenderingDEMO/dependence")
-add_subdirectory ("RenderingDEMO/src")
+add_subdirectory ("engine/dependence")
+add_subdirectory ("engine/src")
