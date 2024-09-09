@@ -5,6 +5,8 @@
 #include "RenderDefinition.h"
 #include "Camera.h"
 
+#include "scene/DataDefinition.h"
+
 namespace RenderingDEMO
 {
 	class RenderResource
@@ -14,23 +16,27 @@ namespace RenderingDEMO
 		void UpdatePerObjectConstant(const PerObjectConstant& constant);
 		
 		// temp
-		void UpdateBuffers(std::shared_ptr<RHI> rhi);
+		void UploadBuffers(std::shared_ptr<RHI> rhi, std::shared_ptr<Mesh> mesh);
 		void UploadTextures(std::shared_ptr<RHI> rhi);
 
 	private:
 		std::shared_ptr<Texture2D> LoadTexture(std::shared_ptr<RHI> rhi, const std::string& texPath);
 		std::shared_ptr<Texture2D> LoadCubeMap(std::shared_ptr<RHI> rhi, const std::vector<std::string>& cubeMapPaths);
-		std::shared_ptr<Mesh> LoadMesh(const std::string& objPath);
+
+		// temp
+		void CreateBuffers(std::shared_ptr<RHI> rhi);
 
 	public:
 		// temp 
 		// need Mesh and Object class to manage all the buffers
 		std::shared_ptr<VertexBuffer> m_CubeVertexBuffer;
 		std::shared_ptr<VertexBuffer> m_SkyBoxVertexBuffer;
-		std::shared_ptr<VertexBuffer> m_BunnyVertexBuffer;
-		std::shared_ptr<IndexBuffer> m_BunnyIndexBuffer;
+
 		std::shared_ptr<VertexBuffer> m_PlaneVertexBuffer;
 		std::shared_ptr<IndexBuffer> m_PlaneIndexBuffer;
+
+		std::shared_ptr<VertexBuffer> m_BunnyVertexBuffer = nullptr;
+		std::shared_ptr<IndexBuffer> m_BunnyIndexBuffer = nullptr;
 
 		// for debug
 		std::shared_ptr<VertexBuffer> m_QuadVertexBuffer;
@@ -42,8 +48,6 @@ namespace RenderingDEMO
 		std::shared_ptr<Texture2D> m_WallTexture;
 		std::shared_ptr<Texture2D> m_BoxTexture;
 		std::shared_ptr<Texture2D> m_SkyBoxTexture;
-
-		std::shared_ptr<Mesh> m_BunnyMesh;
 
 		PerFrameConstant m_PerFrameConstant;
 		PerObjectConstant m_BunnyConstant;

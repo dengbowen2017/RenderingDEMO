@@ -9,21 +9,25 @@
 namespace RenderingDEMO
 {
 	class WindowUI;
+	struct Mesh;
 
 	enum class RenderAPI : unsigned int
 	{
 		Unknown = 0, OpenGL, DirectX
 	};
 
-	class Renderer
+	class RenderSystem
 	{
 	public:
-		Renderer() = default;
-		~Renderer();
+		RenderSystem() = default;
+		~RenderSystem();
 
 		void Initialize(std::shared_ptr<Window> window, RenderAPI api);
 		void InitializeUI(std::shared_ptr<WindowUI> ui);
 		void OnUpdate(float deltaTime);
+
+		void SubmitMesh(std::shared_ptr<Mesh> mesh);
+		void SubmitConstant(const PerObjectConstant& constant);
 
 		std::shared_ptr<RHI> GetRHI() const { return m_RHI; }
 		std::shared_ptr<Camera> GetMainCamera() const { return m_Camera; }

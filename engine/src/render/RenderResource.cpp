@@ -6,9 +6,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
-
 namespace RenderingDEMO
 {
     void RenderResource::UpdatePerFrameConstant(std::shared_ptr<Camera> camera)
@@ -45,8 +42,72 @@ namespace RenderingDEMO
 		GMath::StoreMatrix4x4(&m_PlaneVConstant.ModelMatrix, GMath::ModelMatrix(pos_vec, rotate_vec, scale_vec));
 	}
 
-    void RenderResource::UpdateBuffers(std::shared_ptr<RHI> rhi)
+    void RenderResource::UploadBuffers(std::shared_ptr<RHI> rhi, std::shared_ptr<Mesh> mesh)
     {
+		std::shared_ptr<Mesh> bunny_mesh = mesh;
+		unsigned int stride = 32;
+		m_BunnyVertexBuffer = rhi->CreateVertexBuffer(bunny_mesh->Vertices.data(), stride * bunny_mesh->Vertices.size(), stride);
+		m_BunnyIndexBuffer = rhi->CreateIndexBuffer(bunny_mesh->Indices.data(), sizeof(unsigned int) * bunny_mesh->Indices.size());
+
+		CreateBuffers(rhi);
+    }
+
+	std::shared_ptr<Texture2D> RenderResource::LoadTexture(std::shared_ptr<RHI> rhi, const std::string& texPath)
+	{
+		std::shared_ptr<Texture2D> texture;
+		int width, height, channels;
+		// TODO
+		// use stbi to identify different types of texutre (16bit, hdr ...)
+		// if input channels is 3, we add a alpha channel to be compatible to DirectX
+		void* raw_data = stbi_load(texPath.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+		ResourceRawData texData;
+		texData.TextureData.push_back(raw_data);
+
+		if (raw_data)
+		{
+			unsigned int flags = (unsigned int)TextureFlags::TexShaderResource | (unsigned int)TextureFlags::TexImmutable;
+			texture = rhi->CreateTexture2D(width, height, 1, 1, 1, flags, TextureFormat::R8G8B8A8_UNorm, texData);
+		}
+		else
+		{
+			spdlog::error("Failed to load texture");
+		}
+		stbi_image_free(raw_data);
+		return texture;
+	}
+
+	std::shared_ptr<Texture2D> RenderResource::LoadCubeMap(std::shared_ptr<RHI> rhi, const std::vector<std::string>& cubeMapPaths)
+	{
+		std::shared_ptr<Texture2D> texture;
+		ResourceRawData texDatas;
+
+		int width, height, channels;
+		unsigned int flags = (unsigned int)TextureFlags::TexCubeMap | (unsigned int)TextureFlags::TexShaderResource | (unsigned int)TextureFlags::TexImmutable;
+
+		for (size_t i = 0; i < cubeMapPaths.size(); i++)
+		{
+			void* raw_data = stbi_load(cubeMapPaths[i].c_str(), &width, &height, &channels, STBI_rgb_alpha);
+			
+			if (raw_data == nullptr)
+			{
+				spdlog::error("Failed to load {0}", cubeMapPaths[i]);
+				return texture;
+			}
+			texDatas.TextureData.push_back(raw_data);
+		}
+
+		texture = rhi->CreateTexture2D(width, height, 6, 1, 1, flags, TextureFormat::R8G8B8A8_UNorm, texDatas);
+
+		for each (void* data in texDatas.TextureData)
+		{
+			stbi_image_free(data);
+		}
+
+		return texture;
+	}
+
+	void RenderResource::CreateBuffers(std::shared_ptr<RHI> rhi)
+	{
 		// TODO
 		// use Mesh Component to manage the vertex data
 		// since cube and skybox are all just a cube, so we can create a mesh class to store
@@ -143,10 +204,10 @@ namespace RenderingDEMO
 
 		float planeVertices[] =
 		{
-			 20.0f, -1.0f, -20.0f, 0.0f, 1.0f, 0.0f, 4.0f, 4.0f,
-			 20.0f, -1.0f,  20.0f, 0.0f, 1.0f, 0.0f, 4.0f, 0.0f,
-			-20.0f, -1.0f, -20.0f, 0.0f, 1.0f, 0.0f, 0.0f, 4.0f,
-			-20.0f, -1.0f,  20.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+			 20.0f, 0.0f, -20.0f, 0.0f, 1.0f, 0.0f, 4.0f, 4.0f,
+			 20.0f, 0.0f,  20.0f, 0.0f, 1.0f, 0.0f, 4.0f, 0.0f,
+			-20.0f, 0.0f, -20.0f, 0.0f, 1.0f, 0.0f, 0.0f, 4.0f,
+			-20.0f, 0.0f,  20.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
 		};
 
 		unsigned int planeIndices[] =
@@ -188,14 +249,6 @@ namespace RenderingDEMO
 		vb = rhi->CreateVertexBuffer(skyBoxVertices, sizeof(skyBoxVertices), stride);
 		m_SkyBoxVertexBuffer = vb;
 
-		std::string bunny_path = "../asset/model/bunny.obj";
-		std::shared_ptr<Mesh> bunny_mesh = LoadMesh(bunny_path);
-		stride = 32;
-		vb = rhi->CreateVertexBuffer(bunny_mesh->Vertices.data(), stride * bunny_mesh->Vertices.size(), stride);
-		ib = rhi->CreateIndexBuffer(bunny_mesh->Indices.data(), sizeof(unsigned int) * bunny_mesh->Indices.size());
-		m_BunnyVertexBuffer = vb;
-		m_BunnyIndexBuffer = ib;
-
 		// directional light looking at world zero
 		GMath::MVector light_pos(3.0f, 4.0f, 2.0f, 0.0f);
 		GMath::MVector zero_pos(0.0f, 0.0f, 0.0f, 0.0f);
@@ -224,120 +277,6 @@ namespace RenderingDEMO
 
 		ub = rhi->CreateUniformBuffer(sizeof(PerObjectConstant));
 		m_PerObjectUniformBuffer = ub;
-    }
-
-	std::shared_ptr<Texture2D> RenderResource::LoadTexture(std::shared_ptr<RHI> rhi, const std::string& texPath)
-	{
-		std::shared_ptr<Texture2D> texture;
-		int width, height, channels;
-		// TODO
-		// use stbi to identify different types of texutre (16bit, hdr ...)
-		// if input channels is 3, we add a alpha channel to be compatible to DirectX
-		void* raw_data = stbi_load(texPath.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-		ResourceRawData texData;
-		texData.TextureData.push_back(raw_data);
-
-		if (raw_data)
-		{
-			unsigned int flags = (unsigned int)TextureFlags::TexShaderResource | (unsigned int)TextureFlags::TexImmutable;
-			texture = rhi->CreateTexture2D(width, height, 1, 1, 1, flags, TextureFormat::R8G8B8A8_UNorm, texData);
-		}
-		else
-		{
-			spdlog::error("Failed to load texture");
-		}
-		stbi_image_free(raw_data);
-		return texture;
-	}
-
-	std::shared_ptr<Texture2D> RenderResource::LoadCubeMap(std::shared_ptr<RHI> rhi, const std::vector<std::string>& cubeMapPaths)
-	{
-		std::shared_ptr<Texture2D> texture;
-		ResourceRawData texDatas;
-
-		int width, height, channels;
-		unsigned int flags = (unsigned int)TextureFlags::TexCubeMap | (unsigned int)TextureFlags::TexShaderResource | (unsigned int)TextureFlags::TexImmutable;
-
-		for (size_t i = 0; i < cubeMapPaths.size(); i++)
-		{
-			void* raw_data = stbi_load(cubeMapPaths[i].c_str(), &width, &height, &channels, STBI_rgb_alpha);
-			
-			if (raw_data == nullptr)
-			{
-				spdlog::error("Failed to load {0}", cubeMapPaths[i]);
-				return texture;
-			}
-			texDatas.TextureData.push_back(raw_data);
-		}
-
-		texture = rhi->CreateTexture2D(width, height, 6, 1, 1, flags, TextureFormat::R8G8B8A8_UNorm, texDatas);
-
-		for each (void* data in texDatas.TextureData)
-		{
-			stbi_image_free(data);
-		}
-
-		return texture;
-	}
-
-	std::shared_ptr<Mesh> RenderResource::LoadMesh(const std::string& objPath)
-	{
-		tinyobj::ObjReaderConfig reader_config;
-		tinyobj::ObjReader reader;
-
-		if (!reader.ParseFromFile(objPath, reader_config))
-		{
-			if (!reader.Error().empty()) 
-			{
-				spdlog::error("TinyObjReader: {0}", reader.Error());
-			}
-			return nullptr;
-		}
-
-		if (!reader.Warning().empty()) 
-		{
-			spdlog::warn("TinyObjReader: {0}", reader.Warning());
-		}
-
-		auto& attrib = reader.GetAttrib();
-		auto& shapes = reader.GetShapes();
-
-		std::shared_ptr<Mesh> mesh_data = std::make_shared<Mesh>();
-		
-		for (const auto& shape : shapes)
-		{
-			for (const auto& index : shape.mesh.indices)
-			{
-				mesh_data->Indices.push_back(index.vertex_index);
-			}
-		}
-
-		unsigned int num_verts = attrib.vertices.size() / 3;
-
-		for (size_t i = 0; i < num_verts; i++)
-		{
-			Vertex vert;
-
-			vert.Position =
-			{
-				attrib.vertices[i * 3 + 0],
-				attrib.vertices[i * 3 + 1],
-				attrib.vertices[i * 3 + 2]
-			};
-
-			vert.Normal =
-			{
-				attrib.normals[i * 3 + 0],
-				attrib.normals[i * 3 + 1],
-				attrib.normals[i * 3 + 2]
-			};
-
-			vert.TexCoord = { 0.0f, 0.0f };
-
-			mesh_data->Vertices.push_back(vert);
-		}
-
-		return mesh_data;
 	}
 
 	void RenderResource::UploadTextures(std::shared_ptr<RHI> rhi)

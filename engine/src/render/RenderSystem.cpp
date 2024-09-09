@@ -1,4 +1,4 @@
-#include "Renderer.h"
+#include "RenderSystem.h"
 #include "render/OpenGL/OpenGLRHI.h"
 #include "render/DirectX/DirectXRHI.h"
 
@@ -6,11 +6,11 @@
 
 namespace RenderingDEMO
 {
-	Renderer::~Renderer()
+	RenderSystem::~RenderSystem()
 	{
 	}
 
-	void Renderer::Initialize(std::shared_ptr<Window> window, RenderAPI api)
+	void RenderSystem::Initialize(std::shared_ptr<Window> window, RenderAPI api)
 	{
 		m_CurrentAPI = api;
 		switch (api)
@@ -31,19 +31,28 @@ namespace RenderingDEMO
 		m_Camera = std::make_shared<Camera>(GMath::Vector3(0.0f, 1.0f, 3.0f), 85.0f, static_cast<float>(size[0]) / static_cast<float>(size[1]));
 
 		m_RenderResource = std::make_shared<RenderResource>();
-		m_RenderResource->UpdateBuffers(m_RHI);
 		m_RenderResource->UploadTextures(m_RHI);
 
 		m_RenderPipeline = std::make_shared<RenderPipline>();
 		m_RenderPipeline->Initialize(m_RHI, m_RenderResource);
 	}
 
-	void Renderer::InitializeUI(std::shared_ptr<WindowUI> ui)
+	void RenderSystem::InitializeUI(std::shared_ptr<WindowUI> ui)
 	{
 		m_RenderPipeline->InitializeUI(ui);
 	}
 
-	void Renderer::OnUpdate(float deltaTime)
+	void RenderSystem::SubmitMesh(std::shared_ptr<Mesh> mesh)
+	{
+		m_RenderResource->UploadBuffers(m_RHI, mesh);
+	}
+
+	void RenderSystem::SubmitConstant(const PerObjectConstant& constant)
+	{
+		m_RenderResource->UpdatePerObjectConstant(constant);
+	}
+
+	void RenderSystem::OnUpdate(float deltaTime)
 	{
 		/*
 		Do rendering similarly as DirectX12
@@ -67,13 +76,8 @@ namespace RenderingDEMO
 
 		m_RenderResource->UpdatePerFrameConstant(m_Camera);
 		m_RHI->UpdateUniformBuffer(m_RenderResource->m_PerFrameUniformBuffer, &m_RenderResource->m_PerFrameConstant);
+
 		m_RHI->SetUniformBuffer(m_RenderResource->m_PerFrameUniformBuffer, 0);
-
-		PerObjectConstant tmp;
-		GMath::MVector scale_vec(2.0f);
-		GMath::StoreMatrix4x4(&tmp.ModelMatrix, GMath::ScaleMatrix(scale_vec));
-
-		m_RenderResource->UpdatePerObjectConstant(tmp);
 		m_RHI->SetUniformBuffer(m_RenderResource->m_PerObjectUniformBuffer, 1);
 
 		m_RenderPipeline->ForwardRendering();
