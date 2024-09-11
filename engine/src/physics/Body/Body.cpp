@@ -9,9 +9,13 @@ namespace PhysicsDEMO
 		m_PhysicMaterial.Friction = friction;
 	}
 
-	void Body::SetMotionProperty(const GMath::MVector& linear_velocity, const GMath::MVector& angular_velocity)
+	void Body::SetLinearVelocity(const GMath::MVector& linear_velocity)
 	{
 		m_MotionProperty.LinearVelocity = linear_velocity;
+	}
+
+	void Body::SetAngularVelocity(const GMath::MVector& angular_velocity)
+	{
 		m_MotionProperty.AngularVelocity = angular_velocity;
 	}
 
@@ -41,11 +45,21 @@ namespace PhysicsDEMO
 
 	void Body::ApplyImpluse(const GMath::MVector& impluse)
 	{
+		m_MotionProperty.LinearVelocity += m_MassProperty.InvMass * impluse;
+	}
+
+	void Body::ApplyTorque(const GMath::MVector& torque)
+	{
+		GMath::MMatrix R = GMath::QuaternionToMatrix(m_Rotation);
+		m_MotionProperty.AngularVelocity += R * m_MassProperty.InvInertia * GMath::MatrixTranspose(R) * torque;
 	}
 
 	void Body::UpdateTransform(float dt)
 	{
 		m_Translation += m_MotionProperty.LinearVelocity * dt;
-		//m_Rotation += m_MotionProperty.AngularVelocity * dt * 0.5 * m_Rotation;
+
+		GMath::MQuaternion temp(m_MotionProperty.AngularVelocity);
+		m_Rotation += 0.5 * dt * temp * m_Rotation;
+		m_Rotation = GMath::QuaternionNormalize(m_Rotation);
 	}
 }

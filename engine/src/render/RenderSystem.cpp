@@ -27,8 +27,9 @@ namespace RenderingDEMO
 		}
 		m_RHI->Initialize(window);
 
+		// TODO : move to scene system
 		std::array<int, 2> size = window->GetWindowSize();
-		m_Camera = std::make_shared<Camera>(GMath::Vector3(0.0f, 1.0f, 3.0f), 85.0f, static_cast<float>(size[0]) / static_cast<float>(size[1]));
+		m_Camera = std::make_shared<Camera>(GMath::Vector3(1.0f, 2.0f, 4.0f), 85.0f, static_cast<float>(size[0]) / static_cast<float>(size[1]));
 
 		m_RenderResource = std::make_shared<RenderResource>();
 		m_RenderResource->UploadTextures(m_RHI);

@@ -10,8 +10,8 @@ namespace PhysicsDEMO
 	public:
 		virtual ~Shape() = default;
 		virtual MassProperty GetMassProperty(float mass) = 0;
-		virtual GMath::Vector3 GetCenterOfMass() = 0;
-		virtual std::vector<GMath::Vector3> GetPositionVectors() = 0;
+		virtual const GMath::MVector& GetCenterOfMass() = 0;
+		virtual const std::vector<GMath::MVector>& GetPositionVectors() = 0;
 		virtual const std::vector<GMath::Vector3>& GetVertices() const = 0;
 	};
 }

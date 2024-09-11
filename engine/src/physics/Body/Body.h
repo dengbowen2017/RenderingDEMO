@@ -15,8 +15,10 @@ namespace PhysicsDEMO
 
 		void SetTranslation(const GMath::MVector& translation) { m_Translation = translation; }
 		void SetRotation(const GMath::MQuaternion& rotation) { m_Rotation = rotation; }
+
 		void SetPhysicMaterial(float friction, float restitution, float damping);
-		void SetMotionProperty(const GMath::MVector& linear_velocity, const GMath::MVector& angular_velocity);
+		void SetLinearVelocity(const GMath::MVector& linear_velocity);
+		void SetAngularVelocity(const GMath::MVector& angular_velocity);
 		void SetShapeAndMass(std::shared_ptr<Shape> shape, float mass);
 
 		GMath::Matrix4x4 GetTransformMatrix() const;
@@ -24,10 +26,14 @@ namespace PhysicsDEMO
 		void ApplyGravity(float dt);
 		void ApplyDamping();
 		void ApplyImpluse(const GMath::MVector& impluse);
+		void ApplyTorque(const GMath::MVector& torque);
 		
 		void UpdateTransform(float dt);
 
 	private:
+		friend class PhysicsSystem;
+		friend class CollisionSolver;
+
 		GMath::MVector m_Translation;
 		GMath::MQuaternion m_Rotation;
 

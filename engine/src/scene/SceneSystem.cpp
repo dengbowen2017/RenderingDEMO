@@ -17,15 +17,24 @@ namespace RenderingDEMO
 		m_BunnyMesh = LoadMesh(bunny_path);
 		m_RenderSystem->SubmitMesh(m_BunnyMesh);
 
-		m_BunnyShape = std::make_shared<PhysicsDEMO::ConvexHull>(GetMeshPos(m_BunnyMesh));
+		// set shape, mass, transform, motion, physic material
 		m_BunnyBody = std::make_shared<PhysicsDEMO::Body>();
-		m_BunnyBody->SetTranslation(GMath::MVector(1.0f, 1.0f, 0.0f, 0.0f));
+		m_BunnyShape = std::make_shared<PhysicsDEMO::ConvexHull>(GetMeshPos(m_BunnyMesh));
+		m_BunnyBody->SetShapeAndMass(m_BunnyShape, 100000.0f);
+		m_BunnyBody->SetPhysicMaterial(0.5f, 0.5f, 0.99f);
+
+		m_BunnyBody->SetTranslation(GMath::MVector(3.0f, 3.0f, 0.0f, 0.0f));
 		m_BunnyBody->SetRotation(GMath::MQuaternion(0.0f, 0.0f, 0.0f, 1.0f));
+
+		m_BunnyBody->SetLinearVelocity(GMath::MVector(-8.0f, 0.0f, 0.0f, 0.0f));
+		m_BunnyBody->SetAngularVelocity(GMath::MVector(0.0f, 0.0f, 0.0f, 0.0f));
+
+		m_PhysicsSystem->AddBody(m_BunnyBody.get());
 	}
 
 	void SceneSystem::OnUpdate(float dt)
 	{
-		//m_PhysicsSystem->Update(dt);
+		m_PhysicsSystem->Update(dt);
 		LogicToRender();
 	}
 
@@ -92,13 +101,10 @@ namespace RenderingDEMO
 	std::vector<GMath::Vector3> SceneSystem::GetMeshPos(std::shared_ptr<Mesh> mesh)
 	{
 		std::vector<GMath::Vector3> positions;
-		positions.resize(mesh->Vertices.size());
-
 		for each (const Vertex& vert in mesh->Vertices)
 		{
 			positions.emplace_back(vert.Position);
 		}
-
 		return positions;
 	}
 

@@ -21,6 +21,8 @@ namespace RenderingDEMO
 		
 		m_InputManager->Initialize(m_RenderSystem->GetMainCamera());
 
+		m_PhysicsSystem->Initialize(PhysicsDEMO::PhysicsSystemType::Default);
+
 		m_SceneSystem->Initialize(m_RenderSystem, m_PhysicsSystem);
 
 		m_Window->RegisterOnKeyFunc(std::bind(&InputManager::OnKey, m_InputManager.get(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
