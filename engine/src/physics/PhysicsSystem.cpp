@@ -12,7 +12,7 @@ namespace PhysicsDEMO
 		plane1.Point = GMath::MVector(0.0f);
 
 		plane2.Normal = GMath::MVector(1.0f, 0.0f, 0.0f, 0.0f);
-		plane2.Point = GMath::MVector(-1.0f, 0.0f, 0.0f, 0.0f);
+		plane2.Point = GMath::MVector(-2.0f, 0.0f, 0.0f, 0.0f);
 	}
 
 	void PhysicsSystem::AddBody(Body* body)

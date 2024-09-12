@@ -38,7 +38,7 @@ namespace RenderingDEMO
 		GMath::StoreMatrix4x4(&m_PlaneHConstant.ModelMatrix, GMath::ScaleMatrix(scale_vec));
 
 		GMath::MQuaternion rotate_vec(0, 0, -GMath::ScalarSin(GMath::ConvertToRadians(45)), GMath::ScalarCos(GMath::ConvertToRadians(45)));
-		GMath::MVector pos_vec(-1.0f, 0.0f, 0.0f, 0.0f);
+		GMath::MVector pos_vec(-2.0f, 0.0f, 0.0f, 0.0f);
 		GMath::StoreMatrix4x4(&m_PlaneVConstant.ModelMatrix, GMath::ModelMatrix(pos_vec, rotate_vec, scale_vec));
 	}
 

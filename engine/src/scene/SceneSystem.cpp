@@ -20,13 +20,13 @@ namespace RenderingDEMO
 		// set shape, mass, transform, motion, physic material
 		m_BunnyBody = std::make_shared<PhysicsDEMO::Body>();
 		m_BunnyShape = std::make_shared<PhysicsDEMO::ConvexHull>(GetMeshPos(m_BunnyMesh));
-		m_BunnyBody->SetShapeAndMass(m_BunnyShape, 100000.0f);
+		m_BunnyBody->SetShapeAndMass(m_BunnyShape, 10.0f);
 		m_BunnyBody->SetPhysicMaterial(0.5f, 0.5f, 0.99f);
 
-		m_BunnyBody->SetTranslation(GMath::MVector(3.0f, 3.0f, 0.0f, 0.0f));
+		m_BunnyBody->SetTranslation(GMath::MVector(1.5f, 2.4f, 0.0f, 0.0f));
 		m_BunnyBody->SetRotation(GMath::MQuaternion(0.0f, 0.0f, 0.0f, 1.0f));
 
-		m_BunnyBody->SetLinearVelocity(GMath::MVector(-8.0f, 0.0f, 0.0f, 0.0f));
+		m_BunnyBody->SetLinearVelocity(GMath::MVector(-5.8f, 2.3f, 0.0f, 0.0f));
 		m_BunnyBody->SetAngularVelocity(GMath::MVector(0.0f, 0.0f, 0.0f, 0.0f));
 
 		m_PhysicsSystem->AddBody(m_BunnyBody.get());

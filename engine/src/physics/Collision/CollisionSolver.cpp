@@ -18,7 +18,7 @@ namespace PhysicsDEMO
 
 		GMath::MVector now_center_of_mass = body->m_Shape->GetCenterOfMass() + body->m_Translation;
 		GMath::MMatrix R = GMath::QuaternionToMatrix(body->m_Rotation);
-		GMath::MMatrix cross_mat = GMath::VectorCrossToMatrix(R * (collision.Point - now_center_of_mass));
+		GMath::MMatrix cross_mat = GMath::VectorCrossToMatrix(collision.Point - now_center_of_mass);
 		GMath::MMatrix K = body->m_MassProperty.InvMass * GMath::MMatrix::Identity() - cross_mat * R * body->m_MassProperty.InvInertia * GMath::MatrixTranspose(R) * cross_mat;
 		K.r[3] = GMath::g_MatIdentityR3;
 

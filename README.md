@@ -1,18 +1,20 @@
 # RenderingDEMO
 
 ## Outline
-This is my implementation of a simple game engine. The main concept is to use RHI to manage different rendering APIs. For now, it can support OpenGL and DirectX11 only on Windows.
+This is my implementation of a simple game engine. For now, it can support OpenGL and DirectX11 only on Windows.
 
 ![preview](doc/preview.png)
 
 ## How to use
-After cloning the repository
+First, clone the repository
+```
+git clone https://github.com/dengbowen2017/RenderingDEMO.git path_to_your_folder --recursive
+```
 ### Windows
 #### Method 1
 Open the root folder with Visual Studio and run the cmake file 
 #### Method 2
 ```
-$ cd RenderingDEMO
 $ mkdir build
 $ cd build
 $ cmake ..
@@ -27,12 +29,22 @@ Then run the .sln file.
 - phong lighting
 - simple shadow mapping
 - skybox
-
-## TODO list
-### Priority
 - 3D graphics math library
 - Add smiple resource loader
 - Add simple 3D rigid body physics
+
+## Notice
+### Physics Engine
+
+Simulation normally contains four stages.
+
+BoardPhase -> NarrowPhase -> ResolvePhase -> Intergration
+
+For now, the part is just a very simple one and need to be reconstructed in the future. No good collision detection, No good intergration with other system, Only supports one rigid body.
+
+## TODO list
+### Priority
+- Add PBD physics simulation
 - Add rendering features (PBR, Deferred Rendering...)
 - Add batch rendering
 
@@ -45,12 +57,14 @@ Then run the .sln file.
 
 ## References
 ### Rendering API
-[LearnOpenGL](https://learnopengl.com/Getting-started/OpenGL)
+[Learn OpenGL](https://learnopengl.com/Getting-started/OpenGL)
 
-[LearnD3D11](https://graphicsprogramming.github.io/learnd3d11/1-introduction/1-1-getting-started/1-1-0-overview/)
-### Engine Framework
-[UnrealEngine](https://github.com/folgerwang/UnrealEngine)
+[Learn D3D11](https://graphicsprogramming.github.io/learnd3d11/1-introduction/1-1-getting-started/1-1-0-overview/)
+### Game Engine Framework
+[Unreal Engine](https://github.com/folgerwang/UnrealEngine)
 
 [Piccolo](https://github.com/BoomingTech/Piccolo)
 
 [Hazel](https://github.com/TheCherno/Hazel)
+### Physics Engine Framework
+[Jolt Physics](https://github.com/jrouwe/JoltPhysics)
