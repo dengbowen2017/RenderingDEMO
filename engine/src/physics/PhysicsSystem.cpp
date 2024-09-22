@@ -4,100 +4,68 @@
 
 namespace PhysicsDEMO
 {
-	void PhysicsSystem::Initialize(PhysicsSystemType type)
+	PhysicsSystem::PhysicsSystem(const PhysicsSystemConfig& config)
+		:m_Gravity(0.0f, -config.Gravity, 0.0f, 0.0f), m_LinearSpeedThreshold(config.LinearSpeedThreshold),
+		m_AngularSpeedThreshold(config.AngularSpeedThreshold), m_SleepThreshold(config.SleepThreshold)
 	{
-		m_Type = type;
-
-		plane1.Normal = GMath::MVector(0.0f, 1.0f, 0.0f, 0.0f);
-		plane1.Point = GMath::MVector(0.0f);
-
-		plane2.Normal = GMath::MVector(1.0f, 0.0f, 0.0f, 0.0f);
-		plane2.Point = GMath::MVector(-2.0f, 0.0f, 0.0f, 0.0f);
 	}
 
-	void PhysicsSystem::AddBody(Body* body)
+	void PhysicsSystem::AddRigidActor(RigidActor* body)
 	{
-		m_Bodies.push_back(body);
+		m_RigidActors.push_back(body);
 	}
 
-	void PhysicsSystem::RemoveBody(Body* body)
+	void PhysicsSystem::RemoveRigidActor(RigidActor* body)
 	{
-		auto it = std::find(m_Bodies.begin(), m_Bodies.end(), body);
-		if (it != m_Bodies.end())
+		auto it = std::find(m_RigidActors.begin(), m_RigidActors.end(), body);
+		if (it != m_RigidActors.end())
 		{
-			m_Bodies.erase(it);
+			m_RigidActors.erase(it);
 		}
 	}
 
 	void PhysicsSystem::Update(float dt)
 	{
 		m_Accumulator += dt;
-		if (m_Accumulator < m_StepSize)
+		if (m_Accumulator >= m_StepSize)
 		{
-			return;
+			m_Accumulator -= m_StepSize;
+			Simulate(m_StepSize);
 		}
-		m_Accumulator -= m_StepSize;
-		Simulate(m_StepSize);
 	}
 
 	void PhysicsSystem::Simulate(float dt)
 	{
-		Collision collision;
-
-		for each (Body * body in m_Bodies)
+		for each (RigidActor * actor1 in m_RigidActors)
 		{
-			body->ApplyGravity(dt);
-			body->ApplyDamping();
+			RigidDynamic* dynamic_actor1 = actor1->is<RigidDynamic>();
 
-			if (isCollided(body, plane1, collision))
+			if (dynamic_actor1 && dynamic_actor1->IsSleep() == false)
 			{
-				m_Solver.ImpulseSolver(collision);
-			}
+				dynamic_actor1->ApplyGravity(m_Gravity, dt);
+				dynamic_actor1->ApplyDamping();
 
-			if (isCollided(body, plane2, collision))
-			{
-				m_Solver.ImpulseSolver(collision);
-			}
+				for each (RigidActor * actor2 in m_RigidActors)
+				{
+					if (actor1 != actor2)
+					{
+						Collision collision;
+						if (m_Solver.DetectCollision(actor1, actor2, collision))
+						{
+							m_Solver.AddCollision(collision);
+						}
+					}
+				}
 
-			body->UpdateTransform(dt);
-		}
-	}
+				m_Solver.SolveCollision();
+				dynamic_actor1->UpdateTransform(dt);
 
-	bool PhysicsSystem::isCollided(Body* body, const PlaneCollider& collider, Collision& collision)
-	{
-		GMath::MMatrix R = GMath::RotateMatrix(body->m_Rotation);
-		GMath::MVector average_position(0.0f);
-		GMath::MVector average_velocity(0.0f);
-
-		int n = 0;
-
-		const std::vector<GMath::Vector3>& vertices = body->m_Shape->GetVertices();
-		const std::vector<GMath::MVector>& pos_vecs = body->m_Shape->GetPositionVectors();
-
-		for (size_t i = 0; i < vertices.size(); i++)
-		{
-			GMath::MVector new_pos = GMath::LoadVector3(&vertices[i]);
-			new_pos = R * new_pos + body->m_Translation;
-
-			if (GMath::VectorGetX(GMath::VectorDot(new_pos - collider.Point, collider.Normal)) < 0)
-			{
-				GMath::MVector velocity = body->m_MotionProperty.LinearVelocity + GMath::VectorCross(body->m_MotionProperty.AngularVelocity, R * pos_vecs[i]);
-
-				average_position += new_pos;
-				average_velocity += velocity;
-				n++;
+				if (GMath::VectorGetX(GMath::VectorMagnitude(dynamic_actor1->GetLinearVelocity())) <= m_LinearSpeedThreshold
+					&& GMath::VectorGetX(GMath::VectorMagnitude(dynamic_actor1->GetAngularVelocity())) <= m_AngularSpeedThreshold)
+				{
+					dynamic_actor1->AccumulateSleepTime(dt, m_SleepThreshold);
+				}
 			}
 		}
-
-		if (n != 0 && GMath::VectorGetX(GMath::VectorDot(average_velocity, collider.Normal)) < 0)
-		{
-			collision.ActiveBody = body;
-			collision.Plane = collider;
-			collision.Point = average_position / n;
-			collision.Velocity = average_velocity / n;
-			return true;
-		}
-
-		return false;
 	}
 }

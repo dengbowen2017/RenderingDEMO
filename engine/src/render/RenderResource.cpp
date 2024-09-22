@@ -28,18 +28,13 @@ namespace RenderingDEMO
 		m_PerFrameConstant.ProjectionViewNoTransMatrix = proj_view_no_trans;
     }
 
-	void RenderResource::UpdatePerObjectConstant(const PerObjectConstant& constant)
+	void RenderResource::UpdatePerObjectConstant(const std::vector<PerObjectConstant>& constants)
 	{
 		// TODO:
-		// switch to ECS and rewrite the transform
-		m_BunnyConstant = constant;
-
-		GMath::MVector scale_vec(1.0f);
-		GMath::StoreMatrix4x4(&m_PlaneHConstant.ModelMatrix, GMath::ScaleMatrix(scale_vec));
-
-		GMath::MQuaternion rotate_vec(0, 0, -GMath::ScalarSin(GMath::ConvertToRadians(45)), GMath::ScalarCos(GMath::ConvertToRadians(45)));
-		GMath::MVector pos_vec(-2.0f, 0.0f, 0.0f, 0.0f);
-		GMath::StoreMatrix4x4(&m_PlaneVConstant.ModelMatrix, GMath::ModelMatrix(pos_vec, rotate_vec, scale_vec));
+		// switch to ECS and rewrite the update function
+		m_BunnyConstant = constants[0];
+		m_PlaneVConstant = constants[1];
+		m_PlaneHConstant = constants[2];
 	}
 
     void RenderResource::UploadBuffers(std::shared_ptr<RHI> rhi, std::shared_ptr<Mesh> mesh)
@@ -81,7 +76,7 @@ namespace RenderingDEMO
 		std::shared_ptr<Texture2D> texture;
 		ResourceRawData texDatas;
 
-		int width, height, channels;
+		int width = 0, height = 0, channels;
 		unsigned int flags = (unsigned int)TextureFlags::TexCubeMap | (unsigned int)TextureFlags::TexShaderResource | (unsigned int)TextureFlags::TexImmutable;
 
 		for (size_t i = 0; i < cubeMapPaths.size(); i++)

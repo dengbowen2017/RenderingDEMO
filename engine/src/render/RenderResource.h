@@ -13,7 +13,7 @@ namespace RenderingDEMO
 	{
 	public:
 		void UpdatePerFrameConstant(std::shared_ptr<Camera> camera);
-		void UpdatePerObjectConstant(const PerObjectConstant& constant);
+		void UpdatePerObjectConstant(const std::vector<PerObjectConstant>& constants);
 		
 		// temp
 		void UploadBuffers(std::shared_ptr<RHI> rhi, std::shared_ptr<Mesh> mesh);

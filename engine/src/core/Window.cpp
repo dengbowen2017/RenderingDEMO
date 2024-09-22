@@ -7,12 +7,7 @@
 
 namespace RenderingDEMO
 {
-	Window::~Window()
-	{
-		glfwTerminate();
-	}
-
-	void Window::Initialize(const WindowProps& props)
+	Window::Window(const WindowProps& props)
 	{
 		if (!glfwInit())
 		{
@@ -31,7 +26,7 @@ namespace RenderingDEMO
 		{
 			spdlog::error("Failed to create window");
 			glfwTerminate();
-			return ;
+			return;
 		}
 		m_WindowHandler = glfwGetWin32Window(m_Window);
 
@@ -40,6 +35,11 @@ namespace RenderingDEMO
 		glfwSetFramebufferSizeCallback(m_Window, FrameBufferSizeCallback);
 		glfwSetCursorPosCallback(m_Window, CursorPosCallback);
 		glfwSetMouseButtonCallback(m_Window, MouseButtonCallback);
+	}
+
+	Window::~Window()
+	{
+		glfwTerminate();
 	}
 
 	void Window::PollEvents()

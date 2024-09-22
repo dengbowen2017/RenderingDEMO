@@ -1,44 +1,43 @@
 #pragma once
 
-#include "Body/Body.h"
-#include "Collision/CollisionDefinition.h"
+#include "Actor/RigidDynamic.h"
+#include "Actor/RigidStatic.h"
 #include "Collision/CollisionSolver.h"
 
 namespace PhysicsDEMO
 {
-	enum PhysicsSystemType
+	struct PhysicsSystemConfig
 	{
-		Default, PBD
+		float Gravity = 9.8f;
+		float LinearSpeedThreshold = 0.2f;
+		float AngularSpeedThreshold = 0.25f;
+		float SleepThreshold = 0.4f;
 	};
 
 	class PhysicsSystem
 	{
 	public:
-		~PhysicsSystem() = default;
+		PhysicsSystem(const PhysicsSystemConfig& config);
 
-		void Initialize(PhysicsSystemType type);
-
-		void AddBody(Body* body);
-		void RemoveBody(Body* body);
+		void AddRigidActor(RigidActor* body);
+		void RemoveRigidActor(RigidActor* body);
 
 		void Update(float dt);
 
 	private:
 		void Simulate(float dt);
 
-		// TODO: Add Collision Detector and BodyPair
-		bool isCollided(Body* body, const PlaneCollider& collider, Collision& collision);
-
 	private:
-		PhysicsSystemType m_Type;
-		std::vector<Body*> m_Bodies;
+		std::vector<RigidActor*> m_RigidActors;
 		CollisionSolver m_Solver;
+
+		GMath::MVector m_Gravity;
 
 		float m_Accumulator = 0.0f;
 		float m_StepSize = 1.0f / 60.0f;
 
-		//Temp
-		PlaneCollider plane1;
-		PlaneCollider plane2;
+		float m_LinearSpeedThreshold = 0.2f;
+		float m_AngularSpeedThreshold = 0.3f;
+		float m_SleepThreshold = 0.5f;
 	};
 }

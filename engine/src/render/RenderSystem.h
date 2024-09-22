@@ -19,7 +19,7 @@ namespace RenderingDEMO
 	class RenderSystem
 	{
 	public:
-		RenderSystem() = default;
+		RenderSystem(std::shared_ptr<Window> window, RenderAPI api);
 		~RenderSystem();
 
 		void Initialize(std::shared_ptr<Window> window, RenderAPI api);
@@ -27,10 +27,11 @@ namespace RenderingDEMO
 		void OnUpdate(float deltaTime);
 
 		void SubmitMesh(std::shared_ptr<Mesh> mesh);
-		void SubmitConstant(const PerObjectConstant& constant);
+		void SubmitConstants(const std::vector<PerObjectConstant>& constants);
+
+		void SetSceneCamera(std::shared_ptr<Camera> camera);
 
 		std::shared_ptr<RHI> GetRHI() const { return m_RHI; }
-		std::shared_ptr<Camera> GetMainCamera() const { return m_Camera; }
 
 	private:
 		std::shared_ptr<RHI> m_RHI;

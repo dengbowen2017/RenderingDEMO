@@ -1,7 +1,10 @@
 #include "SceneSystem.h"
 
+#include "physics/SimpleFactory.h"
+#include "physics/Geometry/ConvexHull.h"
+#include "physics/Geometry/Plane.h"
+
 #include "spdlog/spdlog.h"
-#include "physics/Shape/ConvexHull.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
@@ -13,23 +16,50 @@ namespace RenderingDEMO
 		m_RenderSystem = render_system;
 		m_PhysicsSystem = physics_system;
 
+		m_Camera = std::make_shared<Camera>(GMath::Vector3(1.0f, 2.0f, 3.5f));
+		m_RenderSystem->SetSceneCamera(m_Camera);
+
 		std::string bunny_path = "../asset/model/bunny.obj";
 		m_BunnyMesh = LoadMesh(bunny_path);
 		m_RenderSystem->SubmitMesh(m_BunnyMesh);
 
-		// set shape, mass, transform, motion, physic material
-		m_BunnyBody = std::make_shared<PhysicsDEMO::Body>();
-		m_BunnyShape = std::make_shared<PhysicsDEMO::ConvexHull>(GetMeshPos(m_BunnyMesh));
-		m_BunnyBody->SetShapeAndMass(m_BunnyShape, 10.0f);
-		m_BunnyBody->SetPhysicMaterial(0.5f, 0.5f, 0.99f);
+		std::shared_ptr<PhysicsDEMO::ConvexHull> bunny_geo = std::make_shared<PhysicsDEMO::ConvexHull>(GetMeshPos(m_BunnyMesh));
+		std::shared_ptr<PhysicsDEMO::PhysicMaterial> bunny_mat = std::make_shared<PhysicsDEMO::PhysicMaterial>(0.5f, 0.0f, 0.4f);
 
-		m_BunnyBody->SetTranslation(GMath::MVector(1.5f, 2.4f, 0.0f, 0.0f));
-		m_BunnyBody->SetRotation(GMath::MQuaternion(0.0f, 0.0f, 0.0f, 1.0f));
+		m_BunnyRigidDynamic = PhysicsDEMO::SimpleFactory::CreateRigidDynamic(
+			GMath::MVector(1.5f, 2.4f, 0.0f, 0.0f),
+			GMath::MQuaternion(0.0f, 0.0f, 0.0f, 1.0f),
+			10.0f,
+			bunny_geo,
+			bunny_mat);
 
-		m_BunnyBody->SetLinearVelocity(GMath::MVector(-5.8f, 2.3f, 0.0f, 0.0f));
-		m_BunnyBody->SetAngularVelocity(GMath::MVector(0.0f, 0.0f, 0.0f, 0.0f));
+		m_BunnyRigidDynamic->SetLinearDamping(0.99f);
+		m_BunnyRigidDynamic->SetAngularDamping(0.98f);
+		m_BunnyRigidDynamic->SetLinearVelocity(GMath::MVector(-5.8f, 2.3f, 0.0f, 0.0f));
+		m_BunnyRigidDynamic->SetAngularVelocity(GMath::MVector(0.0f, 0.0f, 0.0f, 0.0f));
+		m_PhysicsSystem->AddRigidActor(m_BunnyRigidDynamic.get());
 
-		m_PhysicsSystem->AddBody(m_BunnyBody.get());
+		std::shared_ptr<PhysicsDEMO::Plane> planeV_geo = std::make_shared<PhysicsDEMO::Plane>(GMath::MVector(-2.0f, 0.0f, 0.0f, 0.0f), GMath::MQuaternion(0, 0, -GMath::ScalarSin(GMath::ConvertToRadians(45)), GMath::ScalarCos(GMath::ConvertToRadians(45))));
+		std::shared_ptr<PhysicsDEMO::PhysicMaterial> planeV_mat = std::make_shared<PhysicsDEMO::PhysicMaterial>();
+
+		m_PlaneVStatic = PhysicsDEMO::SimpleFactory::CreateRigidStatic(
+			GMath::MVector(-2.0f, 0.0f, 0.0f, 0.0f),
+			GMath::MQuaternion(0, 0, -GMath::ScalarSin(GMath::ConvertToRadians(45)), GMath::ScalarCos(GMath::ConvertToRadians(45))),
+			planeV_geo,
+			planeV_mat
+		);
+		m_PhysicsSystem->AddRigidActor(m_PlaneVStatic.get());
+
+		std::shared_ptr<PhysicsDEMO::Plane> planeH_geo = std::make_shared<PhysicsDEMO::Plane>(GMath::MVector(0.0f), GMath::MQuaternion(0.0f, 0.0f, 0.0f, 1.0f));
+		std::shared_ptr<PhysicsDEMO::PhysicMaterial> planeH_mat = std::make_shared<PhysicsDEMO::PhysicMaterial>();
+
+		m_PlaneHStatic = PhysicsDEMO::SimpleFactory::CreateRigidStatic(
+			GMath::MVector(0.0f),
+			GMath::MQuaternion(0.0f, 0.0f, 0.0f, 1.0f),
+			planeH_geo,
+			planeH_mat
+		);
+		m_PhysicsSystem->AddRigidActor(m_PlaneHStatic.get());
 	}
 
 	void SceneSystem::OnUpdate(float dt)
@@ -110,9 +140,19 @@ namespace RenderingDEMO
 
 	void SceneSystem::LogicToRender()
 	{
-		PerObjectConstant constant;
-		constant.ModelMatrix = m_BunnyBody->GetTransformMatrix();
+		// TODO: add ecs to scene system and use scene system to submit transformer to render
+		std::vector<PerObjectConstant> constants;
 
-		m_RenderSystem->SubmitConstant(constant);
+		PerObjectConstant constant;
+		constant.ModelMatrix = m_BunnyRigidDynamic->GetModelMatrix();
+		constants.push_back(constant);
+
+		constant.ModelMatrix = m_PlaneVStatic->GetModelMatrix();
+		constants.push_back(constant);
+
+		constant.ModelMatrix = m_PlaneHStatic->GetModelMatrix();
+		constants.push_back(constant);
+
+		m_RenderSystem->SubmitConstants(constants);
 	}
 }

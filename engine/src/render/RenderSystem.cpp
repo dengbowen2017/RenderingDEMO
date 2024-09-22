@@ -6,6 +6,31 @@
 
 namespace RenderingDEMO
 {
+	RenderSystem::RenderSystem(std::shared_ptr<Window> window, RenderAPI api)
+	{
+		m_CurrentAPI = api;
+		switch (api)
+		{
+		case RenderAPI::Unknown:
+			spdlog::error("Unknown RenderAPI");
+			break;
+		case RenderAPI::OpenGL:
+			m_RHI = std::make_shared<OpenGLRHI>();
+			break;
+		case RenderAPI::DirectX:
+			m_RHI = std::make_shared<DirectXRHI>();
+			break;
+		}
+		m_RHI->Initialize(window);
+
+		m_RenderResource = std::make_shared<RenderResource>();
+		//TODO : add asset manager to manage textures and models, then move to scene system
+		m_RenderResource->UploadTextures(m_RHI);
+
+		m_RenderPipeline = std::make_shared<RenderPipline>();
+		m_RenderPipeline->Initialize(m_RHI, m_RenderResource);
+	}
+
 	RenderSystem::~RenderSystem()
 	{
 	}
@@ -27,11 +52,8 @@ namespace RenderingDEMO
 		}
 		m_RHI->Initialize(window);
 
-		// TODO : move to scene system
-		std::array<int, 2> size = window->GetWindowSize();
-		m_Camera = std::make_shared<Camera>(GMath::Vector3(1.0f, 2.0f, 3.5f), 85.0f, static_cast<float>(size[0]) / static_cast<float>(size[1]));
-
 		m_RenderResource = std::make_shared<RenderResource>();
+		//TODO : add asset manager to manage textures and models, then move to scene system
 		m_RenderResource->UploadTextures(m_RHI);
 
 		m_RenderPipeline = std::make_shared<RenderPipline>();
@@ -48,9 +70,14 @@ namespace RenderingDEMO
 		m_RenderResource->UploadBuffers(m_RHI, mesh);
 	}
 
-	void RenderSystem::SubmitConstant(const PerObjectConstant& constant)
+	void RenderSystem::SubmitConstants(const std::vector<PerObjectConstant>& constants)
 	{
-		m_RenderResource->UpdatePerObjectConstant(constant);
+		m_RenderResource->UpdatePerObjectConstant(constants);
+	}
+
+	void RenderSystem::SetSceneCamera(std::shared_ptr<Camera> camera)
+	{
+		m_Camera = camera;
 	}
 
 	void RenderSystem::OnUpdate(float deltaTime)

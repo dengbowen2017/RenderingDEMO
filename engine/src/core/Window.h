@@ -4,6 +4,7 @@
 
 namespace RenderingDEMO
 {
+	// the default aspect ratio is 16 : 9
 	struct WindowProps
 	{
 		const char* Title = "RenderingDEMO";
@@ -14,16 +15,15 @@ namespace RenderingDEMO
 	class Window
 	{
 	public:
-		Window() = default;
+		Window(const WindowProps& props);
 		~Window();
 
-		void Initialize(const WindowProps& props);
 		void PollEvents();
+		bool WindowShouldClose() const { return glfwWindowShouldClose(m_Window); }
 
 		GLFWwindow* GetWindowPointer() const { return m_Window; }
 		std::array<int, 2> GetWindowSize() const { return std::array<int, 2>({ m_Width, m_Height }); }
 		HWND GetWindowHandler() const { return m_WindowHandler; }
-		bool WindowShouldClose() const { return glfwWindowShouldClose(m_Window); }
 
 		typedef std::function<void(int, int, int, int)>		OnKeyFunc;
 		typedef std::function<void(double, double)>			OnCursorPosFunc;

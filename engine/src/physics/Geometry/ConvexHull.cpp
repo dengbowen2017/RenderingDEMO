@@ -5,29 +5,24 @@ namespace PhysicsDEMO
 	ConvexHull::ConvexHull(std::vector<GMath::Vector3> vertices)
 		:m_Vertices(std::move(vertices))
 	{
+		m_Type = GeometryType::CONVEXHULL;
 		CalculateCenterOfMass();
 		CalculatePositionVectors();
 	}
 
-	MassProperty ConvexHull::GetMassProperty(float mass)
+	GMath::MMatrix ConvexHull::GetInertia(float mass) const
 	{
-		std::vector<GMath::MVector> position_vecs = GetPositionVectors();
 		GMath::MMatrix inertia = GMath::MMatrix::Zero();
 
-		for (size_t i = 0; i < position_vecs.size(); i++)
+		for (size_t i = 0; i < m_PositionVectors.size(); i++)
 		{
-			inertia += GMath::PartOfInertiaMatrix(position_vecs[i]);
+			inertia += GMath::PartOfInertiaMatrix(m_PositionVectors[i]);
 		}
 
-		inertia *= mass / position_vecs.size();
+		inertia *= mass / m_PositionVectors.size();
 		inertia.r[3] = GMath::g_MatIdentityR3;
 
-		MassProperty property;
-		property.Mass = mass;
-		property.InvMass = 1 / mass;
-		property.Inertia = inertia;
-		property.InvInertia = GMath::MatrixInverse(property.Inertia);
-		return property;
+		return inertia;
 	}
 
 	void ConvexHull::CalculateCenterOfMass()
@@ -41,7 +36,7 @@ namespace PhysicsDEMO
 			res += temp;
 		}
 
-		m_Center_Of_Mass = res / m_Vertices.size();
+		m_Center_Of_Mass = res / static_cast<float>(m_Vertices.size());
 	}
 
 	void ConvexHull::CalculatePositionVectors()

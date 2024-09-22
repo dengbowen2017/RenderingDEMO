@@ -6,10 +6,8 @@ namespace RenderingDEMO
 {
 	class Camera
 	{
-		friend class InputManager;
-
 	public:
-		Camera(GMath::Vector3 position, float fov, float aspectRatio);
+		Camera(GMath::Vector3 position, float fov = 85.0f, float aspectRatio = 16.0f / 9.0f);
 		~Camera() = default;
 
 		void ProcessMouseMovement(float xoffset, float yoffset);
@@ -19,10 +17,15 @@ namespace RenderingDEMO
 
 		GMath::Vector3 GetCameraPos() const { return m_Position; }
 
+		void SetAspectRatio(float ratio) { m_AspectRatio = ratio; }
+		void SetFovy(float degrees) { m_Fovy = degrees; }
+
 	private:
 		void updateCameraVectors();
 
 	private:
+		friend class InputManager;
+
 		GMath::Vector3 m_Position = {};
 
 		GMath::MVector m_Forward = {};
@@ -32,7 +35,7 @@ namespace RenderingDEMO
 		float m_Fovy = 0;
 		float m_AspectRatio = 0;
 
-		// TODO: set at constructor
+		// TODO: change to component
 		GMath::MVector m_WorldUp = { 0.0f, 1.0f, 0.0f, 0.0f }; 
 		float m_Yaw = -90.0f;
 		float m_Pitch = 0;
