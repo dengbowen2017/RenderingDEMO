@@ -1,7 +1,7 @@
 # RenderingDEMO
 
 ## Outline
-This is my simple game engine. For now, it can support OpenGL and DirectX11 only on Windows.
+This is a simple game engine I make. For now, it can support OpenGL and DirectX11 only on Windows.
 
 ![preview](doc/preview.png)
 
@@ -29,30 +29,29 @@ Then run the .sln file.
 - skybox
 - 3D graphics math library
 - smiple resource loader
-- simple 3D rigid body physics
+- simple 3D rigid body physics (both traditional and shape matching)
 
 ## Notice
 
 ### Physics Engine
+For now, this part in my engine is just a very simple one and need to be reconstructed in the future. No good collision detection. No good intergration with other systems. Bad performance. Only support dynamic rigid body collided with static planes.
 
-Simulation normally contains four stages.
+Bunny in the front is force based while bunny in the back is position based.
 
-BoardPhase -> NarrowPhase -> ResolvePhase -> Intergration
-
-For now, the part is just a very simple one and need to be reconstructed in the future. No good collision detection, No good intergration with other system, Only supports one rigid body.
+[some notes about physics engine](./doc/blog.md)
 
 ## TODO list
 
 ### Priority
-- Add PBD physics simulation
-- Add rendering features (PBR, Deferred Rendering...)
+- Reconstruct math library
+- Add smiple scene manager (ECS)
+- Add basic editor (imgui)
 - Add batch rendering
 
 ### In the future
-- Add smiple scene manager (ECS)
-- Add basic editor (imgui)
-- Add smiple scripting system (C#)
+- Add smiple scripting system (Lua)
 - Add multi-thread (logic thread and render thread)
+- Add rendering features (PBR, Deferred Rendering...)
 - Add cross compiling (cmake presets)
 
 ## References

@@ -36,7 +36,6 @@ namespace RenderingDEMO
 			float currentFrame = static_cast<float>(glfwGetTime());
 			deltaTime = currentFrame - lastFrame;
 			lastFrame = currentFrame;
-
 			spdlog::info("{0} FPS", 1 / deltaTime);
 
 			m_Window->PollEvents();

@@ -13,10 +13,7 @@ namespace RenderingDEMO
 	{
 	public:
 		Application();
-		~Application() = default;
-
 		void Run();
-
 	private:
 		std::shared_ptr<Window> m_Window;
 		std::shared_ptr<WindowUI> m_WindowUI;
