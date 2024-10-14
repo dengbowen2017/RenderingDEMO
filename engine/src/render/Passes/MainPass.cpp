@@ -60,6 +60,10 @@ namespace RenderingDEMO
 		m_RHI->SetVertexBuffer(m_RenderResource->m_BunnyVertexBuffer);
 		m_RHI->DrawIndexed(m_RenderResource->m_BunnyIndexBuffer);
 
+		m_RHI->UpdateUniformBuffer(m_RenderResource->m_PerObjectUniformBuffer, &m_RenderResource->m_BunnyParticleConstant);
+		m_RHI->SetVertexBuffer(m_RenderResource->m_BunnyVertexBuffer);
+		m_RHI->DrawIndexed(m_RenderResource->m_BunnyIndexBuffer);
+
 		m_RHI->SetTexture(m_RenderResource->m_BoxTexture, 1);
 		m_RHI->SetSamplerState(m_DiffuseSamplerState, 1);
 

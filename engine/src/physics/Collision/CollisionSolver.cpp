@@ -11,7 +11,7 @@ namespace PhysicsDEMO
 		if (dynamic_actor2)
 		{
 			//TODO: deal with dynamic
-
+			return false;
 		}
 
 		RigidStatic* static_actor2 = actor2->is<RigidStatic>();
@@ -124,5 +124,3 @@ namespace PhysicsDEMO
 		actor1->ApplyAngularImpulse(torque);
 	}
 }
-
-

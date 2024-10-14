@@ -46,7 +46,12 @@ namespace RenderingDEMO
 		//m_RHI->Draw(36);
 
 		// planes don't cast shadow
+
 		m_RHI->UpdateUniformBuffer(m_RenderResource->m_PerObjectUniformBuffer, &m_RenderResource->m_BunnyConstant);
+		m_RHI->SetVertexBuffer(m_RenderResource->m_BunnyVertexBuffer);
+		m_RHI->DrawIndexed(m_RenderResource->m_BunnyIndexBuffer);
+
+		m_RHI->UpdateUniformBuffer(m_RenderResource->m_PerObjectUniformBuffer, &m_RenderResource->m_BunnyParticleConstant);
 		m_RHI->SetVertexBuffer(m_RenderResource->m_BunnyVertexBuffer);
 		m_RHI->DrawIndexed(m_RenderResource->m_BunnyIndexBuffer);
 	}

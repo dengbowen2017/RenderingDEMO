@@ -35,6 +35,7 @@ namespace RenderingDEMO
 		m_BunnyConstant = constants[0];
 		m_PlaneVConstant = constants[1];
 		m_PlaneHConstant = constants[2];
+		m_BunnyParticleConstant = constants[3];
 	}
 
     void RenderResource::UploadBuffers(std::shared_ptr<RHI> rhi, std::shared_ptr<Mesh> mesh)

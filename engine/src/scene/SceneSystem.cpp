@@ -60,6 +60,10 @@ namespace RenderingDEMO
 			planeH_mat
 		);
 		m_PhysicsSystem->AddRigidActor(m_PlaneHStatic.get());
+		
+		std::vector<GMath::MVector> velocities(m_BunnyMesh->Vertices.size(), GMath::MVector(-5.8f, 2.3f, 0.0f, 0.0f));
+		m_BunnyParticleBuffer = std::make_shared<PhysicsDEMO::ParticleRigidBuffer>(GetMeshPosVec(m_BunnyMesh), velocities, GMath::MVector(1.5f, 2.4f, -2.0f, 0.0f));
+		m_PhysicsSystem->AddParticleBuffer(m_BunnyParticleBuffer.get());
 	}
 
 	void SceneSystem::OnUpdate(float dt)
@@ -131,9 +135,21 @@ namespace RenderingDEMO
 	std::vector<GMath::Vector3> SceneSystem::GetMeshPos(std::shared_ptr<Mesh> mesh)
 	{
 		std::vector<GMath::Vector3> positions;
+		positions.reserve(mesh->Vertices.size());
 		for each (const Vertex& vert in mesh->Vertices)
 		{
 			positions.emplace_back(vert.Position);
+		}
+		return positions;
+	}
+
+	std::vector<GMath::MVector> SceneSystem::GetMeshPosVec(std::shared_ptr<Mesh> mesh)
+	{
+		std::vector<GMath::MVector> positions;
+		positions.reserve(mesh->Vertices.size());
+		for each (const Vertex & vert in mesh->Vertices)
+		{
+			positions.emplace_back(GMath::LoadVector3(&vert.Position));
 		}
 		return positions;
 	}
@@ -151,6 +167,9 @@ namespace RenderingDEMO
 		constants.push_back(constant);
 
 		constant.ModelMatrix = m_PlaneHStatic->GetModelMatrix();
+		constants.push_back(constant);
+
+		constant.ModelMatrix = m_BunnyParticleBuffer->GetModelMatrix();
 		constants.push_back(constant);
 
 		m_RenderSystem->SubmitConstants(constants);

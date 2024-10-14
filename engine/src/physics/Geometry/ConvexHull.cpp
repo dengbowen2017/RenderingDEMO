@@ -2,8 +2,8 @@
 
 namespace PhysicsDEMO
 {
-	ConvexHull::ConvexHull(std::vector<GMath::Vector3> vertices)
-		:m_Vertices(std::move(vertices))
+	ConvexHull::ConvexHull(const std::vector<GMath::Vector3>& vertices)
+		:m_Vertices(vertices)
 	{
 		m_Type = GeometryType::CONVEXHULL;
 		CalculateCenterOfMass();

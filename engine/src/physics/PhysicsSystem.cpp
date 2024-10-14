@@ -10,18 +10,36 @@ namespace PhysicsDEMO
 	{
 	}
 
-	void PhysicsSystem::AddRigidActor(RigidActor* body)
+	void PhysicsSystem::AddRigidActor(RigidActor* rigid_actor)
 	{
-		m_RigidActors.push_back(body);
+		RigidDynamic* dynamic_actor = rigid_actor->is<RigidDynamic>();
+		if (dynamic_actor)
+		{
+			m_RigidDynamics.push_back(dynamic_actor);
+		}
+
+		RigidStatic* static_actor = rigid_actor->is<RigidStatic>();
+		if (static_actor)
+		{
+			m_RigidStatics.push_back(static_actor);
+		}
 	}
 
-	void PhysicsSystem::RemoveRigidActor(RigidActor* body)
+	void PhysicsSystem::RemoveRigidActor(RigidActor* rigid_actor)
 	{
-		auto it = std::find(m_RigidActors.begin(), m_RigidActors.end(), body);
-		if (it != m_RigidActors.end())
+	}
+
+	void PhysicsSystem::AddParticleBuffer(ParticleBuffer* buffer)
+	{
+		ParticleRigidBuffer* rigid_buffer = dynamic_cast<ParticleRigidBuffer*>(buffer);
+		if (rigid_buffer)
 		{
-			m_RigidActors.erase(it);
+			m_RigidBuffers.push_back(rigid_buffer);
 		}
+	}
+
+	void PhysicsSystem::RemoveParticleBuffer(ParticleBuffer* buffer)
+	{
 	}
 
 	void PhysicsSystem::Update(float dt)
@@ -36,36 +54,44 @@ namespace PhysicsDEMO
 
 	void PhysicsSystem::Simulate(float dt)
 	{
-		for each (RigidActor * actor1 in m_RigidActors)
+		// only used for dynamic collided with static based on force
+		for each (RigidDynamic * actor1 in m_RigidDynamics)
 		{
-			RigidDynamic* dynamic_actor1 = actor1->is<RigidDynamic>();
-
-			if (dynamic_actor1 && dynamic_actor1->IsSleep() == false)
+			if (!actor1->IsSleep())
 			{
-				dynamic_actor1->ApplyGravity(m_Gravity, dt);
-				dynamic_actor1->ApplyDamping();
+				actor1->ApplyGravity(m_Gravity, dt);
+				actor1->ApplyDamping();
 
-				for each (RigidActor * actor2 in m_RigidActors)
+				for each (RigidStatic* actor2 in m_RigidStatics)
 				{
-					if (actor1 != actor2)
+					Collision collision;
+					if (m_Solver.DetectCollision(actor1, actor2, collision))
 					{
-						Collision collision;
-						if (m_Solver.DetectCollision(actor1, actor2, collision))
-						{
-							m_Solver.AddCollision(collision);
-						}
+						m_Solver.AddCollision(collision);
 					}
 				}
-
 				m_Solver.SolveCollision();
-				dynamic_actor1->UpdateTransform(dt);
 
-				if (GMath::VectorGetX(GMath::VectorMagnitude(dynamic_actor1->GetLinearVelocity())) <= m_LinearSpeedThreshold
-					&& GMath::VectorGetX(GMath::VectorMagnitude(dynamic_actor1->GetAngularVelocity())) <= m_AngularSpeedThreshold)
-				{
-					dynamic_actor1->AccumulateSleepTime(dt, m_SleepThreshold);
-				}
+				actor1->UpdateTransform(dt);
+				CheckSleep(actor1, dt);
 			}
+		}
+
+		// shape matching for rigid body collided with static
+		for each (ParticleRigidBuffer* rigid_buffer in m_RigidBuffers)
+		{
+			rigid_buffer->PreSolve(m_RigidStatics, m_Gravity, dt);
+			rigid_buffer->Solve();
+			rigid_buffer->PostSolve(dt);
+		}
+	}
+
+	void PhysicsSystem::CheckSleep(RigidDynamic* rigid_dynamic, float dt)
+	{
+		if (GMath::VectorGetX(GMath::VectorMagnitude(rigid_dynamic->GetLinearVelocity())) <= m_LinearSpeedThreshold
+			&& GMath::VectorGetX(GMath::VectorMagnitude(rigid_dynamic->GetAngularVelocity())) <= m_AngularSpeedThreshold)
+		{
+			rigid_dynamic->AccumulateSleepTime(dt, m_SleepThreshold);
 		}
 	}
 }

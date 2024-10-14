@@ -22,8 +22,11 @@ namespace RenderingDEMO
 		std::shared_ptr<Camera> GetSceneCamera() const { return m_Camera; }
 
 	private:
+		// TODO: reconstruct the loading function and build a resource manager
+		// use emplace_back instead of push_back
 		std::shared_ptr<Mesh> LoadMesh(const std::string& objPath);
 		std::vector<GMath::Vector3> GetMeshPos(std::shared_ptr<Mesh> mesh);
+		std::vector<GMath::MVector> GetMeshPosVec(std::shared_ptr<Mesh> mesh);
 
 		void LogicToRender();
 
@@ -41,5 +44,6 @@ namespace RenderingDEMO
 		std::shared_ptr<PhysicsDEMO::RigidDynamic> m_BunnyRigidDynamic;
 		std::shared_ptr<PhysicsDEMO::RigidStatic> m_PlaneVStatic;
 		std::shared_ptr<PhysicsDEMO::RigidStatic> m_PlaneHStatic;
+		std::shared_ptr<PhysicsDEMO::ParticleRigidBuffer> m_BunnyParticleBuffer;
 	};
 }

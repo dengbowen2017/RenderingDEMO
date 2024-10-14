@@ -8,7 +8,7 @@ namespace PhysicsDEMO
 	class ConvexHull : public Geometry
 	{
 	public:
-		ConvexHull(std::vector<GMath::Vector3> vertices);
+		ConvexHull(const std::vector<GMath::Vector3>& vertices);
 		~ConvexHull() = default;
 
 		const std::vector<GMath::MVector>& GetPositionVectors() const { return m_PositionVectors; }

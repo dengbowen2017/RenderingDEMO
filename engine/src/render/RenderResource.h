@@ -53,5 +53,6 @@ namespace RenderingDEMO
 		PerObjectConstant m_BunnyConstant;
 		PerObjectConstant m_PlaneHConstant;
 		PerObjectConstant m_PlaneVConstant;
+		PerObjectConstant m_BunnyParticleConstant;
 	};
 }
