@@ -27,7 +27,7 @@ Then run the .sln file.
 - phong lighting
 - simple shadow mapping
 - skybox
-- 3D graphics math library
+- 3D graphics math library [GraphicsMath](https://github.com/dengbowen2017/GraphicsMath)
 - smiple resource loader
 - simple 3D rigid body physics (both traditional and shape matching)
 
@@ -43,15 +43,15 @@ Bunny in the front is force based while bunny in the back is position based.
 ## TODO list
 
 ### Priority
+- GPU based PBD
 - Reconstruct math library
 - Add smiple scene manager (ECS)
 - Add basic editor (imgui)
-- Add batch rendering
 
 ### In the future
 - Add smiple scripting system (Lua)
 - Add multi-thread (logic thread and render thread)
-- Add rendering features (PBR, Deferred Rendering...)
+- Add rendering features (PBR, deferred rendering, batch rendering...)
 - Add cross compiling (cmake presets)
 
 ## References

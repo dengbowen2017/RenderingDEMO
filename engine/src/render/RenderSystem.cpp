@@ -31,10 +31,6 @@ namespace RenderingDEMO
 		m_RenderPipeline->Initialize(m_RHI, m_RenderResource);
 	}
 
-	RenderSystem::~RenderSystem()
-	{
-	}
-
 	void RenderSystem::Initialize(std::shared_ptr<Window> window, RenderAPI api)
 	{
 		m_CurrentAPI = api;

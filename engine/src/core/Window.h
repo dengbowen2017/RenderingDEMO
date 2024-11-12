@@ -18,6 +18,9 @@ namespace RenderingDEMO
 		Window(const WindowProps& props);
 		~Window();
 
+		Window(const Window& window) = delete;
+		Window& operator=(const Window& window) = delete;
+
 		void PollEvents();
 		bool WindowShouldClose() const { return glfwWindowShouldClose(m_Window); }
 

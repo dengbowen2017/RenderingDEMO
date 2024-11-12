@@ -20,7 +20,6 @@ namespace RenderingDEMO
 	{
 	public:
 		RenderSystem(std::shared_ptr<Window> window, RenderAPI api);
-		~RenderSystem();
 
 		void Initialize(std::shared_ptr<Window> window, RenderAPI api);
 		void InitializeUI(std::shared_ptr<WindowUI> ui);
@@ -29,6 +28,8 @@ namespace RenderingDEMO
 		void SubmitMesh(std::shared_ptr<Mesh> mesh);
 		void SubmitConstants(const std::vector<PerObjectConstant>& constants);
 
+		// TODO:
+		// pass constants from the scene rather than pass the camera
 		void SetSceneCamera(std::shared_ptr<Camera> camera);
 
 		std::shared_ptr<RHI> GetRHI() const { return m_RHI; }

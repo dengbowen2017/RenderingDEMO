@@ -39,6 +39,8 @@ namespace RenderingDEMO
 
 	Window::~Window()
 	{
+		glfwDestroyWindow(m_Window);
+		m_Window = nullptr;
 		glfwTerminate();
 	}
 
